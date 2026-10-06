@@ -15,6 +15,7 @@ Movie/TV browsing app built with Next.js 16 on TMDB data (portfolio project).
 
 ## Workflow
 
+- **Review gate before every task:** before implementing any task, list every step you will take for that task (branch, files, commands, tests, commit/PR) and wait for the user's explicit approval. Do not start implementation, create branches, install packages or open PRs until the user approves that task's step list. Approval covers only that one task.
 - Task N in the plan = GitHub issue #N in `MooseNguyen/ui-moose-movie-web-2`, tracked on the "Moose Movie Next" project board.
 - One branch and one PR per task; the PR body contains `Closes #N`.
 - Commits follow Conventional Commits.
