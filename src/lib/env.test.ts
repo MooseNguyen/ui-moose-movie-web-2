@@ -17,4 +17,19 @@ describe('getEnv', () => {
       SITE_URL: 'http://localhost:3000',
     });
   });
+
+  it('returns the configured SITE_URL when set', () => {
+    vi.stubEnv('TMDB_READ_TOKEN', 'abc');
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://moose.example');
+    expect(getEnv().SITE_URL).toBe('https://moose.example');
+  });
+
+  it('caches the parsed env until resetEnvCache is called', () => {
+    vi.stubEnv('TMDB_READ_TOKEN', 'abc');
+    const first = getEnv();
+    expect(getEnv()).toBe(first);
+    resetEnvCache();
+    expect(getEnv()).not.toBe(first);
+    expect(getEnv()).toEqual(first);
+  });
 });
