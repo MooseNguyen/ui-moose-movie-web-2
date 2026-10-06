@@ -24,8 +24,9 @@ const MAX_CAST = 12;
 const MAX_COMPANIES = 3;
 
 function toYear(date: string | null): number | null {
-  const year = Number.parseInt((date ?? '').slice(0, 4), 10);
-  return Number.isNaN(year) ? null : year;
+  const match = /^(\d{4})/.exec(date ?? '');
+  const year = match ? Number.parseInt(match[1], 10) : 0;
+  return year > 0 ? year : null;
 }
 
 // Multi-search results and person credits carry both movie and tv fields,
@@ -130,7 +131,9 @@ export function toMediaDetail(
   mediaType: MediaType,
   fallbackOverview?: string
 ): MediaDetail {
-  const movie = 'runtime' in raw;
+  // 'in' only narrows the type; mediaType decides which fields apply.
+  const movieRaw = mediaType === 'movie' && 'runtime' in raw ? raw : null;
+  const tvRaw = mediaType === 'tv' && 'episode_run_time' in raw ? raw : null;
   const base = toMediaItem(raw, mediaType);
   const useFallback = raw.overview.trim() === '' && !!fallbackOverview;
   const recommendations = raw.recommendations.results;
@@ -150,9 +153,9 @@ export function toMediaDetail(
     tagline: raw.tagline || null,
     genres: raw.genres,
     releaseDate: pickTexts(raw, mediaType).date || null,
-    runtime: movie ? raw.runtime : (raw.episode_run_time[0] ?? null),
-    seasons: movie ? null : raw.number_of_seasons,
-    episodes: movie ? null : raw.number_of_episodes,
+    runtime: movieRaw ? movieRaw.runtime : (tvRaw?.episode_run_time[0] ?? null),
+    seasons: tvRaw ? tvRaw.number_of_seasons : null,
+    episodes: tvRaw ? tvRaw.number_of_episodes : null,
     companies: raw.production_companies
       .slice(0, MAX_COMPANIES)
       .map((c) => c.name),

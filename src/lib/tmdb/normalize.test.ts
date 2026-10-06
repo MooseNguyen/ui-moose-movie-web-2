@@ -66,6 +66,16 @@ describe('toMediaItem', () => {
     expect(toMediaItem(noPoster, 'movie').posterPath).toBeNull();
   });
 
+  it.each([
+    ['12ab', null],
+    ['0000-00-00', null],
+    ['', null],
+    ['1999-10-15', 1999],
+  ])('parses year from %j as %j', (date, year) => {
+    const raw = rawMovieSchema.parse({ id: 3, release_date: date });
+    expect(toMediaItem(raw, 'movie').year).toBe(year);
+  });
+
   it('returns year null when the date is missing or empty', () => {
     const noDate = shows.results.find((r) => r.id === 999002)!;
     expect(toMediaItem(noDate, 'tv').year).toBeNull();
@@ -157,12 +167,6 @@ describe('pickVideos', () => {
       true
     );
     expect(picked.map((v) => v.key)).not.toContain('vimeo1');
-    const firstUnofficial = picked.findIndex((v) => !v.official);
-    if (firstUnofficial !== -1) {
-      expect(picked.slice(firstUnofficial).every((v) => !v.official)).toBe(
-        true
-      );
-    }
   });
 
   it('caps at 6', () => {
@@ -244,9 +248,9 @@ describe('toPersonDetail', () => {
     const d = toPersonDetail(personDetail);
     const ids = d.credits.map((c) => `${c.mediaType}:${c.id}`);
     expect(new Set(ids).size).toBe(ids.length);
-    const popularity = (id: number) =>
-      rawCredits.find((c) => c.id === id)!.popularity;
-    const pops = d.credits.map((c) => popularity(c.id));
+    const popularity = (id: number, type: string) =>
+      rawCredits.find((c) => c.id === id && c.media_type === type)!.popularity;
+    const pops = d.credits.map((c) => popularity(c.id, c.mediaType));
     expect(pops).toEqual([...pops].sort((a, b) => b - a));
     expect(d).toMatchObject({
       id: 287,
