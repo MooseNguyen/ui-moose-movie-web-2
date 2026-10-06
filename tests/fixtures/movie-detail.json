@@ -1,0 +1,503 @@
+{
+  "adult": false,
+  "backdrop_path": "/c6OLXfKAk5BKeR6broC8pYiCquX.jpg",
+  "belongs_to_collection": null,
+  "budget": 63000000,
+  "genres": [
+    {
+      "id": 18,
+      "name": "Drama"
+    },
+    {
+      "id": 53,
+      "name": "Thriller"
+    }
+  ],
+  "homepage": "https://www.20thcenturystudios.com/movies/fight-club",
+  "id": 550,
+  "imdb_id": "tt0137523",
+  "origin_country": ["US"],
+  "original_language": "en",
+  "original_title": "Fight Club",
+  "overview": "A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy. Their concept catches on, with underground \"fight clubs\" forming in every town, until an eccentric gets in the way and ignites an out-of-control spiral toward oblivion.",
+  "popularity": 44.5726,
+  "poster_path": "/jSziioSwPVrOy9Yow3XhWIBDjq1.jpg",
+  "production_companies": [
+    {
+      "id": 711,
+      "logo_path": "/tEiIH5QesdheJmDAqQwvtN60727.png",
+      "name": "Fox 2000 Pictures",
+      "origin_country": "US"
+    },
+    {
+      "id": 508,
+      "logo_path": "/4sGWXoboEkWPphI6es6rTmqkCBh.png",
+      "name": "Regency Enterprises",
+      "origin_country": "US"
+    },
+    {
+      "id": 4700,
+      "logo_path": "/A32wmjrs9Psf4zw0uaixF0GXfxq.png",
+      "name": "Linson Entertainment",
+      "origin_country": "US"
+    },
+    {
+      "id": 25,
+      "logo_path": "/nM2MfoMqzJQRiSynsDabOtFKetD.png",
+      "name": "20th Century Fox",
+      "origin_country": "US"
+    },
+    {
+      "id": 20555,
+      "logo_path": "/hD8yEGUBlHOcfHYbujp71vD8gZp.png",
+      "name": "Taurus Film",
+      "origin_country": "DE"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "DE",
+      "name": "Germany"
+    },
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "release_date": "1999-10-15",
+  "revenue": 100853753,
+  "runtime": 139,
+  "softcore": false,
+  "spoken_languages": [
+    {
+      "english_name": "English",
+      "iso_639_1": "en",
+      "name": "English"
+    }
+  ],
+  "status": "Released",
+  "tagline": "Mischief. Mayhem. Soap.",
+  "title": "Fight Club",
+  "video": false,
+  "vote_average": 8.4,
+  "vote_count": 32974,
+  "credits": {
+    "cast": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 819,
+        "known_for_department": "Acting",
+        "name": "Edward Norton",
+        "original_name": "Edward Norton",
+        "popularity": 7.7379,
+        "profile_path": "/8nytsqL59SFJTVYVrN72k6qkGgJ.jpg",
+        "cast_id": 4,
+        "character": "Narrator",
+        "credit_id": "52fe4250c3a36847f80149f3",
+        "order": 0
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 287,
+        "known_for_department": "Acting",
+        "name": "Brad Pitt",
+        "original_name": "Brad Pitt",
+        "popularity": 13.5075,
+        "profile_path": "/ajNaPmXVVMJFg9GWmu6MJzTaXdV.jpg",
+        "cast_id": 5,
+        "character": "Tyler Durden",
+        "credit_id": "52fe4250c3a36847f80149f7",
+        "order": 1
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 1283,
+        "known_for_department": "Acting",
+        "name": "Helena Bonham Carter",
+        "original_name": "Helena Bonham Carter",
+        "popularity": 4.9171,
+        "profile_path": "/hJMbNSPJ2PCahsP3rNEU39C8GWU.jpg",
+        "cast_id": 285,
+        "character": "Marla Singer",
+        "credit_id": "631f0de8bd32090082733691",
+        "order": 2
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7470,
+        "known_for_department": "Acting",
+        "name": "Meat Loaf",
+        "original_name": "Meat Loaf",
+        "popularity": 1.9001,
+        "profile_path": "/1zkohpaG3my4qQAZGVgzgPuXwZ6.jpg",
+        "cast_id": 7,
+        "character": "Robert Paulson",
+        "credit_id": "52fe4250c3a36847f80149ff",
+        "order": 3
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7499,
+        "known_for_department": "Acting",
+        "name": "Jared Leto",
+        "original_name": "Jared Leto",
+        "popularity": 4.0566,
+        "profile_path": "/ca3x0OfIKbJppZh8S1Alx3GfUZO.jpg",
+        "cast_id": 286,
+        "character": "Angel Face",
+        "credit_id": "631f0e29ce9e91007f757d86",
+        "order": 4
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7471,
+        "known_for_department": "Acting",
+        "name": "Zach Grenier",
+        "original_name": "Zach Grenier",
+        "popularity": 1.891,
+        "profile_path": "/fSyQKZO39sUsqY283GXiScOg3Hi.jpg",
+        "cast_id": 31,
+        "character": "Richard Chesler (Regional Manager)",
+        "credit_id": "52fe4250c3a36847f8014a55",
+        "order": 5
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7497,
+        "known_for_department": "Acting",
+        "name": "Holt McCallany",
+        "original_name": "Holt McCallany",
+        "popularity": 3.1519,
+        "profile_path": "/xHnvYcJv6YEku9pIg8LoDNHWQy.jpg",
+        "cast_id": 32,
+        "character": "The Mechanic",
+        "credit_id": "52fe4250c3a36847f8014a59",
+        "order": 6
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7498,
+        "known_for_department": "Acting",
+        "name": "Eion Bailey",
+        "original_name": "Eion Bailey",
+        "popularity": 3.9538,
+        "profile_path": "/3DW13W47cKk4LQZwS4EvRaNBoVu.jpg",
+        "cast_id": 33,
+        "character": "Ricky",
+        "credit_id": "52fe4250c3a36847f8014a5d",
+        "order": 7
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7472,
+        "known_for_department": "Acting",
+        "name": "Richmond Arquette",
+        "original_name": "Richmond Arquette",
+        "popularity": 2.2988,
+        "profile_path": "/7byGiVac0GjBSVD1h6ylZlVXZK6.jpg",
+        "cast_id": 34,
+        "character": "Intern at Hospital",
+        "credit_id": "52fe4250c3a36847f8014a61",
+        "order": 8
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7219,
+        "known_for_department": "Acting",
+        "name": "David Andrews",
+        "original_name": "David Andrews",
+        "popularity": 1.9485,
+        "profile_path": "/s5jEvhtGrYptw3Mmv7bejvcAKLv.jpg",
+        "cast_id": 35,
+        "character": "Thomas at Remaining Men Together",
+        "credit_id": "52fe4250c3a36847f8014a65",
+        "order": 9
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 1129738,
+        "known_for_department": "Acting",
+        "name": "George Maguire",
+        "original_name": "George Maguire",
+        "popularity": 0.6659,
+        "profile_path": "/pyKzJNkpjCA96ItVq93x1Y2YfYx.jpg",
+        "cast_id": 59,
+        "character": "Group Leader at Remaining Men Together",
+        "credit_id": "581fce4c92514168ad00899d",
+        "order": 10
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 1317693,
+        "known_for_department": "Acting",
+        "name": "Eugenie Bondurant",
+        "original_name": "Eugenie Bondurant",
+        "popularity": 1.1348,
+        "profile_path": "/9ULAELEKNha7VCJhRWoer58NcJe.jpg",
+        "cast_id": 60,
+        "character": "Weeping Woman - Onward and Upward",
+        "credit_id": "581fce7fc3a368555600847b",
+        "order": 11
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 68277,
+        "known_for_department": "Acting",
+        "name": "Christina Cabot",
+        "original_name": "Christina Cabot",
+        "popularity": 1.2304,
+        "profile_path": "/h1vwbOfITSvDvDq8E9MVvWqMYSr.jpg",
+        "cast_id": 36,
+        "character": "Group Leader - Partners in Positivity",
+        "credit_id": "52fe4250c3a36847f8014a69",
+        "order": 12
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 202080,
+        "known_for_department": "Acting",
+        "name": "Sydney 'Big Dawg' Colston",
+        "original_name": "Sydney 'Big Dawg' Colston",
+        "popularity": 0.9688,
+        "profile_path": "/tdzVh7pstj6rcppqbBOX0KA7mX9.jpg",
+        "cast_id": 61,
+        "character": "Speaker - Free and Clear",
+        "credit_id": "581fcf3a92514168ad008b09",
+        "order": 13
+      }
+    ]
+  },
+  "videos": {
+    "results": [
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Yeah... no wonder this movie never won an Oscar",
+        "key": "V0Fqdb-smqo",
+        "site": "YouTube",
+        "size": 2160,
+        "type": "Featurette",
+        "official": false,
+        "id": "67c90f7a3dd7da394f24957b",
+        "published_at": "2025-02-14T14:25:16.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "20th Anniversary Trailer",
+        "key": "dfeUzm6KF4g",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Trailer",
+        "official": true,
+        "id": "64fb16fbdb4ed610343d72c3",
+        "published_at": "2019-10-15T18:59:47.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Mark Kermode introduces Fight Club | Film4 Interview",
+        "key": "tiWCNtGDGEY",
+        "site": "YouTube",
+        "size": 480,
+        "type": "Featurette",
+        "official": true,
+        "id": "65d00d0c57176f017b8fc73d",
+        "published_at": "2015-05-08T15:59:05.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Theatrical Trailer (HD Fan Remaster)",
+        "key": "6JnN1DmbqoU",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Trailer",
+        "official": false,
+        "id": "653b36ba5907de00c4953699",
+        "published_at": "2015-02-26T03:19:25.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "#TBT Trailer",
+        "key": "BdJKm16Co6M",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Trailer",
+        "official": true,
+        "id": "5c9294240e0a267cd516835f",
+        "published_at": "2014-10-02T19:20:22.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Vimeo Trailer",
+        "key": "vimeo1",
+        "site": "Vimeo",
+        "size": 1080,
+        "type": "Trailer",
+        "official": true,
+        "id": "manual1",
+        "published_at": "2019-10-15T18:59:47.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Official Teaser",
+        "key": "teaser1",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Teaser",
+        "official": true,
+        "id": "manual2",
+        "published_at": "2019-10-15T18:59:47.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Fan Teaser",
+        "key": "teaser2",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Teaser",
+        "official": false,
+        "id": "manual3",
+        "published_at": "2019-10-15T18:59:47.000Z"
+      }
+    ]
+  },
+  "recommendations": {
+    "page": 1,
+    "results": [
+      {
+        "adult": false,
+        "backdrop_path": "/fAGYRJCujRBMw7TCuTp893eSG8e.jpg",
+        "id": 641,
+        "title": "Requiem for a Dream",
+        "original_title": "Requiem for a Dream",
+        "overview": "The drug-induced utopias of four Coney Island residents are shattered when their addictions run deep.",
+        "poster_path": "/9BTwsLaMVHOGFlmsSlx5QYCaXb.jpg",
+        "media_type": "movie",
+        "original_language": "en",
+        "genre_ids": [80, 18],
+        "popularity": 10.1285,
+        "release_date": "2000-10-06",
+        "softcore": false,
+        "video": false,
+        "vote_average": 8,
+        "vote_count": 11357
+      },
+      {
+        "adult": false,
+        "backdrop_path": "/t9kQnqiaxQ8TLB25rTzDKLd0fdM.jpg",
+        "id": 187,
+        "title": "Sin City",
+        "original_title": "Sin City",
+        "overview": "Welcome to Sin City. This town beckons to the tough, the corrupt, the brokenhearted. Some call it dark… Hard-boiled. Then there are those who call it home — Crooked cops, sexy dames, desperate vigilantes. Some are seeking revenge, others lust after redemption, and then there are those hoping for a little of both. A universe of unlikely and reluctant heroes still trying to do the right thing in a city that refuses to care.",
+        "poster_path": "/i66G50wATMmPrvpP95f0XP6ZdVS.jpg",
+        "media_type": "movie",
+        "original_language": "en",
+        "genre_ids": [80, 53],
+        "popularity": 15.0018,
+        "release_date": "2005-04-01",
+        "softcore": false,
+        "video": false,
+        "vote_average": 7.463,
+        "vote_count": 9113
+      },
+      {
+        "adult": false,
+        "backdrop_path": "/oaDTXNmyqeNEEBat3h4ijiu27jv.jpg",
+        "id": 426249,
+        "title": "Lords of Chaos",
+        "original_title": "Lords of Chaos",
+        "overview": "A teenager's quest to launch Norwegian Black Metal in Oslo in the 1990s results in a very violent outcome.",
+        "poster_path": "/5jDShbwEsILXa2AAmAbOLxyNwyq.jpg",
+        "media_type": "movie",
+        "original_language": "en",
+        "genre_ids": [18, 53, 10402],
+        "popularity": 3.3729,
+        "release_date": "2018-09-20",
+        "softcore": false,
+        "video": false,
+        "vote_average": 6.78,
+        "vote_count": 582
+      }
+    ],
+    "total_pages": 17,
+    "total_results": 323
+  },
+  "similar": {
+    "page": 1,
+    "results": [
+      {
+        "adult": false,
+        "backdrop_path": "/f7sQHmdZdPHaRVt3428XmdoZ8Hs.jpg",
+        "genre_ids": [18, 12, 10749, 53],
+        "id": 1907,
+        "title": "The Beach",
+        "original_language": "en",
+        "original_title": "The Beach",
+        "overview": "Twenty-something Richard travels to Thailand and finds himself in possession of a strange map. Rumours state that it leads to a solitary beach paradise, a tropical bliss - excited and intrigued, he sets out to find it.",
+        "popularity": 7.3112,
+        "poster_path": "/4y7LxD8TSi6AtsM2xSYqUm1gu7u.jpg",
+        "release_date": "2000-02-03",
+        "softcore": false,
+        "video": false,
+        "vote_average": 6.486,
+        "vote_count": 4837
+      },
+      {
+        "adult": false,
+        "backdrop_path": "/amGU1FpELmenVvNmPShW58Orepy.jpg",
+        "genre_ids": [18, 9648, 27],
+        "id": 1923,
+        "title": "Twin Peaks: Fire Walk with Me",
+        "original_language": "en",
+        "original_title": "Twin Peaks: Fire Walk with Me",
+        "overview": "In the questionable town of Deer Meadow, Washington, FBI Agent Desmond inexplicably disappears while hunting for the man who murdered a teen girl. The killer is never apprehended, and, after experiencing dark visions and supernatural encounters, Agent Dale Cooper chillingly predicts that the culprit will claim another life. Meanwhile, in the more cozy town of Twin Peaks, hedonistic beauty Laura Palmer hangs with lowlifes and seems destined for a grisly fate.",
+        "popularity": 12.4341,
+        "poster_path": "/mxsGXqetGnirf99qapYd5MMY1VL.jpg",
+        "release_date": "1992-06-03",
+        "softcore": false,
+        "video": false,
+        "vote_average": 7.4,
+        "vote_count": 2372
+      },
+      {
+        "adult": false,
+        "backdrop_path": "/Ak4qIGjRY2CYrTTB1VsM9i9nF13.jpg",
+        "genre_ids": [14, 28, 27, 878, 53],
+        "id": 1877,
+        "title": "Doctor Mordrid",
+        "original_language": "en",
+        "original_title": "Doctor Mordrid",
+        "overview": "Bound by hate and a mystical amulet that holds the powers of life and death, two immortal wizards meet for the last time in an ancient struggle of good versus evil.",
+        "popularity": 2.2378,
+        "poster_path": "/zH9TkMZHSVRokg6vyyeLdu5SJxf.jpg",
+        "release_date": "1992-11-02",
+        "softcore": false,
+        "video": false,
+        "vote_average": 5.1,
+        "vote_count": 68
+      }
+    ],
+    "total_pages": 1001,
+    "total_results": 20001
+  }
+}
