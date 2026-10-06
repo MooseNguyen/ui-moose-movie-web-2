@@ -3,4 +3,4 @@ node_modules
 coverage
 docs
 .superpowers
-package-lock.json
+pnpm-lock.yaml

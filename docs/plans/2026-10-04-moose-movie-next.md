@@ -15,7 +15,7 @@
 ## Global Constraints
 
 - **Language:** everything in the repo is English — code, comments, docs, commit messages, issues, PRs. Vietnamese appears only in `src/messages/vi.json` and in test data that deliberately exercises Vietnamese input.
-- Package manager: **npm** (pnpm is not installed). `engines.node` = `>=20.9`; CI uses Node 24.
+- Package manager: **pnpm** (`packageManager` pinned in `package.json`; `pnpm-workspace.yaml` holds `allowBuilds`). Never use npm or yarn to install — they create a second lockfile. `engines.node` = `>=20.9`; CI uses Node 24 with `pnpm/action-setup`. Task 1 was executed with npm and migrated to pnpm afterwards; its commands below are historical.
 - TypeScript `strict: true`; alias `@/*` → `src/*`.
 - Only one required env var: `TMDB_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL` (default `http://localhost:3000`).
 - Every file in `src/lib/tmdb/` starts with `import 'server-only';`. The token never gets a `NEXT_PUBLIC_` prefix.
@@ -155,7 +155,7 @@ it('maps timeout to kind network', /* handler delay 'infinite', timeoutMs: 50 */
 it('maps schema mismatch to kind invalid_response', /* body {page:'x'} */);
 ```
 
-- [ ] **Step 2: Run to see them fail** — `npm run test -- src/lib/tmdb/client.test.ts` → FAIL.
+- [ ] **Step 2: Run to see them fail** — `pnpm test src/lib/tmdb/client.test.ts` → FAIL.
 
 - [ ] **Step 3: Implement** `tmdbFetch` in `client.ts`: `fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs ?? 8000), next: { revalidate, tags } })`; wait `min(Number(Retry-After)*1000, 2000)` before the retry; `schema.safeParse` — on failure `console.error('[tmdb]', path, issues)` then throw `invalid_response`. This is the only log point of the data layer.
 
@@ -316,7 +316,7 @@ it('maps 429 twice to rate_limit', ...);
 it('getTrailer returns null when no videos', ...);
 ```
 
-- [ ] **Step 2: Run → FAIL.** - [ ] **Step 3: Implement.** - [ ] **Step 4: Run → PASS; `npm run test:coverage` meets the 80% threshold.**
+- [ ] **Step 2: Run → FAIL.** - [ ] **Step 3: Implement.** - [ ] **Step 4: Run → PASS; `pnpm test:coverage` meets the 80% threshold.**
 - [ ] **Step 5: Commit** — `git commit -m "feat(actions): add validated load-more and trailer server actions"`
 
 ---
@@ -330,7 +330,7 @@ it('getTrailer returns null when no videos', ...);
 - Create: `src/messages/vi.json`, `src/messages/en.json`
 - Create: `src/app/[locale]/layout.tsx`, `src/app/[locale]/page.tsx` (temporary: heading only), `src/app/[locale]/loading.tsx`, `src/app/[locale]/error.tsx`, `src/app/[locale]/not-found.tsx`, `src/app/[locale]/[...rest]/page.tsx` (calls `notFound()`)
 - Create: `src/components/providers.tsx` (ThemeProvider + Toaster), `src/components/layout/Header.tsx`, `MobileNav.tsx`, `Footer.tsx`, `LocaleSwitcher.tsx`, `ThemeToggle.tsx`, `NavLinks.tsx`
-- Create: `src/components/ui/*` via `npx shadcn@latest init` then `npx shadcn@latest add button dialog alert-dialog sheet select tabs carousel skeleton sonner badge dropdown-menu`
+- Create: `src/components/ui/*` via `pnpm dlx shadcn@latest init` then `pnpm dlx shadcn@latest add button dialog alert-dialog sheet select tabs carousel skeleton sonner badge dropdown-menu`
 - Create: `tests/utils/render.tsx`
 - Delete: default `src/app/page.tsx`, `src/app/layout.tsx` (replace with a minimal root layout if next-intl requires one)
 - Test: `src/messages/messages.test.ts`, `src/components/layout/NavLinks.test.tsx`
@@ -355,7 +355,7 @@ expect(isActivePath('/', '/')).toBe(true);
 ```
 
 - [ ] **Step 2: Run → FAIL.** - [ ] **Step 3: Implement.** - [ ] **Step 4: Run → PASS.**
-- [ ] **Step 5: Manual check** — `npm run dev`: `/` redirects to `/vi`; `/en` shows English text; switching locale keeps the path; switching theme does not flash; `/vi/does-not-exist` shows the 404 page; at 360px the menu is in a Sheet.
+- [ ] **Step 5: Manual check** — `pnpm dev`: `/` redirects to `/vi`; `/en` shows English text; switching locale keeps the path; switching theme does not flash; `/vi/does-not-exist` shows the 404 page; at 360px the menu is in a Sheet.
 - [ ] **Step 6: Commit** — `git commit -m "feat(app): add i18n routing, theme, header, footer and route states"`
 
 ---
@@ -483,7 +483,7 @@ it('ignores a response that resolves after unmount/rerender with new key', ...);
 
 ## Phase 4 — Pages
 
-Every page in this phase: `await`s `params`/`searchParams`; calls `setRequestLocale(locale)`; has a `generateMetadata` (Task 19 adds hreflang via `buildMetadata` — until then `title` and `description` are enough). Verify manually with `npm run dev`, and `npm run build` must succeed.
+Every page in this phase: `await`s `params`/`searchParams`; calls `setRequestLocale(locale)`; has a `generateMetadata` (Task 19 adds hreflang via `buildMetadata` — until then `title` and `description` are enough). Verify manually with `pnpm dev`, and `pnpm build` must succeed.
 
 ### Task 12: Home
 
@@ -639,11 +639,11 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 - Modify: `package.json` (`"e2e": "playwright test"`), add minimal `data-testid`s if needed (`media-card`, `hero`)
 
 **Interfaces:**
-- Config: `webServer: { command: 'npm run build && npm run start', port: 3000, reuseExistingServer: !process.env.CI }`; projects `chromium` and `mobile` (Pixel 7); `use.baseURL = 'http://localhost:3000'`.
+- Config: `webServer: { command: 'pnpm build && pnpm start', port: 3000, reuseExistingServer: !process.env.CI }`; projects `chromium` and `mobile` (Pixel 7); `use.baseURL = 'http://localhost:3000'`.
 
-- [ ] **Step 1: Install** — `npm i -D @playwright/test && npx playwright install chromium`
+- [ ] **Step 1: Install** — `pnpm add -D @playwright/test && pnpm exec playwright install chromium`
 - [ ] **Step 2: Write the 5 scenarios from spec section 7.3.** Assertions check structure only (card count > 0, heading present, URL changed), never specific titles.
-- [ ] **Step 3: Run** — `npm run e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects.
+- [ ] **Step 3: Run** — `pnpm e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects.
 - [ ] **Step 4: Commit** — `git commit -m "test(e2e): add Playwright smoke tests"`
 
 ### Task 21: CI, performance budget, README
@@ -652,12 +652,12 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 - Create: `.github/workflows/ci.yml`, `lighthouserc.json`, `renovate.json`, `README.md`
 
 **Interfaces:**
-- `ci.yml` (triggers: `pull_request`, `push` to `main`; Node 24; `npm ci`): job `check` runs `lint` → `typecheck` → `test:coverage` → `build`; job `e2e` (needs `check`) runs Playwright with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}` and uploads the report on failure; job `lighthouse` (needs `check`) runs `npx @lhci/cli autorun`.
-- `lighthouserc.json`: `startServerCommand: 'npm run start'`; URLs `/vi`, `/vi/movie`, `/vi/movie/550`; mobile preset; assertions `categories:performance ≥ 0.9`, `categories:seo ≥ 1`, `categories:accessibility ≥ 0.95`, `resource-summary:script:size` `maxNumericValue: 153600`.
+- `ci.yml` (triggers: `pull_request`, `push` to `main`; Node 24; `pnpm/action-setup` then `pnpm install --frozen-lockfile`): job `check` runs `lint` → `typecheck` → `test:coverage` → `build`; job `e2e` (needs `check`) runs Playwright with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}` and uploads the report on failure; job `lighthouse` (needs `check`) runs `pnpm dlx @lhci/cli autorun`.
+- `lighthouserc.json`: `startServerCommand: 'pnpm start'`; URLs `/vi`, `/vi/movie`, `/vi/movie/550`; mobile preset; assertions `categories:performance ≥ 0.9`, `categories:seo ≥ 1`, `categories:accessibility ≥ 0.95`, `resource-summary:script:size` `maxNumericValue: 153600`.
 - `renovate.json`: `extends: ['config:recommended']`, `schedule: ['before 6am on monday']`, group minor/patch devDependencies.
-- README: description, screenshots, demo link, CI badge, `cp .env.example .env.local` + how to get a TMDB token, npm scripts, folder structure, TMDB attribution.
+- README: description, screenshots, demo link, CI badge, `cp .env.example .env.local` + how to get a TMDB token, pnpm scripts, folder structure, TMDB attribution.
 
 - [ ] **Step 1: Write the files above.**
-- [ ] **Step 2: Run locally** — `npm run build && npx @lhci/cli autorun`. Expected: every assertion PASS. On failure fix the actual cause (hero image not prioritized, `"use client"` too broad, iframe loaded early…) instead of loosening the budget.
+- [ ] **Step 2: Run locally** — `pnpm build && pnpm dlx @lhci/cli autorun`. Expected: every assertion PASS. On failure fix the actual cause (hero image not prioritized, `"use client"` too broad, iframe loaded early…) instead of loosening the budget.
 - [ ] **Step 3: Commit** — `git commit -m "ci: add CI workflow, Lighthouse budgets, Renovate and README"`
 - [ ] **Step 4 (done by the user):** add the `TMDB_READ_TOKEN` repository secret; import the repo into Vercel and set `TMDB_READ_TOKEN` and `NEXT_PUBLIC_SITE_URL`; confirm CI is green and the preview deploy works.

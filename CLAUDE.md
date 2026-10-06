@@ -24,3 +24,4 @@ exercises Vietnamese input. Everything else follows the global English rule.
   requires my explicit request.
 - One branch (`task/<N>-<slug>`) and one PR per task; the PR body contains `Closes #N`.
 - Commits follow Conventional Commits.
+- Package manager is **pnpm** (pinned via `packageManager`). Use `pnpm install`, `pnpm add`, `pnpm <script>`, `pnpm dlx`; never npm or yarn. New dependencies with install scripts must be approved explicitly in `pnpm-workspace.yaml` (`allowBuilds`).
