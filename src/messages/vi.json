@@ -1,0 +1,36 @@
+{
+  "common": {
+    "appName": "Moose Movie",
+    "homeHeading": "Chào mừng đến với Moose Movie",
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu",
+    "menuTitle": "Menu",
+    "menuDescription": "Điều hướng trang web",
+    "language": "Ngôn ngữ",
+    "switchToLight": "Chuyển sang giao diện sáng",
+    "switchToDark": "Chuyển sang giao diện tối"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "movies": "Phim lẻ",
+    "tv": "Phim bộ",
+    "discover": "Khám phá",
+    "favorites": "Yêu thích",
+    "main": "Điều hướng chính"
+  },
+  "footer": {
+    "tagline": "Duyệt phim điện ảnh và phim truyền hình.",
+    "tmdbAttribution": "Sản phẩm này sử dụng API của TMDB nhưng không được TMDB chứng thực hay công nhận.",
+    "github": "Trang GitHub",
+    "linkedin": "Trang LinkedIn",
+    "social": "Liên kết mạng xã hội"
+  },
+  "errors": {
+    "title": "Đã có lỗi xảy ra",
+    "description": "Không thể tải trang này. Vui lòng thử lại.",
+    "retry": "Thử lại",
+    "notFoundTitle": "Không tìm thấy trang",
+    "notFoundDescription": "Trang bạn tìm không tồn tại hoặc đã được di chuyển.",
+    "backHome": "Về trang chủ"
+  }
+}

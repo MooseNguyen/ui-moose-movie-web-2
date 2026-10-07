@@ -6,7 +6,7 @@
 
 **Architecture:** Server-first: Server Components fetch TMDB through `lib/tmdb` (server-only, cached with `fetch` revalidate, validated with Zod, normalized to `MediaItem`). Interactivity (slider, trailer, load more, favorites, filters) lives in leaf Client Components; "Load more" calls Server Actions. next-intl drives `/[locale]` routing.
 
-**Tech Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript strict, Tailwind CSS v4, shadcn/ui, next-themes, Embla Carousel, next-intl v4, Zod v4, Zustand v5, Vitest + Testing Library + MSW v2, Playwright, Lighthouse CI, GitHub Actions.
+**Tech Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript strict, Tailwind CSS v4, shadcn/ui, in-house theme module (replaced next-themes in Task 7), Embla Carousel, next-intl v4, Zod v4, Zustand v5, Vitest + Testing Library + MSW v2, Playwright, Lighthouse CI, GitHub Actions.
 
 **Spec:** `docs/specs/2026-10-04-moose-movie-next-design.md`
 
@@ -328,7 +328,7 @@ it('getTrailer returns null when no videos', ...);
 **Files:**
 - Create: `src/i18n/routing.ts`, `src/i18n/navigation.ts`, `src/i18n/request.ts`, `src/proxy.ts`
 - Create: `src/messages/vi.json`, `src/messages/en.json`
-- Create: `src/app/[locale]/layout.tsx`, `src/app/[locale]/page.tsx` (temporary: heading only), `src/app/[locale]/loading.tsx`, `src/app/[locale]/error.tsx`, `src/app/[locale]/not-found.tsx`, `src/app/[locale]/[...rest]/page.tsx` (calls `notFound()`)
+- Create: `src/app/[locale]/layout.tsx`, `src/app/[locale]/page.tsx` (temporary: heading only), `src/app/[locale]/error.tsx`, `src/app/[locale]/not-found.tsx`, `src/app/[locale]/[...rest]/page.tsx` (calls `notFound()`). There is deliberately no `[locale]/loading.tsx`: a locale-level Suspense boundary would stream the shell first and turn `notFound()` into HTTP 200 (soft 404). Each page task adds its own route-level `loading.tsx`.
 - Create: `src/components/providers.tsx` (ThemeProvider + Toaster), `src/components/layout/Header.tsx`, `MobileNav.tsx`, `Footer.tsx`, `LocaleSwitcher.tsx`, `ThemeToggle.tsx`, `NavLinks.tsx`
 - Create: `src/components/ui/*` via `pnpm dlx shadcn@latest init` then `pnpm dlx shadcn@latest add button dialog alert-dialog sheet select tabs carousel skeleton sonner badge dropdown-menu`
 - Create: `tests/utils/render.tsx`
@@ -341,7 +341,7 @@ it('getTrailer returns null when no videos', ...);
   - Message namespaces: `common`, `nav`, `home`, `list`, `search`, `discover`, `detail`, `person`, `favorites`, `errors`, `footer`
   - `isActivePath(pathname: string, href: string): boolean` (exported from `NavLinks.tsx`) — `/` matches only exactly; other hrefs match themselves and nested routes
   - `renderWithIntl(ui: ReactElement, locale?: Locale): RenderResult` in `tests/utils/render.tsx` (wraps `NextIntlClientProvider` with the real messages; default locale `en`)
-- Layout: `<html lang={locale} suppressHydrationWarning>`, Be Vietnam Pro font, `setRequestLocale(locale)`, `generateStaticParams` returns both locales; invalid locale → `notFound()`. Header is transparent and gains a background when `scrollY > 80` (client `useEffect` + state, no `classList`). Footer: "This product uses the TMDB API but is not endorsed or certified by TMDB." with a link to `https://www.themoviedb.org` (the TMDB logo can be downloaded manually from TMDB's attribution page into `public/tmdb-logo.svg`). `error.tsx` is a client component with a button calling `reset()`.
+- Layout: `<html lang={locale} suppressHydrationWarning>`, Be Vietnam Pro font, locale resolved from `next/root-params` in `src/i18n/request.ts` (no `setRequestLocale` calls; Next 16.3+), `generateStaticParams` returns both locales; invalid locale → `notFound()`. Header is transparent and gains a background when `scrollY > 80` (client `useEffect` + state, no `classList`). Footer: "This product uses the TMDB API but is not endorsed or certified by TMDB." with a link to `https://www.themoviedb.org` (the TMDB logo can be downloaded manually from TMDB's attribution page into `public/tmdb-logo.svg`). `error.tsx` is a client component with a button calling `reset()`.
 
 - [ ] **Step 1: Write failing tests**
 
@@ -483,7 +483,7 @@ it('ignores a response that resolves after unmount/rerender with new key', ...);
 
 ## Phase 4 — Pages
 
-Every page in this phase: `await`s `params`/`searchParams`; calls `setRequestLocale(locale)`; has a `generateMetadata` (Task 19 adds hreflang via `buildMetadata` — until then `title` and `description` are enough). Verify manually with `pnpm dev`, and `pnpm build` must succeed.
+Every page in this phase: `await`s `params`/`searchParams`; does not call `setRequestLocale` (the locale comes from `next/root-params` via `src/i18n/request.ts`); has a `generateMetadata` (Task 19 adds hreflang via `buildMetadata` — until then `title` and `description` are enough). Verify manually with `pnpm dev`, and `pnpm build` must succeed.
 
 ### Task 12: Home
 
@@ -522,7 +522,7 @@ Every page in this phase: `await`s `params`/`searchParams`; calls `setRequestLoc
 ### Task 14: Detail `/[mediaType]/[id]`
 
 **Files:**
-- Create: `src/app/[locale]/[mediaType]/[id]/page.tsx`, `loading.tsx`
+- Create: `src/app/[locale]/[mediaType]/[id]/page.tsx` (NO route-level `loading.tsx` at or above `[id]`: resolve existence and `notFound()` before streaming so missing items return HTTP 404; use `<Suspense>` only around secondary sections)
 - Create: `src/components/detail/DetailHero.tsx`, `CastList.tsx`, `VideoList.tsx`
 - Test: `src/components/detail/DetailHero.test.tsx`
 
@@ -539,7 +539,7 @@ Every page in this phase: `await`s `params`/`searchParams`; calls `setRequestLoc
 ### Task 15: Person `/person/[id]`
 
 **Files:**
-- Create: `src/app/[locale]/person/[id]/page.tsx`, `loading.tsx`, `src/components/person/PersonBio.tsx`, `src/components/person/PersonCredits.tsx`, `src/components/person/age.ts`
+- Create: `src/app/[locale]/person/[id]/page.tsx` (NO route-level `loading.tsx` at or above `[id]`: resolve existence and `notFound()` before streaming; `<Suspense>` only around secondary sections), `src/components/person/PersonBio.tsx`, `src/components/person/PersonCredits.tsx`, `src/components/person/age.ts`
 - Test: `src/components/person/PersonCredits.test.tsx`, `src/components/person/age.test.ts`
 
 **Interfaces:**
@@ -643,7 +643,7 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 
 - [ ] **Step 1: Install** — `pnpm add -D @playwright/test && pnpm exec playwright install chromium`
 - [ ] **Step 2: Write the 5 scenarios from spec section 7.3.** Assertions check structure only (card count > 0, heading present, URL changed), never specific titles.
-- [ ] **Step 3: Run** — `pnpm e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects.
+- [ ] **Step 3: Run** — `pnpm e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects. Also assert that `/vi/does-not-exist` returns HTTP 404 (guards against soft 404s).
 - [ ] **Step 4: Commit** — `git commit -m "test(e2e): add Playwright smoke tests"`
 
 ### Task 21: CI, performance budget, README

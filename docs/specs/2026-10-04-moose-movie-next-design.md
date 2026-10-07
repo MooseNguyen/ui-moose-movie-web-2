@@ -51,7 +51,7 @@ Authentication, database, user comments/reviews, actual video streaming, offline
 | Language | TypeScript (strict) | Catch TMDB data errors while coding |
 | Styling | Tailwind CSS v4 | Zero runtime, CSS contains only used classes |
 | Components | shadcn/ui (Radix) | Accessibility built in, code lives in the repo |
-| Theme | next-themes | Dark by default + Light, no color flash |
+| Theme | In-house theme module (server-rendered anti-flash script + `useSyncExternalStore` hook) | Dark by default + Light, no color flash; replaced next-themes (unmaintained, React 19 dev warning) |
 | Carousel | Embla Carousel (+ Autoplay) | ~7KB, shadcn's official carousel |
 | i18n | next-intl | RSC support, `/[locale]` routes, hreflang |
 | Validation | Zod (v4) | Validate TMDB responses, env, URL params, Server Action input |
