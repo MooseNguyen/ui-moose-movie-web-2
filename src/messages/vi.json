@@ -8,7 +8,10 @@
     "menuDescription": "Điều hướng trang web",
     "language": "Ngôn ngữ",
     "switchToLight": "Chuyển sang giao diện sáng",
-    "switchToDark": "Chuyển sang giao diện tối"
+    "switchToDark": "Chuyển sang giao diện tối",
+    "carouselPrevious": "Cuộn về trước",
+    "carouselNext": "Cuộn tiếp",
+    "loading": "Đang tải…"
   },
   "nav": {
     "home": "Trang chủ",

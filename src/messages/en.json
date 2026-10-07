@@ -8,7 +8,10 @@
     "menuDescription": "Site navigation",
     "language": "Language",
     "switchToLight": "Switch to light theme",
-    "switchToDark": "Switch to dark theme"
+    "switchToDark": "Switch to dark theme",
+    "carouselPrevious": "Previous",
+    "carouselNext": "Next",
+    "loading": "Loading…"
   },
   "nav": {
     "home": "Home",
