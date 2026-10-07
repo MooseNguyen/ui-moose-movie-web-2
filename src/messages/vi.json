@@ -7,7 +7,8 @@
     "menuTitle": "Menu",
     "menuDescription": "Điều hướng trang web",
     "language": "Ngôn ngữ",
-    "toggleTheme": "Đổi giao diện sáng/tối"
+    "switchToLight": "Chuyển sang giao diện sáng",
+    "switchToDark": "Chuyển sang giao diện tối"
   },
   "nav": {
     "home": "Trang chủ",

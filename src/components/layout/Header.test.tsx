@@ -42,7 +42,9 @@ describe('Header', () => {
     renderWithIntl(<Header />);
     expect(screen.getByRole('button', { name: 'Open menu' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Language' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Toggle theme' })).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'Switch to light theme' })
+    ).toBeVisible();
   });
 
   it('becomes solid only after scrolling past 80px', () => {

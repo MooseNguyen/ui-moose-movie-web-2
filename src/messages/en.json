@@ -7,7 +7,8 @@
     "menuTitle": "Menu",
     "menuDescription": "Site navigation",
     "language": "Language",
-    "toggleTheme": "Toggle theme"
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
   },
   "nav": {
     "home": "Home",

@@ -4,6 +4,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
+import { ThemeScript } from '@/components/theme/ThemeScript';
 import { Providers } from '@/components/providers';
 import { routing } from '@/i18n/routing';
 import '../globals.css';
@@ -37,6 +38,9 @@ export default async function LocaleLayout({
       className={`${beVietnamPro.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <Providers>
