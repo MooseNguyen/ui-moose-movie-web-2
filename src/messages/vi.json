@@ -1,7 +1,6 @@
 {
   "common": {
     "appName": "Moose Movie",
-    "homeHeading": "Chào mừng đến với Moose Movie",
     "openMenu": "Mở menu",
     "closeMenu": "Đóng menu",
     "menuTitle": "Menu",
@@ -56,5 +55,30 @@
     "trailerTitle": "Trailer: {title}",
     "noTrailer": "Chưa có trailer.",
     "playVideo": "Phát: {name}"
+  },
+  "home": {
+    "heading": "Moose Movie: phim lẻ và phim bộ thịnh hành",
+    "metaTitle": "Moose Movie: phim lẻ và phim bộ thịnh hành",
+    "metaDescription": "Khám phá phim lẻ và phim bộ thịnh hành, phổ biến, được đánh giá cao và sắp ra mắt, kèm trailer và thông tin chi tiết từ TMDB.",
+    "heroLabel": "Thịnh hành tuần này",
+    "slideLabel": "{index} / {total}",
+    "goToSlide": "Đến trang chiếu {index}",
+    "slides": "Chọn trang chiếu",
+    "previousSlide": "Trang chiếu trước",
+    "nextSlide": "Trang chiếu tiếp theo",
+    "pauseSlideshow": "Tạm dừng trình chiếu",
+    "details": "Chi tiết",
+    "detailsTitle": "Chi tiết: {title}",
+    "seeAll": "Xem tất cả",
+    "seeAllTitle": "Xem tất cả: {title}",
+    "rowError": "Không thể tải {title}. Vui lòng tải lại trang để thử lại.",
+    "rows": {
+      "popularMovies": "Phim lẻ thịnh hành",
+      "topRatedMovies": "Phim lẻ đánh giá cao",
+      "upcomingMovies": "Phim lẻ sắp chiếu",
+      "popularTv": "Phim bộ phổ biến",
+      "topRatedTv": "Phim bộ đánh giá cao",
+      "onTheAirTv": "Phim bộ đang phát sóng"
+    }
   }
 }

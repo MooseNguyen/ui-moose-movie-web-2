@@ -1,7 +1,6 @@
 {
   "common": {
     "appName": "Moose Movie",
-    "homeHeading": "Welcome to Moose Movie",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "menuTitle": "Menu",
@@ -56,5 +55,30 @@
     "trailerTitle": "Trailer: {title}",
     "noTrailer": "No trailer available.",
     "playVideo": "Play: {name}"
+  },
+  "home": {
+    "heading": "Moose Movie: trending movies and TV series",
+    "metaTitle": "Moose Movie: trending movies and TV series",
+    "metaDescription": "Discover trending, popular, top rated and upcoming movies and TV series, with trailers and details powered by TMDB.",
+    "heroLabel": "Trending this week",
+    "slideLabel": "{index} of {total}",
+    "goToSlide": "Go to slide {index}",
+    "slides": "Choose a slide",
+    "previousSlide": "Previous slide",
+    "nextSlide": "Next slide",
+    "pauseSlideshow": "Pause slideshow",
+    "details": "Details",
+    "detailsTitle": "Details: {title}",
+    "seeAll": "See all",
+    "seeAllTitle": "See all: {title}",
+    "rowError": "Could not load {title}. Please refresh the page to try again.",
+    "rows": {
+      "popularMovies": "Trending Movies",
+      "topRatedMovies": "Top Rated Movies",
+      "upcomingMovies": "Upcoming Movies",
+      "popularTv": "Popular TV Series",
+      "topRatedTv": "Top Rated TV Series",
+      "onTheAirTv": "On The Air TV Series"
+    }
   }
 }

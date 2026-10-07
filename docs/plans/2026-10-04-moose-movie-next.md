@@ -18,6 +18,7 @@
 - Package manager: **pnpm** (`packageManager` pinned in `package.json`; `pnpm-workspace.yaml` holds `allowBuilds`). Never use npm or yarn to install — they create a second lockfile. `engines.node` = `>=20.9`; CI uses Node 24 with `pnpm/action-setup`. Task 1 was executed with npm and migrated to pnpm afterwards; its commands below are historical.
 - TypeScript `strict: true`; alias `@/*` → `src/*`.
 - Only one required env var: `TMDB_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL` (default `http://localhost:3000`).
+- `pnpm build` prerenders Home (ISR, `revalidate = 3600`) and therefore calls TMDB: the build needs `TMDB_READ_TOKEN` (and, locally, a network that reaches TMDB, e.g. Cloudflare WARP). CI must pass the secret to the build step, not only to E2E.
 - Every file in `src/lib/tmdb/` starts with `import 'server-only';`. The token never gets a `NEXT_PUBLIC_` prefix.
 - The layout owns the single `<main>` landmark; pages render container `<div>`s, never their own `<main>`.
   The layout `<main>` is a block container; never make it a flex/grid container — centred page containers with `mx-auto` inside a flex parent shrink to fit-content and carousels then overflow the viewport.
@@ -655,7 +656,7 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 - Create: `.github/workflows/ci.yml`, `lighthouserc.json`, `renovate.json`, `README.md`
 
 **Interfaces:**
-- `ci.yml` (triggers: `pull_request`, `push` to `main`; Node 24; `pnpm/action-setup` then `pnpm install --frozen-lockfile`): job `check` runs `lint` → `typecheck` → `test:coverage` → `build`; job `e2e` (needs `check`) runs Playwright with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}` and uploads the report on failure; job `lighthouse` (needs `check`) runs `pnpm dlx @lhci/cli autorun`.
+- `ci.yml` (triggers: `pull_request`, `push` to `main`; Node 24; `pnpm/action-setup` then `pnpm install --frozen-lockfile`): job `check` runs `lint` → `typecheck` → `test:coverage` → `build` (with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}` in its env: the build prerenders Home from TMDB); job `e2e` (needs `check`) runs Playwright with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}` and uploads the report on failure; job `lighthouse` (needs `check`) runs `pnpm dlx @lhci/cli autorun`.
 - `lighthouserc.json`: `startServerCommand: 'pnpm start'`; URLs `/vi`, `/vi/movie`, `/vi/movie/550`; mobile preset; assertions `categories:performance ≥ 0.9`, `categories:seo ≥ 1`, `categories:accessibility ≥ 0.95`, `resource-summary:script:size` `maxNumericValue: 153600`.
 - `renovate.json`: `extends: ['config:recommended']`, `schedule: ['before 6am on monday']`, group minor/patch devDependencies.
 - README: description, screenshots, demo link, CI badge, `cp .env.example .env.local` + how to get a TMDB token, pnpm scripts, folder structure, TMDB attribution.
