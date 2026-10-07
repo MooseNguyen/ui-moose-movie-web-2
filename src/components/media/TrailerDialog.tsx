@@ -56,8 +56,18 @@ export function TrailerDialog({
   useEffect(() => {
     return () => {
       requestId.current += 1;
+      started.current = false;
     };
   }, []);
+
+  // A different target (or language) invalidates the cached result.
+  useEffect(() => {
+    return () => {
+      requestId.current += 1;
+      started.current = false;
+      setState({ status: 'idle' });
+    };
+  }, [mediaType, id, locale]);
 
   const load = useCallback(async () => {
     started.current = true;
@@ -86,13 +96,16 @@ export function TrailerDialog({
           <DialogTitle className="pr-8">{dialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-          {state.status === 'ready' && state.video ? (
+          {open && state.status === 'ready' && state.video ? (
             <YouTubeFrame
               videoKey={state.video.key}
               title={state.video.name || dialogTitle}
             />
           ) : state.status === 'error' ? (
-            <div className="bg-muted flex size-full flex-col items-center justify-center gap-3 p-4 text-center">
+            <div
+              role="alert"
+              className="bg-muted flex size-full flex-col items-center justify-center gap-3 p-4 text-center"
+            >
               <p>{t('errors.generic')}</p>
               <Button
                 type="button"
@@ -103,15 +116,17 @@ export function TrailerDialog({
               </Button>
             </div>
           ) : state.status === 'ready' ? (
-            <div className="bg-muted flex size-full items-center justify-center p-4 text-center">
+            <div
+              role="status"
+              className="bg-muted flex size-full items-center justify-center p-4 text-center"
+            >
               <p>{t('detail.noTrailer')}</p>
             </div>
           ) : (
-            <Skeleton
-              role="status"
-              aria-label={t('common.loading')}
-              className="size-full rounded-none"
-            />
+            <div role="status" className="size-full">
+              <span className="sr-only">{t('common.loading')}</span>
+              <Skeleton aria-hidden="true" className="size-full rounded-none" />
+            </div>
           )}
         </div>
       </DialogContent>

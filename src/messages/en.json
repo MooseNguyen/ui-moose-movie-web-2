@@ -12,7 +12,8 @@
     "carouselPrevious": "Previous",
     "carouselNext": "Next",
     "loading": "Loading…",
-    "rating": "Rating"
+    "rating": "Rating",
+    "close": "Close"
   },
   "nav": {
     "home": "Home",

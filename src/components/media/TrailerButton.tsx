@@ -40,7 +40,11 @@ export function TrailerButton({
       open={open}
       onOpenChange={handleOpenChange}
       trigger={
-        <Button type="button" variant={variant}>
+        <Button
+          type="button"
+          variant={variant}
+          aria-label={t('trailerTitle', { title })}
+        >
           <Play aria-hidden="true" className="fill-current" />
           {t('trailer')}
         </Button>

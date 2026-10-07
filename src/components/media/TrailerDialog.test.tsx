@@ -31,7 +31,7 @@ function deferred<T>() {
 const props = { mediaType: 'movie' as const, id: 550, title: 'Fight Club' };
 const getIframe = () => document.querySelector('iframe');
 const openDialog = (user: ReturnType<typeof userEvent.setup>) =>
-  user.click(screen.getByRole('button', { name: 'Trailer' }));
+  user.click(screen.getByRole('button', { name: 'Trailer: Fight Club' }));
 
 beforeEach(() => mockedGetTrailer.mockReset());
 
@@ -40,10 +40,9 @@ describe('TrailerButton / TrailerDialog', () => {
     renderWithIntl(<TrailerButton {...props} />);
     expect(getIframe()).toBeNull();
     expect(mockedGetTrailer).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Trailer' })).toHaveAttribute(
-      'type',
-      'button'
-    );
+    expect(
+      screen.getByRole('button', { name: 'Trailer: Fight Club' })
+    ).toHaveAttribute('type', 'button');
   });
 
   it('fetches on open, renders the iframe with exact attributes, removes it on Esc', async () => {
@@ -139,7 +138,7 @@ describe('TrailerButton / TrailerDialog', () => {
     expect(getIframe()).not.toBeNull();
   });
 
-  it('keeps the newest result: a retry result is not overwritten by the earlier request', async () => {
+  it('shows the retry result after an initial error', async () => {
     const first = deferred<ActionResult<Video | null>>();
     const second = deferred<ActionResult<Video | null>>();
     mockedGetTrailer
@@ -162,7 +161,7 @@ describe('TrailerButton / TrailerDialog', () => {
     errorSpy.mockRestore();
   });
 
-  it('ignores a response that arrives after unmount without warnings', async () => {
+  it('does not log React errors when a response arrives after unmount', async () => {
     const d = deferred<ActionResult<Video | null>>();
     mockedGetTrailer.mockReturnValue(d.promise);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -181,7 +180,7 @@ describe('TrailerButton / TrailerDialog', () => {
     const onOpenChange = vi.fn();
     const user = userEvent.setup();
     renderWithIntl(<TrailerButton {...props} onOpenChange={onOpenChange} />);
-    const trigger = screen.getByRole('button', { name: 'Trailer' });
+    const trigger = screen.getByRole('button', { name: 'Trailer: Fight Club' });
     await user.click(trigger);
     expect(
       await screen.findByRole('dialog', { name: 'Trailer: Fight Club' })
@@ -193,11 +192,38 @@ describe('TrailerButton / TrailerDialog', () => {
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
+  it('removes the iframe immediately when closed', async () => {
+    mockedGetTrailer.mockResolvedValue(ok(video));
+    const user = userEvent.setup();
+    renderWithIntl(<TrailerButton {...props} />);
+    await openDialog(user);
+    await waitFor(() => expect(getIframe()).not.toBeNull());
+    await user.keyboard('{Escape}');
+    expect(getIframe()).toBeNull();
+  });
+
+  it('gives each trailer button on a page a distinct accessible name', () => {
+    renderWithIntl(
+      <>
+        <TrailerButton {...props} />
+        <TrailerButton mediaType="tv" id={1} title="Dark" />
+      </>
+    );
+    expect(
+      screen.getByRole('button', { name: 'Trailer: Fight Club' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Trailer: Dark' })
+    ).toBeInTheDocument();
+  });
+
   it('uses the Vietnamese messages and locale', async () => {
     mockedGetTrailer.mockResolvedValue(ok(null));
     const user = userEvent.setup();
     renderWithIntl(<TrailerButton {...props} />, 'vi');
-    await user.click(screen.getByRole('button', { name: 'Trailer' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Trailer: Fight Club' })
+    );
     expect(await screen.findByText('Chưa có trailer.')).toBeVisible();
     expect(mockedGetTrailer).toHaveBeenCalledWith(
       expect.objectContaining({ locale: 'vi' })
