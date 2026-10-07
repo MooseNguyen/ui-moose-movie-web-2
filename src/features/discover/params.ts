@@ -59,8 +59,8 @@ export function serializeDiscoverParams(p: DiscoverParams): string {
     params.append('genres', p.genres.join(','));
   }
 
-  if (p.year !== DEFAULT_DISCOVER.year) {
-    params.append('year', p.year!.toString());
+  if (p.year !== DEFAULT_DISCOVER.year && p.year !== null) {
+    params.append('year', p.year.toString());
   }
 
   if (p.sort !== DEFAULT_DISCOVER.sort) {
@@ -80,13 +80,13 @@ export function toTmdbDiscoverQuery(
 
   // Map sort by media type
   if (p.type === 'movie') {
-    query.sort_by = mapMovieSort(p.sort);
+    query.sort_by = MOVIE_SORT_MAP[p.sort];
     if (p.year !== null) {
       query.primary_release_year = p.year;
     }
   } else {
     // tv
-    query.sort_by = mapTvSort(p.sort);
+    query.sort_by = TV_SORT_MAP[p.sort];
     if (p.year !== null) {
       query.first_air_date_year = p.year;
     }
@@ -131,16 +131,16 @@ function parseGenres(value: string | string[] | undefined): number[] {
     return [];
   }
 
-  if (v === '') {
-    return [];
-  }
-
   const genreIds = v
     .split(',')
     .map((g) => {
+      // Only accept strict decimal notation: /^\d+$/
+      if (!/^\d+$/.test(g)) {
+        return null;
+      }
       const id = parseInt(g, 10);
-      // Only include positive integers
-      return Number.isInteger(id) && id > 0 ? id : null;
+      // Only include safe positive integers
+      return Number.isSafeInteger(id) && id > 0 ? id : null;
     })
     .filter((id): id is number => id !== null);
 
@@ -180,24 +180,16 @@ function parseSort(value: string | string[] | undefined): DiscoverSort {
     : DEFAULT_DISCOVER.sort;
 }
 
-function mapMovieSort(sort: DiscoverSort): string {
-  switch (sort) {
-    case 'release_date.desc':
-      return 'primary_release_date.desc';
-    case 'title.asc':
-      return 'title.asc';
-    default:
-      return sort;
-  }
-}
+const MOVIE_SORT_MAP: Record<DiscoverSort, string> = {
+  'popularity.desc': 'popularity.desc',
+  'vote_average.desc': 'vote_average.desc',
+  'release_date.desc': 'primary_release_date.desc',
+  'title.asc': 'title.asc',
+};
 
-function mapTvSort(sort: DiscoverSort): string {
-  switch (sort) {
-    case 'release_date.desc':
-      return 'first_air_date.desc';
-    case 'title.asc':
-      return 'name.asc';
-    default:
-      return sort;
-  }
-}
+const TV_SORT_MAP: Record<DiscoverSort, string> = {
+  'popularity.desc': 'popularity.desc',
+  'vote_average.desc': 'vote_average.desc',
+  'release_date.desc': 'first_air_date.desc',
+  'title.asc': 'name.asc',
+};
