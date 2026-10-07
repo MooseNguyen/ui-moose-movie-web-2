@@ -1,5 +1,3 @@
-import 'server-only';
-
 export type ImageSize = 'w185' | 'w342' | 'w780' | 'w1280' | 'original';
 
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';

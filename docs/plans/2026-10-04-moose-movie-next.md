@@ -166,10 +166,10 @@ it('maps schema mismatch to kind invalid_response', /* body {page:'x'} */);
 ### Task 3: Schemas, normalized types, images
 
 **Files:**
-- Create: `src/lib/tmdb/types.ts`, `src/lib/tmdb/schemas.ts`, `src/lib/tmdb/normalize.ts`, `src/lib/tmdb/images.ts`
+- Create: `src/lib/tmdb/types.ts`, `src/lib/tmdb/schemas.ts`, `src/lib/tmdb/normalize.ts`, `src/lib/images.ts` (moved out of `tmdb/` in Task 8: pure URL builder, no `server-only`, so client components can use it)
 - Create: `public/placeholder-poster.svg`, `public/placeholder-profile.svg`, `public/placeholder-backdrop.svg`
 - Create: `tests/fixtures/movie-popular.json`, `tv-popular.json`, `search-multi.json`, `movie-detail.json`, `tv-detail.json`, `person-detail.json` (real TMDB responses, trimmed to ~3 items; manually add one item without `poster_path` and one TV item without `first_air_date`)
-- Test: `src/lib/tmdb/normalize.test.ts`, `src/lib/tmdb/images.test.ts`
+- Test: `src/lib/tmdb/normalize.test.ts`, `src/lib/images.test.ts`
 
 **Interfaces:**
 - Produces (`types.ts`):
@@ -375,7 +375,7 @@ expect(isActivePath('/', '/')).toBe(true);
   - `PersonCard({ person }: { person: PersonSummary })` — links to `/person/{id}`, image `w185` of kind `profile`
   - `GridItemCard({ item }: { item: GridItem })` — picks PersonCard or MediaCard (`action` slot left empty; Task 9 plugs in FavoriteButton)
   - `MediaGrid({ children })` — grid `grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6`
-  - `MediaCarousel({ items }: { items: MediaItem[] })` — client, Embla via shadcn `Carousel`, `slidesToScroll: 'auto'`, prev/next buttons with `aria-label`
+  - `MediaCarousel({ children, label }: { children: ReactNode; label: string })` — client, scrolling only (Embla via shadcn `Carousel`, `slidesToScroll: 'auto'`), wraps each child in a slide, prev/next buttons with translated names; it does not import MediaCard — Tasks 12/14 pass server-rendered cards as children
   - `ErrorBoundary({ fallback, children })` — client class component
 
 - [ ] **Step 1: Write the failing test**
