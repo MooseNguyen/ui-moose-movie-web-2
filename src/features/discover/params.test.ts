@@ -175,6 +175,17 @@ describe('discover params', () => {
       });
     });
 
+    it('handles empty genres string', () => {
+      expect(
+        parseDiscoverParams({ genres: '' }, new Date('2026-10-04'))
+      ).toEqual({
+        type: 'movie',
+        genres: [],
+        year: null,
+        sort: 'popularity.desc',
+      });
+    });
+
     it('rejects negative genre IDs', () => {
       expect(
         parseDiscoverParams({ genres: '-1,28,35' }, new Date('2026-10-04'))

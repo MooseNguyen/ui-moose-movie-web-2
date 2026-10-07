@@ -59,7 +59,7 @@ export function serializeDiscoverParams(p: DiscoverParams): string {
     params.append('genres', p.genres.join(','));
   }
 
-  if (p.year !== DEFAULT_DISCOVER.year && p.year !== null) {
+  if (p.year !== null) {
     params.append('year', p.year.toString());
   }
 
