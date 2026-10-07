@@ -440,7 +440,7 @@ it('toggles aria-pressed after hydration', ...);
 **Interfaces:**
 - Consumes: `getTrailer` (Task 6), shadcn `Dialog`.
 - Produces:
-  - `TrailerButton({ mediaType, id, title, onOpenChange? }: { mediaType: MediaType; id: number; title: string; onOpenChange?: (open: boolean) => void })` — client; owns `open`; `TrailerDialog` is loaded via `next/dynamic` the first time `open` is true
+  - `TrailerButton({ mediaType, id, title, onOpenChange? }: { mediaType: MediaType; id: number; title: string; onOpenChange?: (open: boolean) => void })` — client; owns `open`; imports `TrailerDialog` statically (Radix Dialog is already in every bundle via the header Sheet, so `next/dynamic` would save nothing; the Server Action fetch is what stays lazy) and passes its button as the dialog `trigger` so focus returns to it on close
   - `TrailerDialog({ mediaType, id, title, open, onOpenChange })` — calls `getTrailer` when opened; loading → Skeleton; video → iframe `https://www.youtube-nocookie.com/embed/{key}?autoplay=1`, `title={title}`, `aspect-video`; `data: null` → `detail.noTrailer` text; error → `errors.generic` + retry button. Closing removes the iframe from the DOM.
   - `VideoLiteEmbed({ video }: { video: Video })` — thumbnail button `https://i.ytimg.com/vi/{key}/hqdefault.jpg` with `aria-label` = video name; the iframe renders only after click
 
