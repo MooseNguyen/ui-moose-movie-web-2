@@ -328,7 +328,7 @@ it('getTrailer returns null when no videos', ...);
 **Files:**
 - Create: `src/i18n/routing.ts`, `src/i18n/navigation.ts`, `src/i18n/request.ts`, `src/proxy.ts`
 - Create: `src/messages/vi.json`, `src/messages/en.json`
-- Create: `src/app/[locale]/layout.tsx`, `src/app/[locale]/page.tsx` (temporary: heading only), `src/app/[locale]/loading.tsx`, `src/app/[locale]/error.tsx`, `src/app/[locale]/not-found.tsx`, `src/app/[locale]/[...rest]/page.tsx` (calls `notFound()`)
+- Create: `src/app/[locale]/layout.tsx`, `src/app/[locale]/page.tsx` (temporary: heading only), `src/app/[locale]/error.tsx`, `src/app/[locale]/not-found.tsx`, `src/app/[locale]/[...rest]/page.tsx` (calls `notFound()`). There is deliberately no `[locale]/loading.tsx`: a locale-level Suspense boundary would stream the shell first and turn `notFound()` into HTTP 200 (soft 404). Each page task adds its own route-level `loading.tsx`.
 - Create: `src/components/providers.tsx` (ThemeProvider + Toaster), `src/components/layout/Header.tsx`, `MobileNav.tsx`, `Footer.tsx`, `LocaleSwitcher.tsx`, `ThemeToggle.tsx`, `NavLinks.tsx`
 - Create: `src/components/ui/*` via `pnpm dlx shadcn@latest init` then `pnpm dlx shadcn@latest add button dialog alert-dialog sheet select tabs carousel skeleton sonner badge dropdown-menu`
 - Create: `tests/utils/render.tsx`
@@ -522,7 +522,7 @@ Every page in this phase: `await`s `params`/`searchParams`; does not call `setRe
 ### Task 14: Detail `/[mediaType]/[id]`
 
 **Files:**
-- Create: `src/app/[locale]/[mediaType]/[id]/page.tsx`, `loading.tsx`
+- Create: `src/app/[locale]/[mediaType]/[id]/page.tsx` (NO route-level `loading.tsx` at or above `[id]`: resolve existence and `notFound()` before streaming so missing items return HTTP 404; use `<Suspense>` only around secondary sections)
 - Create: `src/components/detail/DetailHero.tsx`, `CastList.tsx`, `VideoList.tsx`
 - Test: `src/components/detail/DetailHero.test.tsx`
 
@@ -539,7 +539,7 @@ Every page in this phase: `await`s `params`/`searchParams`; does not call `setRe
 ### Task 15: Person `/person/[id]`
 
 **Files:**
-- Create: `src/app/[locale]/person/[id]/page.tsx`, `loading.tsx`, `src/components/person/PersonBio.tsx`, `src/components/person/PersonCredits.tsx`, `src/components/person/age.ts`
+- Create: `src/app/[locale]/person/[id]/page.tsx` (NO route-level `loading.tsx` at or above `[id]`: resolve existence and `notFound()` before streaming; `<Suspense>` only around secondary sections), `src/components/person/PersonBio.tsx`, `src/components/person/PersonCredits.tsx`, `src/components/person/age.ts`
 - Test: `src/components/person/PersonCredits.test.tsx`, `src/components/person/age.test.ts`
 
 **Interfaces:**
@@ -643,7 +643,7 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 
 - [ ] **Step 1: Install** — `pnpm add -D @playwright/test && pnpm exec playwright install chromium`
 - [ ] **Step 2: Write the 5 scenarios from spec section 7.3.** Assertions check structure only (card count > 0, heading present, URL changed), never specific titles.
-- [ ] **Step 3: Run** — `pnpm e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects.
+- [ ] **Step 3: Run** — `pnpm e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects. Also assert that `/vi/does-not-exist` returns HTTP 404 (guards against soft 404s).
 - [ ] **Step 4: Commit** — `git commit -m "test(e2e): add Playwright smoke tests"`
 
 ### Task 21: CI, performance budget, README

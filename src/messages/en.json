@@ -1,18 +1,13 @@
 {
   "common": {
     "appName": "Moose Movie",
-    "loading": "Loading...",
     "homeHeading": "Welcome to Moose Movie",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "menuTitle": "Menu",
     "menuDescription": "Site navigation",
     "language": "Language",
-    "theme": "Theme",
-    "toggleTheme": "Toggle theme",
-    "themeDark": "Dark",
-    "themeLight": "Light",
-    "search": "Search"
+    "toggleTheme": "Toggle theme"
   },
   "nav": {
     "home": "Home",

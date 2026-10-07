@@ -38,7 +38,7 @@ export function Header() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo.png"
-            alt={t('appName')}
+            alt=""
             width={32}
             height={36}
             className="h-9 w-auto"

@@ -4,5 +4,7 @@ import { routing } from './i18n/routing';
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: '/((?!api|trpc|_next|_vercel|.*\..*).*)',
+  // `[.]` instead of an escaped dot: escapes inside this string literal are
+  // easy to lose (`'\.'` collapses to `.`), which silently narrows the matcher.
+  matcher: '/((?!api|trpc|_next|_vercel|.*[.].*).*)',
 };

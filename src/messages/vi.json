@@ -1,18 +1,13 @@
 {
   "common": {
     "appName": "Moose Movie",
-    "loading": "Đang tải...",
     "homeHeading": "Chào mừng đến với Moose Movie",
     "openMenu": "Mở menu",
     "closeMenu": "Đóng menu",
     "menuTitle": "Menu",
     "menuDescription": "Điều hướng trang web",
     "language": "Ngôn ngữ",
-    "theme": "Giao diện",
-    "toggleTheme": "Đổi giao diện sáng/tối",
-    "themeDark": "Tối",
-    "themeLight": "Sáng",
-    "search": "Tìm kiếm"
+    "toggleTheme": "Đổi giao diện sáng/tối"
   },
   "nav": {
     "home": "Trang chủ",

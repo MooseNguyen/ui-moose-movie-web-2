@@ -20,7 +20,7 @@ export function Footer() {
     <footer className="border-border mt-auto border-t">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt={tc('appName')} width={28} height={32} />
+          <Image src="/logo.png" alt="" width={28} height={32} />
           <div>
             <p className="font-bold">{tc('appName')}</p>
             <p className="text-muted-foreground text-sm">{t('tagline')}</p>
