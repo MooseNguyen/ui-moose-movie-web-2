@@ -2,7 +2,6 @@
 
 import { Languages } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -26,12 +25,13 @@ export function LocaleSwitcher() {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   function switchTo(next: string) {
     if (next === locale) return;
-    const query = searchParams.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
+    // Read the query at click time: useSearchParams() would opt the whole
+    // layout out of static rendering, and the value is only needed here.
+    const query = window.location.search;
+    router.replace(`${pathname}${query}`, {
       locale: next as AppLocale,
     });
   }

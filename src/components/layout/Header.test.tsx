@@ -18,10 +18,6 @@ vi.mock('@/i18n/navigation', () => ({
   ),
 }));
 
-vi.mock('next/navigation', () => ({
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 describe('Header', () => {
   beforeEach(() => {
     mockPathname.mockReturnValue('/tv/42');
