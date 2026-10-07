@@ -43,6 +43,7 @@ export function Header() {
             height={36}
             className="h-9 w-auto"
             priority
+            unoptimized
           />
           <span className="text-lg font-bold">{t('appName')}</span>
         </Link>

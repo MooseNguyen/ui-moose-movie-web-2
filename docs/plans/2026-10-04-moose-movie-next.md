@@ -25,7 +25,7 @@
 - Revalidate: lists/trending `3600`; detail/person/videos `86400`; genres `604800`; search/discover `600`.
 - TMDB page limit: `MAX_PAGE = 500`. Server Actions accept `page` in `2..500`.
 - TMDB fetch timeout: `8000` ms. On 429: wait `Retry-After` up to `2000` ms, retry exactly once.
-- Image sizes: cast `w185`, card `w342`, detail poster `w780`, backdrop `w1280`. `next.config` sets `images.unoptimized: true` (no Vercel image optimization).
+- Image sizes: cast `w185`, card `w342`, detail poster `w780`, backdrop `w1280`. `next.config` uses a global custom loader (`images.loader: 'custom'`, `loaderFile: './src/lib/tmdb-image-loader.ts'`) instead of Vercel image optimization: it rewrites the size segment of `image.tmdb.org/t/p/{size}/…` to the smallest TMDB width ≥ the requested width (`original` above `w1280`), and `deviceSizes`/`imageSizes` are exactly the TMDB widths `92, 154, 185, 300, 342, 500, 780, 1280`, so `sizes` produces real srcsets. Non-TMDB images (local logo/placeholders, YouTube thumbnails) pass through unchanged and are rendered with `unoptimized`.
 - Image placeholders are local SVGs in `public/` — no external placeholder services.
 - `"use client"` only on interactive leaf components; never in `layout.tsx` or `page.tsx`.
 - Next.js 16: page `params` and `searchParams` are `Promise`s — always `await` them. Middleware lives in `src/proxy.ts`.
