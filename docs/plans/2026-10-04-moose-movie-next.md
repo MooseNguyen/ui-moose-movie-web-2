@@ -20,6 +20,7 @@
 - Only one required env var: `TMDB_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL` (default `http://localhost:3000`).
 - Every file in `src/lib/tmdb/` starts with `import 'server-only';`. The token never gets a `NEXT_PUBLIC_` prefix.
 - The layout owns the single `<main>` landmark; pages render container `<div>`s, never their own `<main>`.
+  The layout `<main>` is a block container; never make it a flex/grid container — centred page containers with `mx-auto` inside a flex parent shrink to fit-content and carousels then overflow the viewport.
 - Locales: `vi` (default), `en`. TMDB mapping: `vi → vi-VN`, `en → en-US`.
 - Revalidate: lists/trending `3600`; detail/person/videos `86400`; genres `604800`; search/discover `600`.
 - TMDB page limit: `MAX_PAGE = 500`. Server Actions accept `page` in `2..500`.
@@ -644,6 +645,7 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 
 - [ ] **Step 1: Install** — `pnpm add -D @playwright/test && pnpm exec playwright install chromium`
 - [ ] **Step 2: Write the 5 scenarios from spec section 7.3.** Assertions check structure only (card count > 0, heading present, URL changed), never specific titles.
+- [ ] **Step 2b: No horizontal scroll.** On Home, a list page and a Detail page, at 360px and 1280px viewports, assert `document.documentElement.scrollWidth <= document.documentElement.clientWidth`.
 - [ ] **Step 3: Run** — `pnpm e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects. Also assert that `/vi/does-not-exist` returns HTTP 404 (guards against soft 404s).
 - [ ] **Step 4: Commit** — `git commit -m "test(e2e): add Playwright smoke tests"`
 
