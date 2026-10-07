@@ -68,7 +68,10 @@ function resolveBackend(): StateStorage {
   return backend;
 }
 
-/** Test seam: forget the cached backend so the next call probes again. */
+/**
+ * @internal test-only. Forgets the cached backend and the memory fallback so
+ * the next storage call probes again.
+ */
 export function resetSafeStorage() {
   backend = null;
   memory.clear();
@@ -117,7 +120,24 @@ export function safeStorage(): StateStorage {
 
 const keyOf = (mediaType: MediaType, id: number) => `${mediaType}:${id}`;
 
-/** Keep only well-formed items, first occurrence wins per mediaType+id. */
+/** Rebuild from the 7 known fields so unknown keys are never re-persisted. */
+function pickFields(i: FavoriteItem): FavoriteItem {
+  return {
+    id: i.id,
+    mediaType: i.mediaType,
+    title: i.title,
+    posterPath: i.posterPath,
+    voteAverage: i.voteAverage,
+    year: i.year,
+    addedAt: i.addedAt,
+  };
+}
+
+const FALLBACK_TITLE = 'Untitled';
+
+/**
+ * Keep only well-formed items, first occurrence wins per mediaType+id.
+ */
 function sanitizeItems(value: unknown): FavoriteItem[] {
   if (!Array.isArray(value)) return [];
   const seen = new Set<string>();
@@ -127,7 +147,7 @@ function sanitizeItems(value: unknown): FavoriteItem[] {
     const key = keyOf(candidate.mediaType, candidate.id);
     if (seen.has(key)) continue;
     seen.add(key);
-    items.push(candidate);
+    items.push(pickFields(candidate));
   }
   return items;
 }
@@ -137,14 +157,35 @@ const itemsOf = (persisted: unknown): FavoriteItem[] =>
     ? sanitizeItems(persisted.items)
     : [];
 
+/**
+ * Favorites store.
+ *
+ * Writes (`toggle`, `remove`, `clear`) are no-ops until `hasHydrated` is true:
+ * a write before the first rehydrate would persist over the saved list, and
+ * the later rehydrate would then read the overwritten value, losing data.
+ * `toggle` also normalizes its input so everything stored passes
+ * `isFavoriteItem`.
+ */
 export const useFavorites = create<FavoritesState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
       hasHydrated: false,
       storageAvailable: true,
-      toggle: (item) =>
+      // Guards run before `set`: persist's wrapped `set` writes to storage even
+      // when the state is unchanged, which is exactly what must not happen.
+      toggle: (input) => {
+        if (!get().hasHydrated) return;
+        if (!Number.isInteger(input.id) || input.id <= 0) return;
         set((state) => {
+          const item = {
+            id: input.id,
+            mediaType: input.mediaType,
+            title: input.title.trim() || FALLBACK_TITLE,
+            posterPath: input.posterPath,
+            voteAverage: input.voteAverage,
+            year: input.year,
+          };
           const exists = state.items.some(
             (i) => i.mediaType === item.mediaType && i.id === item.id
           );
@@ -155,14 +196,20 @@ export const useFavorites = create<FavoritesState>()(
                 )
               : [...state.items, { ...item, addedAt: Date.now() }],
           };
-        }),
-      remove: (mediaType, id) =>
+        });
+      },
+      remove: (mediaType, id) => {
+        if (!get().hasHydrated) return;
         set((state) => ({
           items: state.items.filter(
             (i) => !(i.mediaType === mediaType && i.id === id)
           ),
-        })),
-      clear: () => set({ items: [] }),
+        }));
+      },
+      clear: () => {
+        if (!get().hasHydrated) return;
+        set({ items: [] });
+      },
     }),
     {
       name: FAVORITES_STORAGE_KEY,

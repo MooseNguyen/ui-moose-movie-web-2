@@ -88,7 +88,15 @@ describe('FavoriteButton', () => {
       </div>
     );
     hydrate();
+    const clickEvents: MouseEvent[] = [];
+    // Capture phase: the button stops propagation, so a bubbling listener
+    // would never see the event.
+    document.addEventListener('click', (e) => clickEvents.push(e), {
+      capture: true,
+      once: true,
+    });
     await user.click(screen.getByRole('button'));
+    expect(clickEvents[0]?.defaultPrevented).toBe(true);
     expect(parentClick).not.toHaveBeenCalled();
     expect(useFavorites.getState().items).toHaveLength(1);
   });

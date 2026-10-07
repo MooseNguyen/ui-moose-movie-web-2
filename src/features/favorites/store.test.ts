@@ -25,7 +25,7 @@ let storage: ReturnType<typeof stubLocalStorage>;
 beforeEach(() => {
   storage = stubLocalStorage();
   resetSafeStorage();
-  useFavorites.setState(initial, true);
+  useFavorites.setState({ ...initial, hasHydrated: true }, true);
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -89,6 +89,86 @@ describe('actions', () => {
     expect(raw.version).toBe(1);
     expect(raw.state.items).toHaveLength(1);
     expect(Object.keys(raw.state)).toEqual(['items']);
+  });
+});
+
+describe('before hydration', () => {
+  const saved = JSON.stringify({
+    state: { items: [stored(5, 'tv', 1)] },
+    version: 1,
+  });
+
+  beforeEach(() => {
+    useFavorites.setState({ hasHydrated: false });
+    storage.setItem(KEY, saved);
+  });
+
+  it.each([
+    ['toggle', () => useFavorites.getState().toggle(movie)],
+    ['remove', () => useFavorites.getState().remove('tv', 5)],
+    ['clear', () => useFavorites.getState().clear()],
+  ])(
+    '%s is a no-op: state and stored payload stay unchanged',
+    async (_n, act) => {
+      act();
+      expect(useFavorites.getState().items).toEqual([]);
+      expect(storage.getItem(KEY)).toBe(saved);
+
+      await useFavorites.persist.rehydrate();
+      expect(useFavorites.getState().items.map((i) => i.id)).toEqual([5]);
+    }
+  );
+
+  it('actions work after rehydrate marks the store hydrated', async () => {
+    await useFavorites.persist.rehydrate();
+    useFavorites.setState({ hasHydrated: true });
+    useFavorites.getState().toggle(movie);
+    expect(useFavorites.getState().items).toHaveLength(2);
+    useFavorites.getState().remove('tv', 5);
+    expect(useFavorites.getState().items).toHaveLength(1);
+    useFavorites.getState().clear();
+    expect(useFavorites.getState().items).toEqual([]);
+  });
+});
+
+describe('toggle normalization', () => {
+  it('stores only the known fields', () => {
+    useFavorites
+      .getState()
+      .toggle({ ...movie, overview: 'x' } as unknown as typeof movie);
+    expect(Object.keys(useFavorites.getState().items[0]).sort()).toEqual([
+      'addedAt',
+      'id',
+      'mediaType',
+      'posterPath',
+      'title',
+      'voteAverage',
+      'year',
+    ]);
+  });
+
+  it('falls back to "Untitled" for a blank title and survives a reload', async () => {
+    useFavorites.getState().toggle({ ...movie, title: '   ' });
+    expect(useFavorites.getState().items[0].title).toBe('Untitled');
+    const persisted = storage.getItem(KEY) as string;
+    useFavorites.setState({ items: [] });
+    storage.setItem(KEY, persisted);
+    await useFavorites.persist.rehydrate();
+    expect(useFavorites.getState().items.map((i) => i.title)).toEqual([
+      'Untitled',
+    ]);
+  });
+
+  it('trims the title', () => {
+    useFavorites.getState().toggle({ ...movie, title: '  Padded ' });
+    expect(useFavorites.getState().items[0].title).toBe('Padded');
+  });
+
+  it.each([0, -3, 1.5, NaN])('ignores invalid id %s', (id) => {
+    const before = storage.getItem(KEY);
+    useFavorites.getState().toggle({ ...movie, id });
+    expect(useFavorites.getState().items).toEqual([]);
+    expect(storage.getItem(KEY)).toBe(before);
   });
 });
 
@@ -176,6 +256,21 @@ describe('rehydrate', () => {
     expect(
       useFavorites.getState().items.map((i) => `${i.mediaType}:${i.id}`)
     ).toEqual(['movie:1', 'tv:1']);
+  });
+
+  it('drops unknown fields from stored items', async () => {
+    storage.setItem(
+      KEY,
+      JSON.stringify({
+        state: { items: [{ ...stored(1, 'movie', 1), extra: 'x' }] },
+        version: 1,
+      })
+    );
+    await useFavorites.persist.rehydrate();
+    expect(useFavorites.getState().items[0]).not.toHaveProperty('extra');
+    useFavorites.getState().toggle(show);
+    const raw = JSON.parse(storage.getItem(KEY) as string);
+    expect(raw.state.items.every((i: object) => !('extra' in i))).toBe(true);
   });
 
   it('does not reset hasHydrated or storageAvailable', async () => {
