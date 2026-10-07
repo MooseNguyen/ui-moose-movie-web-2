@@ -1,0 +1,40 @@
+{
+  "common": {
+    "appName": "Moose Movie",
+    "loading": "Loading...",
+    "homeHeading": "Welcome to Moose Movie",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menuTitle": "Menu",
+    "menuDescription": "Site navigation",
+    "language": "Language",
+    "theme": "Theme",
+    "toggleTheme": "Toggle theme",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "search": "Search"
+  },
+  "nav": {
+    "home": "Home",
+    "movies": "Movies",
+    "tv": "TV Series",
+    "discover": "Discover",
+    "favorites": "Favorites",
+    "main": "Main navigation"
+  },
+  "footer": {
+    "tagline": "Browse movies and TV series.",
+    "tmdbAttribution": "This product uses the TMDB API but is not endorsed or certified by TMDB.",
+    "github": "GitHub profile",
+    "linkedin": "LinkedIn profile",
+    "social": "Social links"
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "description": "We could not load this page. Please try again.",
+    "retry": "Try again",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The page you are looking for does not exist or has been moved.",
+    "backHome": "Back to home"
+  }
+}

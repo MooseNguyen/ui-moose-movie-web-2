@@ -341,7 +341,7 @@ it('getTrailer returns null when no videos', ...);
   - Message namespaces: `common`, `nav`, `home`, `list`, `search`, `discover`, `detail`, `person`, `favorites`, `errors`, `footer`
   - `isActivePath(pathname: string, href: string): boolean` (exported from `NavLinks.tsx`) — `/` matches only exactly; other hrefs match themselves and nested routes
   - `renderWithIntl(ui: ReactElement, locale?: Locale): RenderResult` in `tests/utils/render.tsx` (wraps `NextIntlClientProvider` with the real messages; default locale `en`)
-- Layout: `<html lang={locale} suppressHydrationWarning>`, Be Vietnam Pro font, `setRequestLocale(locale)`, `generateStaticParams` returns both locales; invalid locale → `notFound()`. Header is transparent and gains a background when `scrollY > 80` (client `useEffect` + state, no `classList`). Footer: "This product uses the TMDB API but is not endorsed or certified by TMDB." with a link to `https://www.themoviedb.org` (the TMDB logo can be downloaded manually from TMDB's attribution page into `public/tmdb-logo.svg`). `error.tsx` is a client component with a button calling `reset()`.
+- Layout: `<html lang={locale} suppressHydrationWarning>`, Be Vietnam Pro font, locale resolved from `next/root-params` in `src/i18n/request.ts` (no `setRequestLocale` calls; Next 16.3+), `generateStaticParams` returns both locales; invalid locale → `notFound()`. Header is transparent and gains a background when `scrollY > 80` (client `useEffect` + state, no `classList`). Footer: "This product uses the TMDB API but is not endorsed or certified by TMDB." with a link to `https://www.themoviedb.org` (the TMDB logo can be downloaded manually from TMDB's attribution page into `public/tmdb-logo.svg`). `error.tsx` is a client component with a button calling `reset()`.
 
 - [ ] **Step 1: Write failing tests**
 
@@ -483,7 +483,7 @@ it('ignores a response that resolves after unmount/rerender with new key', ...);
 
 ## Phase 4 — Pages
 
-Every page in this phase: `await`s `params`/`searchParams`; calls `setRequestLocale(locale)`; has a `generateMetadata` (Task 19 adds hreflang via `buildMetadata` — until then `title` and `description` are enough). Verify manually with `pnpm dev`, and `pnpm build` must succeed.
+Every page in this phase: `await`s `params`/`searchParams`; does not call `setRequestLocale` (the locale comes from `next/root-params` via `src/i18n/request.ts`); has a `generateMetadata` (Task 19 adds hreflang via `buildMetadata` — until then `title` and `description` are enough). Verify manually with `pnpm dev`, and `pnpm build` must succeed.
 
 ### Task 12: Home
 
