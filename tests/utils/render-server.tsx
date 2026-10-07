@@ -12,19 +12,15 @@ import { renderWithIntl } from './render';
 type AnyProps = { children?: ReactNode };
 type AsyncComponent = (props: AnyProps) => Promise<ReactNode>;
 
-function Throw({ error }: { error: unknown }): never {
-  throw error;
-}
-
 const isAsyncComponent = (type: unknown): type is AsyncComponent =>
   typeof type === 'function' && type.constructor.name === 'AsyncFunction';
 
 /**
  * A minimal stand-in for the RSC renderer: awaits every async Server
  * Component found through `children`, the way Next resolves them on the
- * server. A rejected component becomes a child that throws during render, so
- * the nearest client ErrorBoundary catches it like it would in the browser.
- * Async components passed through other props (e.g. `fallback`) or rendered
+ * server, so a page tree can be rendered with Testing Library. A rejection
+ * propagates and fails the test, like a thrown Server Component error fails
+ * Next's prerender (no error boundary is involved). Async components passed through other props (e.g. `fallback`) or rendered
  * by sync components are not resolved.
  */
 async function resolveTree(node: ReactNode): Promise<ReactNode> {
@@ -33,12 +29,7 @@ async function resolveTree(node: ReactNode): Promise<ReactNode> {
 
   const element = node as ReactElement<AnyProps>;
   if (isAsyncComponent(element.type)) {
-    let resolved: ReactNode;
-    try {
-      resolved = await resolveTree(await element.type(element.props));
-    } catch (error) {
-      resolved = <Throw error={error} />;
-    }
+    const resolved = await resolveTree(await element.type(element.props));
     return <Fragment key={element.key}>{resolved}</Fragment>;
   }
 

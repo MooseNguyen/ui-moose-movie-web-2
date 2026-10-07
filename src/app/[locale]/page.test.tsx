@@ -1,5 +1,6 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { getList, getTrending } from '@/lib/tmdb/api';
+import { TmdbError } from '@/lib/tmdb/errors';
 import type { MediaItem } from '@/lib/tmdb/types';
 import { renderServerTree } from '../../../tests/utils/render-server';
 import { tvItem } from '../../../tests/fixtures/media';
@@ -55,6 +56,15 @@ const item = (id: number, mediaType: 'movie' | 'tv'): MediaItem => ({
   title: `${mediaType} ${id}`,
 });
 
+const ROW_TITLES = [
+  'Popular Movies',
+  'Top Rated Movies',
+  'Upcoming Movies',
+  'Popular TV Series',
+  'Top Rated TV Series',
+  'On The Air TV Series',
+];
+
 const params = (locale: string) =>
   ({ params: Promise.resolve({ locale }) }) as PageProps<'/[locale]'>;
 
@@ -72,15 +82,13 @@ describe('HomePage', () => {
     });
   });
 
-  it('isolates a failing row: only that row shows its error fallback', async () => {
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+  it('renders the hero and six rows', async () => {
     mockedGetTrending.mockResolvedValue([item(1, 'movie')]);
-    mockedGetList.mockImplementation(async (mediaType, list) => {
-      if (mediaType === 'tv' && list === 'on_the_air') {
-        throw new Error('TMDB down');
-      }
-      return { items: [item(10, mediaType)], page: 1, totalPages: 1 };
-    });
+    mockedGetList.mockImplementation(async (mediaType) => ({
+      items: [item(10, mediaType)],
+      page: 1,
+      totalPages: 1,
+    }));
 
     await renderServerTree(await HomePage(params('en')));
 
@@ -93,36 +101,75 @@ describe('HomePage', () => {
     expect(
       screen.getByRole('region', { name: 'Trending this week' })
     ).toBeInTheDocument();
-    for (const title of [
-      'Trending Movies',
-      'Top Rated Movies',
-      'Upcoming Movies',
-      'Popular TV Series',
-      'Top Rated TV Series',
-    ]) {
+    for (const title of ROW_TITLES) {
       expect(
         screen.getByRole('link', { name: `See all: ${title}` })
       ).toBeInTheDocument();
     }
-    expect(
-      screen.queryByRole('link', { name: 'See all: On The Air TV Series' })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Could not load On The Air TV Series. Please refresh the page to try again.'
-      )
-    ).toBeInTheDocument();
-    expect(screen.getAllByText(/^Could not load/)).toHaveLength(1);
     expect(mockedGetList).toHaveBeenCalledTimes(6);
-    expect(error).toHaveBeenCalledWith('[ui]', expect.any(Error));
-    // Expected noise only: React's caught-error report and ErrorBoundary's log,
-    // both about the one failing row.
-    expect(error).toHaveBeenCalledTimes(2);
-    for (const args of error.mock.calls) {
-      expect(args).toContainEqual(
-        expect.objectContaining({ message: 'TMDB down' })
-      );
+    expect(mockedGetList).toHaveBeenCalledWith('movie', 'popular', 1, 'en');
+    expect(mockedGetList).toHaveBeenCalledWith('tv', 'on_the_air', 1, 'en');
+  });
+
+  it('renders an inline error for a failing row and cards for the others', async () => {
+    mockedGetTrending.mockResolvedValue([item(1, 'movie')]);
+    mockedGetList.mockImplementation(async (mediaType, list) => {
+      if (mediaType === 'tv' && list === 'on_the_air') {
+        throw new TmdbError('server', '/tv/on_the_air', 503);
+      }
+      return { items: [item(10, mediaType)], page: 1, totalPages: 1 };
+    });
+
+    // Resolves instead of rejecting: no error escapes to fail the prerender.
+    await renderServerTree(await HomePage(params('en')));
+
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Could not load On The Air TV Series right now. Please try again later.'
+    );
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'On The Air TV Series' })
+    ).toBeInTheDocument();
+    for (const title of ROW_TITLES.slice(0, 5)) {
+      const carousel = screen.getByRole('region', { name: title });
+      expect(within(carousel).getAllByRole('group')).toHaveLength(1);
     }
+    expect(
+      screen.queryByRole('region', { name: 'On The Air TV Series' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the rows without the hero when trending fails', async () => {
+    mockedGetTrending.mockRejectedValue(
+      new TmdbError('network', '/trending/all/week')
+    );
+    mockedGetList.mockImplementation(async (mediaType) => ({
+      items: [item(10, mediaType)],
+      page: 1,
+      totalPages: 1,
+    }));
+
+    await renderServerTree(await HomePage(params('en')));
+
+    expect(
+      screen.queryByRole('region', { name: 'Trending this week' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    for (const title of ROW_TITLES) {
+      expect(screen.getByRole('region', { name: title })).toBeInTheDocument();
+    }
+  });
+
+  it('logs unexpected (non-TMDB) trending errors once', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const bug = new TypeError('normalize failed');
+    mockedGetTrending.mockRejectedValue(bug);
+    mockedGetList.mockResolvedValue({ items: [], page: 1, totalPages: 0 });
+
+    await renderServerTree(await HomePage(params('en')));
+
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith('[home]', 'trending', bug);
     error.mockRestore();
   });
 });

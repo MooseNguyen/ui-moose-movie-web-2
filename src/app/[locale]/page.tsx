@@ -9,6 +9,9 @@ import { MediaRow } from '@/components/media/MediaRow';
 import { MediaRowSkeleton } from '@/components/media/MediaRowSkeleton';
 import { routing } from '@/i18n/routing';
 import { getTrending } from '@/lib/tmdb/api';
+import { TmdbError } from '@/lib/tmdb/errors';
+import type { Locale } from '@/lib/tmdb/constants';
+import type { MediaItem } from '@/lib/tmdb/types';
 
 // Same as the TMDB list cache (REVALIDATE.list); must be a literal here.
 export const revalidate = 3600;
@@ -21,6 +24,22 @@ const ROWS = [
   { titleKey: 'topRatedTv', mediaType: 'tv', list: 'top_rated' },
   { titleKey: 'onTheAirTv', mediaType: 'tv', list: 'on_the_air' },
 ] as const;
+
+// Home is prerendered (ISR): a thrown Server Component error would fail the
+// whole prerender/revalidation, so data failures become empty or error UI
+// that is cached until the next revalidation (≤ 1h). Without trending the
+// page simply renders without the hero.
+async function getHeroItems(locale: Locale): Promise<MediaItem[]> {
+  try {
+    return await getTrending(locale);
+  } catch (error) {
+    // tmdbFetch already logged TmdbErrors; log only unexpected ones.
+    if (!(error instanceof TmdbError)) {
+      console.error('[home]', 'trending', error);
+    }
+    return [];
+  }
+}
 
 async function getLocale(params: PageProps<'/[locale]'>['params']) {
   const { locale } = await params;
@@ -40,7 +59,7 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
   const locale = await getLocale(params);
   const [t, trending] = await Promise.all([
     getTranslations({ locale, namespace: 'home' }),
-    getTrending(locale),
+    getHeroItems(locale),
   ]);
 
   return (
@@ -53,7 +72,8 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
           const title = t(`rows.${titleKey}`);
           const errorId = `row-error-${mediaType}-${list}`;
           return (
-            // Each row streams and fails on its own.
+            // MediaRow renders its own data-error state. The boundary is only a
+            // client-side safety net (e.g. a carousel crashing after hydration).
             <ErrorBoundary
               key={`${mediaType}-${list}`}
               fallback={

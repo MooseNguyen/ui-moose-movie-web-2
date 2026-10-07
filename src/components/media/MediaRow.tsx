@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { Link } from '@/i18n/navigation';
 import { getList } from '@/lib/tmdb/api';
+import { TmdbError } from '@/lib/tmdb/errors';
 import type {
   Locale,
   MediaType,
@@ -18,13 +19,31 @@ type RowProps = {
   list: MovieList | TvList;
 };
 
-/** Streams one list as a horizontal row; wrap it in Suspense + ErrorBoundary. */
+/**
+ * Streams one list as a horizontal row (wrap it in Suspense).
+ *
+ * Data errors are handled here, not by an error boundary: Home is prerendered
+ * (ISR), and any error thrown by a Server Component fails the whole
+ * prerender/revalidation, so one TMDB hiccup would break the build. The error
+ * state is cached like any other render until the next revalidation (≤ 1h).
+ */
 export async function MediaRow({
   locale,
   ...row
 }: RowProps & { locale: Locale }) {
-  const { items } = await getList(row.mediaType, row.list, 1, locale);
-  if (items.length === 0) return null;
+  let items: MediaItem[] | null;
+  try {
+    ({ items } = await getList(row.mediaType, row.list, 1, locale));
+  } catch (error) {
+    // tmdbFetch already logs TmdbErrors (all but not_found, which a fixed list
+    // endpoint does not return); log only unexpected ones
+    // (e.g. a bug while normalizing) so each failure is logged exactly once.
+    if (!(error instanceof TmdbError)) {
+      console.error('[home]', row.mediaType, row.list, error);
+    }
+    items = null;
+  }
+  if (items?.length === 0) return null;
   return <MediaRowView {...row} items={items} />;
 }
 
@@ -34,17 +53,16 @@ function MediaRowView({
   mediaType,
   list,
   items,
-}: RowProps & { items: MediaItem[] }) {
+}: RowProps & { items: MediaItem[] | null }) {
   const t = useTranslations('home');
-  const headingId = `row-${mediaType}-${list}`;
 
   return (
-    <section aria-labelledby={headingId}>
+    // No aria-labelledby: the carousel region inside already carries the
+    // title, and two nested regions with the same name are just noise.
+    <section>
       {/* h-7 header: MediaRowSkeleton reserves the same height. */}
       <div className="mb-4 flex h-7 items-center justify-between gap-4">
-        <h2 id={headingId} className="truncate text-xl font-bold">
-          {title}
-        </h2>
+        <h2 className="truncate text-xl font-bold">{title}</h2>
         <Link
           href={`/${mediaType}?list=${list}`}
           // Visible text first keeps the label-in-name rule; the title makes
@@ -55,26 +73,35 @@ function MediaRowView({
           {t('seeAll')}
         </Link>
       </div>
-      <MediaCarousel label={title}>
-        {items.map((item) => (
-          <MediaCard
-            key={item.id}
-            item={item}
-            action={
-              <FavoriteButton
-                item={{
-                  id: item.id,
-                  mediaType: item.mediaType,
-                  title: item.title,
-                  posterPath: item.posterPath,
-                  voteAverage: item.voteAverage,
-                  year: item.year,
-                }}
-              />
-            }
-          />
-        ))}
-      </MediaCarousel>
+      {items === null ? (
+        <p
+          role="status"
+          className="text-muted-foreground rounded-lg border p-6 text-sm"
+        >
+          {t('rowError', { title })}
+        </p>
+      ) : (
+        <MediaCarousel label={title}>
+          {items.map((item) => (
+            <MediaCard
+              key={item.id}
+              item={item}
+              action={
+                <FavoriteButton
+                  item={{
+                    id: item.id,
+                    mediaType: item.mediaType,
+                    title: item.title,
+                    posterPath: item.posterPath,
+                    voteAverage: item.voteAverage,
+                    year: item.year,
+                  }}
+                />
+              }
+            />
+          ))}
+        </MediaCarousel>
+      )}
     </section>
   );
 }

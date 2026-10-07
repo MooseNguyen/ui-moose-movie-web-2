@@ -71,9 +71,9 @@
     "detailsTitle": "Chi tiết: {title}",
     "seeAll": "Xem tất cả",
     "seeAllTitle": "Xem tất cả: {title}",
-    "rowError": "Không thể tải {title}. Vui lòng tải lại trang để thử lại.",
+    "rowError": "Hiện không thể tải {title}. Vui lòng thử lại sau.",
     "rows": {
-      "popularMovies": "Phim lẻ thịnh hành",
+      "popularMovies": "Phim lẻ phổ biến",
       "topRatedMovies": "Phim lẻ đánh giá cao",
       "upcomingMovies": "Phim lẻ sắp chiếu",
       "popularTv": "Phim bộ phổ biến",

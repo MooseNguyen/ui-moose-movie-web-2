@@ -218,6 +218,68 @@ describe('HeroSlider', () => {
     expect(autoplay.playing).toBe(false);
   });
 
+  it('pauses while keyboard focus is in the region and resumes when it leaves', async () => {
+    const user = userEvent.setup();
+    renderWithIntl(
+      <>
+        <HeroSlider items={items} />
+        <button type="button">Outside</button>
+      </>
+    );
+    await waitFor(() => expect(autoplay.playing).toBe(true));
+
+    await user.tab(); // the pause toggle is the region's first tab stop
+    expect(pauseButton()).toHaveFocus();
+    expect(autoplay.playing).toBe(false);
+    expect(pauseButton()).toHaveAttribute('aria-pressed', 'true');
+
+    // Moving within the region keeps it paused.
+    await user.tab();
+    expect(autoplay.playing).toBe(false);
+
+    act(() => screen.getByRole('button', { name: 'Outside' }).focus());
+    expect(autoplay.playing).toBe(true);
+    expect(pauseButton()).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('plays when the user presses play while focus is inside', async () => {
+    const user = userEvent.setup();
+    await renderSlider();
+    await waitFor(() => expect(autoplay.playing).toBe(true));
+
+    await user.tab();
+    expect(autoplay.playing).toBe(false);
+    await user.keyboard('{Enter}');
+    expect(autoplay.playing).toBe(true);
+    expect(pauseButton()).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('stays paused when focus leaves the region after a manual pause', async () => {
+    const user = userEvent.setup();
+    renderWithIntl(
+      <>
+        <HeroSlider items={items} />
+        <button type="button">Outside</button>
+      </>
+    );
+    await waitFor(() => expect(autoplay.playing).toBe(true));
+
+    await user.click(pauseButton());
+    act(() => screen.getByRole('button', { name: 'Outside' }).focus());
+    expect(autoplay.playing).toBe(false);
+    expect(pauseButton()).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('jumps instead of animating under reduced motion', async () => {
+    reducedMotion = true;
+    await renderSlider();
+    // Read through the plugin's Embla instance: the media query resolved.
+    const api = autoplay.api as unknown as {
+      internalEngine: () => { options: { duration: number } };
+    };
+    expect(api.internalEngine().options.duration).toBe(0);
+  });
+
   it('does not autoplay when the user prefers reduced motion', async () => {
     reducedMotion = true;
     await renderSlider();

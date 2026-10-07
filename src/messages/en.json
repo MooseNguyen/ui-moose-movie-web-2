@@ -71,9 +71,9 @@
     "detailsTitle": "Details: {title}",
     "seeAll": "See all",
     "seeAllTitle": "See all: {title}",
-    "rowError": "Could not load {title}. Please refresh the page to try again.",
+    "rowError": "Could not load {title} right now. Please try again later.",
     "rows": {
-      "popularMovies": "Trending Movies",
+      "popularMovies": "Popular Movies",
       "topRatedMovies": "Top Rated Movies",
       "upcomingMovies": "Upcoming Movies",
       "popularTv": "Popular TV Series",

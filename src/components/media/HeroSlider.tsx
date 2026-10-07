@@ -4,7 +4,13 @@ import Autoplay from 'embla-carousel-autoplay';
 import { Info, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
 import { useFormatter, useTranslations } from 'next-intl';
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type FocusEvent,
+} from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Carousel,
@@ -33,6 +39,13 @@ const getReducedMotion = () => window.matchMedia(REDUCED_MOTION).matches;
 // Nothing may move before hydration, so the server assumes reduced motion.
 const getServerReducedMotion = () => true;
 
+const CAROUSEL_OPTIONS = {
+  loop: true,
+  // Manual slide changes jump instead of animating under reduced motion.
+  // Embla evaluates (and re-evaluates) media-query breakpoints itself.
+  breakpoints: { [REDUCED_MOTION]: { duration: 0 } },
+};
+
 export function HeroSlider({ items }: { items: MediaItem[] }) {
   const t = useTranslations('home');
   const [api, setApi] = useState<CarouselApi>();
@@ -40,6 +53,9 @@ export function HeroSlider({ items }: { items: MediaItem[] }) {
   // null = the user has not touched the toggle; reduced motion decides.
   const [userPaused, setUserPaused] = useState<boolean | null>(null);
   const [trailerOpen, setTrailerOpen] = useState(false);
+  // Keyboard focus inside the region stops rotation until focus leaves it or
+  // the user presses play (APG carousel).
+  const [focusPaused, setFocusPaused] = useState(false);
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotion,
@@ -63,7 +79,48 @@ export function HeroSlider({ items }: { items: MediaItem[] }) {
   const autoplay = plugins[0];
 
   const autoplayEnabled = userPaused === null ? !reducedMotion : !userPaused;
-  const shouldPlay = autoplayEnabled && !trailerOpen;
+  // What the toggle shows. An open trailer is a temporary hold on top of it.
+  const rotating = autoplayEnabled && !focusPaused;
+  const shouldPlay = rotating && !trailerOpen;
+
+  function toggleRotation() {
+    if (rotating) {
+      setUserPaused(true);
+    } else {
+      setUserPaused(false);
+      setFocusPaused(false);
+    }
+  }
+
+  // Last input modality, like the browser's :focus-visible heuristic (which
+  // jsdom does not implement reliably). Keyboard by default: unexplained
+  // focus should rather pause than keep moving.
+  const lastInputRef = useRef<'keyboard' | 'pointer'>('keyboard');
+  useEffect(() => {
+    const onPointer = () => (lastInputRef.current = 'pointer');
+    const onKey = () => (lastInputRef.current = 'keyboard');
+    window.addEventListener('pointerdown', onPointer, true);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('pointerdown', onPointer, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, []);
+
+  // React's onFocus/onBlur bubble like focusin/focusout. Only focus arriving
+  // from outside counts, so moving between controls (or pressing play while
+  // focused) does not re-pause. Only keyboard focus counts: a mouse click, or
+  // Radix returning focus after a trailer closed by mouse, must not hold the
+  // slideshow (hover already pauses it for pointers).
+  function handleFocus(event: FocusEvent<HTMLDivElement>) {
+    if (event.currentTarget.contains(event.relatedTarget)) return;
+    if (lastInputRef.current === 'keyboard') setFocusPaused(true);
+  }
+  function handleBlur(event: FocusEvent<HTMLDivElement>) {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setFocusPaused(false);
+    }
+  }
 
   const shouldPlayRef = useRef(shouldPlay);
   useEffect(() => {
@@ -90,7 +147,8 @@ export function HeroSlider({ items }: { items: MediaItem[] }) {
   useEffect(() => {
     if (!api) return;
     // The plugin restarts itself on mouseleave, focusout and drag end. A pause
-    // from the toggle, an open trailer or reduced motion must win, so undo
+    // from the toggle, keyboard focus, an open trailer or reduced motion must
+    // win, so undo
     // those restarts. The plugin only marks itself active after emitting, so
     // stopping has to wait for a microtask.
     const onPlay = () => {
@@ -112,9 +170,11 @@ export function HeroSlider({ items }: { items: MediaItem[] }) {
   return (
     <Carousel
       setApi={setApi}
-      opts={{ loop: true }}
+      opts={CAROUSEL_OPTIONS}
       plugins={plugins}
       aria-label={t('heroLabel')}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
     >
       {/* First in tab order (APG carousel): users can stop the motion before
           reaching the slide content. Visually it sits at the bottom. */}
@@ -126,11 +186,11 @@ export function HeroSlider({ items }: { items: MediaItem[] }) {
           // Constant name + aria-pressed (like FavoriteButton): a label that
           // flipped between "Pause" and "Play" would be announced as a new control.
           aria-label={t('pauseSlideshow')}
-          aria-pressed={!autoplayEnabled}
-          onClick={() => setUserPaused(autoplayEnabled)}
+          aria-pressed={!rotating}
+          onClick={toggleRotation}
           className="rounded-full"
         >
-          {autoplayEnabled ? (
+          {rotating ? (
             <Pause aria-hidden="true" />
           ) : (
             <Play aria-hidden="true" />
