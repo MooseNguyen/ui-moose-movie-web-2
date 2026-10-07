@@ -29,6 +29,10 @@
     "linkedin": "Trang LinkedIn",
     "social": "Liên kết mạng xã hội"
   },
+  "favorites": {
+    "toggle": "Yêu thích: {title}",
+    "storageUnavailable": "Trình duyệt đang chặn bộ nhớ cục bộ, nên danh sách yêu thích sẽ không được lưu sau khi bạn đóng tab này."
+  },
   "errors": {
     "title": "Đã có lỗi xảy ra",
     "description": "Không thể tải trang này. Vui lòng thử lại.",

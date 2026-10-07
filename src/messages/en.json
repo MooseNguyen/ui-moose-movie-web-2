@@ -29,6 +29,10 @@
     "linkedin": "LinkedIn profile",
     "social": "Social links"
   },
+  "favorites": {
+    "toggle": "Favorite: {title}",
+    "storageUnavailable": "Your browser is blocking local storage, so favorites will not be saved after you close this tab."
+  },
   "errors": {
     "title": "Something went wrong",
     "description": "We could not load this page. Please try again.",
