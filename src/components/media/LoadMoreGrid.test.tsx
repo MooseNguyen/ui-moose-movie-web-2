@@ -62,13 +62,112 @@ describe('LoadMoreGrid', () => {
 
     await user.click(loadButton());
     expect(loadMore).toHaveBeenCalledWith(2);
-    expect(loadButton()).toBeDisabled();
     expect(loadButton()).toHaveAttribute('aria-busy', 'true');
 
     await act(async () => d.resolve(ok([media(3, 'Gamma')], 2)));
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(screen.getByText('Gamma')).toBeInTheDocument();
-    expect(loadButton()).toBeEnabled();
+    expect(loadButton()).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('stays focusable while pending (aria-disabled, never disabled)', async () => {
+    const user = userEvent.setup();
+    const d = deferred();
+    const loadMore = vi.fn((page: number) => {
+      void page;
+      return d.promise;
+    });
+    renderWithIntl(<LoadMoreGrid initial={page1} loadMore={loadMore} />);
+    await user.click(loadButton());
+
+    // jsdom cannot reproduce the real-browser blur of a button that becomes
+    // `disabled` while focused, so "not disabled" is the regression guard.
+    const button = loadButton();
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveFocus();
+    expect(screen.getByRole('status')).toHaveTextContent('Loading…');
+
+    await user.keyboard('{Enter}');
+    await user.click(button);
+    expect(loadMore).toHaveBeenCalledTimes(1);
+
+    await act(async () => d.resolve(ok([media(3, 'Gamma')], 2)));
+    expect(button).not.toHaveAttribute('aria-disabled');
+    expect(button).toHaveFocus();
+  });
+
+  it('changes the live-region text on consecutive loads with equal counts', async () => {
+    const user = userEvent.setup();
+    const loadMore = vi
+      .fn<(page: number) => Promise<Result>>()
+      .mockResolvedValueOnce(ok([media(3, 'Gamma')], 2))
+      .mockResolvedValueOnce(ok([media(4, 'Delta')], 3, 4));
+    renderWithIntl(<LoadMoreGrid initial={page1} loadMore={loadMore} />);
+    await user.click(loadButton());
+    await screen.findByText('Gamma');
+    const first = screen.getByRole('status').textContent;
+    expect(first).toContain('Loaded 1 more title');
+    await user.click(loadButton());
+    await screen.findByText('Delta');
+    const second = screen.getByRole('status').textContent;
+    expect(second).toContain('Loaded 1 more title');
+    expect(second).not.toBe(first);
+  });
+
+  it('treats a rejected loadMore as an unknown error and can retry', async () => {
+    const user = userEvent.setup();
+    const loadMore = vi
+      .fn<(page: number) => Promise<Result>>()
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce(ok([media(3, 'Gamma')], 2));
+    renderWithIntl(<LoadMoreGrid initial={page1} loadMore={loadMore} />);
+    await user.click(loadButton());
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Could not load more titles. Please try again.'
+    );
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText('Gamma')).toBeInTheDocument();
+  });
+
+  it.each<ActionError>(['invalid_input', 'not_found'])(
+    'maps %s to the generic load-more message',
+    async (error) => {
+      const user = userEvent.setup();
+      const loadMore = vi.fn(async (): Promise<Result> => ({
+        ok: false,
+        error,
+      }));
+      renderWithIntl(<LoadMoreGrid initial={page1} loadMore={loadMore} />);
+      await user.click(loadButton());
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Could not load more titles. Please try again.'
+      );
+    }
+  );
+
+  it('does not move focus on initial render of a single-page list', () => {
+    renderWithIntl(
+      <LoadMoreGrid initial={{ ...page1, totalPages: 1 }} loadMore={vi.fn()} />
+    );
+    expect(document.body).toHaveFocus();
+  });
+
+  it('announces the end and focuses the last link when the final page is all duplicates', async () => {
+    const user = userEvent.setup();
+    const loadMore = vi.fn(async () => ok([media(2, 'Beta')], 3, 3));
+    renderWithIntl(
+      <LoadMoreGrid initial={{ ...page1, page: 2 }} loadMore={loadMore} />
+    );
+    await user.click(loadButton());
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull()
+    );
+    expect(screen.getByRole('status')).toHaveTextContent(
+      "You've reached the end"
+    );
+    const links = screen.getAllByRole('link');
+    expect(links[links.length - 1]).toHaveFocus();
   });
 
   it('calls loadMore once on a rapid double click', async () => {

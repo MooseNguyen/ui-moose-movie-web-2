@@ -48,7 +48,7 @@
   },
   "list": {
     "loadMore": "Tải thêm",
-    "loadedMore": "{count, plural, =0 {Không có tiêu đề mới} other {Đã tải thêm # tiêu đề}}",
+    "loadedMore": "{count, plural, =0 {Không có tiêu đề mới} other {Đã tải thêm # tiêu đề}}, tổng cộng {total}",
     "allLoaded": "Bạn đã xem hết danh sách"
   },
   "detail": {

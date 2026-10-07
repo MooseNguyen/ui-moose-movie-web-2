@@ -1,8 +1,10 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import type { ActionError, ActionResult } from '@/lib/actions/types';
 import type { GridItem, Paginated } from '@/lib/tmdb/types';
 import { GridItemCard } from './GridItemCard';
@@ -13,7 +15,9 @@ type Props = {
   loadMore: (page: number) => Promise<ActionResult<Paginated<GridItem>>>;
 };
 
-type Announcement = { count: number; done: boolean };
+type Announcement =
+  | { kind: 'loading' }
+  | { kind: 'loaded'; count: number; total: number; done: boolean };
 
 const itemKey = (item: GridItem) => `${item.mediaType}-${item.id}`;
 
@@ -35,6 +39,7 @@ const ERROR_KEY: Record<ActionError, 'rateLimit' | 'network' | 'loadMore'> = {
 export function LoadMoreGrid({ initial, loadMore }: Props) {
   const t = useTranslations('list');
   const tErrors = useTranslations('errors');
+  const tCommon = useTranslations('common');
   const [items, setItems] = useState(initial.items);
   const [page, setPage] = useState(initial.page);
   const [totalPages, setTotalPages] = useState(initial.totalPages);
@@ -44,6 +49,8 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
 
   const itemsRef = useRef(items);
   const inFlight = useRef(false); // synchronous guard: state lags a double click
+  // Defence in depth: inFlight already prevents overlapping requests, but this
+  // guarantees a superseded response can never be applied.
   const requestId = useRef(0);
   const mounted = useRef(true);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -56,7 +63,7 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
   }, []);
 
   const done = page >= totalPages;
-  const reachedEnd = done && announcement !== null;
+  const reachedEnd = done && announcement?.kind === 'loaded';
 
   // The button disappears on the last page. Move focus to the last item's link:
   // it sits directly above where the button was, so there is no scroll jump and
@@ -72,7 +79,7 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
     inFlight.current = true;
     const id = ++requestId.current;
     setPending(true);
-    setError(null);
+    setAnnouncement({ kind: 'loading' });
 
     let result: Awaited<ReturnType<Props['loadMore']>>;
     try {
@@ -88,8 +95,10 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
 
     if (!result.ok) {
       setError(result.error);
+      setAnnouncement(null); // the role=alert message takes over
       return;
     }
+    setError(null);
     const known = new Set(itemsRef.current.map(itemKey));
     const fresh = result.data.items.filter((item) => {
       const key = itemKey(item);
@@ -103,7 +112,9 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
     setPage(result.data.page);
     setTotalPages(result.data.totalPages);
     setAnnouncement({
+      kind: 'loaded',
       count: fresh.length,
+      total: next.length,
       done: result.data.page >= result.data.totalPages,
     });
   }
@@ -126,20 +137,36 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
           <Button
             type="button"
             size="lg"
-            className="min-h-10 px-6"
-            disabled={pending}
+            className={cn(
+              'min-h-10 px-6',
+              'aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
+            )}
+            // aria-disabled, not disabled: a disabled button drops focus to
+            // <body> in real browsers (jsdom does not reproduce this). The
+            // inFlight ref makes activation while pending a no-op.
+            aria-disabled={pending || undefined}
             aria-busy={pending}
             onClick={load}
           >
+            {pending && (
+              <Loader2
+                aria-hidden="true"
+                className="motion-safe:animate-spin"
+              />
+            )}
             {error ? tErrors('retry') : t('loadMore')}
           </Button>
         )}
       </div>
 
       <div role="status" className="sr-only">
-        {announcement && (
+        {announcement?.kind === 'loading' && tCommon('loading')}
+        {announcement?.kind === 'loaded' && (
           <>
-            {t('loadedMore', { count: announcement.count })}
+            {t('loadedMore', {
+              count: announcement.count,
+              total: announcement.total,
+            })}
             {announcement.done && ` ${t('allLoaded')}`}
           </>
         )}

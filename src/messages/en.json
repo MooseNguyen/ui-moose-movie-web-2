@@ -48,7 +48,7 @@
   },
   "list": {
     "loadMore": "Load more",
-    "loadedMore": "{count, plural, =0 {No new titles loaded} one {Loaded # more title} other {Loaded # more titles}}",
+    "loadedMore": "{count, plural, =0 {No new titles loaded} one {Loaded # more title} other {Loaded # more titles}}, {total} in total",
     "allLoaded": "You've reached the end"
   },
   "detail": {
