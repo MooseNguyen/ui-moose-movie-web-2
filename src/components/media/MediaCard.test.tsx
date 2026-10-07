@@ -1,20 +1,12 @@
 import { screen } from '@testing-library/react';
 import { renderWithIntl } from '../../../tests/utils/render';
 import { MediaCard } from './MediaCard';
-import { tvItem } from './fixtures';
+import { tvItem } from '../../../tests/fixtures/media';
 
-// Real next-intl Link needs the Next router; mimic its locale prefixing.
-vi.mock('@/i18n/navigation', async () => {
-  const { useLocale } = await import('next-intl');
-  return {
-    Link: ({
-      href,
-      ...props
-    }: React.ComponentProps<'a'> & { href: string }) => (
-      <a href={'/' + useLocale() + href} {...props} />
-    ),
-  };
-});
+vi.mock(
+  '@/i18n/navigation',
+  () => import('../../../tests/utils/mock-navigation')
+);
 
 describe('MediaCard', () => {
   it('links to the right media type and shows placeholder when poster missing', () => {
@@ -25,7 +17,7 @@ describe('MediaCard', () => {
       'href',
       '/en/tv/' + tvItem.id
     );
-    expect(screen.getByRole('img')).toHaveAttribute(
+    expect(document.querySelector('img')).toHaveAttribute(
       'src',
       '/placeholder-poster.svg'
     );
@@ -49,11 +41,22 @@ describe('MediaCard', () => {
     expect(screen.getByText(/7,3/)).toBeInTheDocument();
   });
 
+  it('exposes the rating to screen readers', () => {
+    renderWithIntl(<MediaCard item={tvItem} />, 'vi');
+    expect(screen.getByText('Đánh giá')).toHaveClass('sr-only');
+  });
+
+  it('marks the poster decorative since the title names the link', () => {
+    renderWithIntl(<MediaCard item={tvItem} />);
+    expect(document.querySelector('img')).toHaveAttribute('alt', '');
+  });
+
   it('hides the rating when there are no votes', () => {
     renderWithIntl(
       <MediaCard item={{ ...tvItem, voteCount: 0, voteAverage: 0 }} />
     );
     expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Rating')).not.toBeInTheDocument();
   });
 
   it('renders the action outside the link', () => {
@@ -64,9 +67,12 @@ describe('MediaCard', () => {
 
   it('is lazy by default and eager when priority is set', () => {
     const { unmount } = renderWithIntl(<MediaCard item={tvItem} />);
-    expect(screen.getByRole('img')).toHaveAttribute('loading', 'lazy');
+    expect(document.querySelector('img')).toHaveAttribute('loading', 'lazy');
     unmount();
     renderWithIntl(<MediaCard item={tvItem} priority />);
-    expect(screen.getByRole('img')).not.toHaveAttribute('loading', 'lazy');
+    expect(document.querySelector('img')).not.toHaveAttribute(
+      'loading',
+      'lazy'
+    );
   });
 });

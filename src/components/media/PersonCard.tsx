@@ -15,7 +15,7 @@ export function PersonCard({ person }: { person: PersonSummary }) {
       <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg">
         <Image
           src={tmdbImage(person.profilePath, 'w185', 'profile')}
-          alt={person.name}
+          alt=""
           fill
           sizes={PROFILE_SIZES}
           className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"

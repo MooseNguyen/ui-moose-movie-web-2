@@ -45,7 +45,12 @@ export default async function LocaleLayout({
         <NextIntlClientProvider>
           <Providers>
             <Header />
-            {children}
+            <main
+              id="main-content"
+              className="flex w-full min-w-0 flex-1 flex-col"
+            >
+              {children}
+            </main>
             <Footer />
           </Providers>
         </NextIntlClientProvider>

@@ -19,6 +19,7 @@
 - TypeScript `strict: true`; alias `@/*` → `src/*`.
 - Only one required env var: `TMDB_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL` (default `http://localhost:3000`).
 - Every file in `src/lib/tmdb/` starts with `import 'server-only';`. The token never gets a `NEXT_PUBLIC_` prefix.
+- The layout owns the single `<main>` landmark; pages render container `<div>`s, never their own `<main>`.
 - Locales: `vi` (default), `en`. TMDB mapping: `vi → vi-VN`, `en → en-US`.
 - Revalidate: lists/trending `3600`; detail/person/videos `86400`; genres `604800`; search/discover `600`.
 - TMDB page limit: `MAX_PAGE = 500`. Server Actions accept `page` in `2..500`.

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import type { ReactNode } from 'react';
-import { useFormatter } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { tmdbImage } from '@/lib/images';
 import type { MediaItem } from '@/lib/tmdb/types';
@@ -19,6 +19,7 @@ type MediaCardProps = {
 
 export function MediaCard({ item, priority = false, action }: MediaCardProps) {
   const format = useFormatter();
+  const t = useTranslations('common');
   const showRating = item.voteCount > 0;
 
   return (
@@ -30,7 +31,7 @@ export function MediaCard({ item, priority = false, action }: MediaCardProps) {
         <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg">
           <Image
             src={tmdbImage(item.posterPath, 'w342')}
-            alt={item.title}
+            alt=""
             fill
             sizes={POSTER_SIZES}
             priority={priority}
@@ -43,7 +44,8 @@ export function MediaCard({ item, priority = false, action }: MediaCardProps) {
             {item.year !== null && <span>{item.year}</span>}
             {showRating && (
               <span>
-                ★{' '}
+                <span className="sr-only">{t('rating')}</span>
+                <span aria-hidden="true">★ </span>
                 {format.number(item.voteAverage, {
                   minimumFractionDigits: 1,
                   maximumFractionDigits: 1,

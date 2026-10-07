@@ -7,8 +7,8 @@ import { Children, type ReactNode } from 'react';
 export function MediaGrid({ children }: { children: ReactNode }) {
   return (
     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-      {Children.toArray(children).map((child, index) => (
-        <li key={(child as { key?: string }).key ?? index}>{child}</li>
+      {Children.map(children, (child) => (
+        <li>{child}</li>
       ))}
     </ul>
   );

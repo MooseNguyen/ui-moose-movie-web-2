@@ -25,14 +25,12 @@ export function MediaCarousel({ children, label }: MediaCarouselProps) {
     <Carousel
       aria-label={label}
       opts={{ align: 'start', slidesToScroll: 'auto' }}
-      className="px-0 md:px-12"
+      className="w-full min-w-0 px-0 md:px-12"
     >
-      <CarouselContent>
-        {Children.toArray(children).map((child, index) => (
-          <CarouselItem
-            key={(child as { key?: string }).key ?? index}
-            className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"
-          >
+      {/* py-1/pr-1: room for the cards' focus ring, which the viewport's overflow-hidden would clip */}
+      <CarouselContent className="py-1 pr-1">
+        {Children.map(children, (child) => (
+          <CarouselItem className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
             {child}
           </CarouselItem>
         ))}

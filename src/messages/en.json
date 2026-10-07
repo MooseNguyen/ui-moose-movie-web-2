@@ -11,7 +11,8 @@
     "switchToDark": "Switch to dark theme",
     "carouselPrevious": "Previous",
     "carouselNext": "Next",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "rating": "Rating"
   },
   "nav": {
     "home": "Home",

@@ -2,26 +2,18 @@ import { screen } from '@testing-library/react';
 import { renderWithIntl } from '../../../tests/utils/render';
 import { PersonCard } from './PersonCard';
 import { GridItemCard } from './GridItemCard';
-import { person, tvItem } from './fixtures';
+import { person, tvItem } from '../../../tests/fixtures/media';
 
-// Real next-intl Link needs the Next router; mimic its locale prefixing.
-vi.mock('@/i18n/navigation', async () => {
-  const { useLocale } = await import('next-intl');
-  return {
-    Link: ({
-      href,
-      ...props
-    }: React.ComponentProps<'a'> & { href: string }) => (
-      <a href={'/' + useLocale() + href} {...props} />
-    ),
-  };
-});
+vi.mock(
+  '@/i18n/navigation',
+  () => import('../../../tests/utils/mock-navigation')
+);
 
 describe('PersonCard', () => {
   it('links to the person page with a profile placeholder', () => {
     renderWithIntl(<PersonCard person={person} />);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/en/person/287');
-    expect(screen.getByRole('img', { name: 'Brad Pitt' })).toHaveAttribute(
+    expect(document.querySelector('img')).toHaveAttribute(
       'src',
       '/placeholder-profile.svg'
     );
