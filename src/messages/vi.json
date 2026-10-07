@@ -41,7 +41,15 @@
     "notFoundTitle": "Không tìm thấy trang",
     "notFoundDescription": "Trang bạn tìm không tồn tại hoặc đã được di chuyển.",
     "backHome": "Về trang chủ",
-    "generic": "Không thể tải video. Vui lòng thử lại."
+    "generic": "Không thể tải video. Vui lòng thử lại.",
+    "rateLimit": "Quá nhiều yêu cầu. Vui lòng đợi một chút rồi thử lại.",
+    "network": "Lỗi mạng. Hãy kiểm tra kết nối và thử lại.",
+    "loadMore": "Không thể tải thêm. Vui lòng thử lại."
+  },
+  "list": {
+    "loadMore": "Tải thêm",
+    "loadedMore": "{count, plural, =0 {Không có tiêu đề mới} other {Đã tải thêm # tiêu đề}}, tổng cộng {total}",
+    "allLoaded": "Bạn đã xem hết danh sách"
   },
   "detail": {
     "trailer": "Trailer",
