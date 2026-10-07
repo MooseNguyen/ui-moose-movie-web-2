@@ -14,8 +14,7 @@ function subscribe(listener: () => void) {
   // Cross-tab sync: another tab changed the stored theme.
   const onStorage = (event: StorageEvent) => {
     if (event.key === null || event.key === THEME_STORAGE_KEY) {
-      applyFromStorage();
-      emit();
+      syncThemeFromStorage();
     }
   };
   window.addEventListener('storage', onStorage);
@@ -25,21 +24,27 @@ function subscribe(listener: () => void) {
   };
 }
 
-function apply(theme: Theme) {
+export function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.classList.remove('dark', 'light');
   root.classList.add(theme);
   root.style.colorScheme = theme;
 }
 
-function applyFromStorage() {
+export function readStoredTheme(): Theme {
   let stored: string | null = null;
   try {
     stored = localStorage.getItem(THEME_STORAGE_KEY);
   } catch {
-    // Storage blocked: keep the default.
+    // Storage blocked: fall back to the default.
   }
-  apply(stored === 'light' || stored === 'dark' ? stored : DEFAULT_THEME);
+  return stored === 'light' || stored === 'dark' ? stored : DEFAULT_THEME;
+}
+
+/** Re-apply the stored theme to <html> and notify `useTheme` subscribers. */
+export function syncThemeFromStorage() {
+  applyTheme(readStoredTheme());
+  emit();
 }
 
 function getSnapshot(): Theme {
@@ -56,7 +61,7 @@ export function useTheme() {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setTheme = useCallback((next: Theme) => {
-    apply(next);
+    applyTheme(next);
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
