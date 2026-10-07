@@ -2,12 +2,14 @@ import 'server-only';
 import type { z } from 'zod';
 import { getEnv } from '@/lib/env';
 import { type Locale, TMDB_BASE_URL, toTmdbLanguage } from './constants';
-import { TmdbError } from './errors';
+import { TmdbError, type TmdbErrorKind } from './errors';
 
 const DEFAULT_TIMEOUT_MS = 8000;
 const MAX_RETRY_DELAY_MS = 2000;
 
-type NextFetchInit = RequestInit & { next?: { revalidate?: number | false; tags?: string[] } };
+type NextFetchInit = RequestInit & {
+  next?: { revalidate?: number | false; tags?: string[] };
+};
 
 export interface TmdbFetchOptions<T> {
   schema: z.ZodType<T>;
@@ -21,7 +23,7 @@ export interface TmdbFetchOptions<T> {
 function buildUrl(
   path: string,
   locale: Locale | undefined,
-  params: TmdbFetchOptions<unknown>['params'],
+  params: TmdbFetchOptions<unknown>['params']
 ): string {
   const url = new URL(`${TMDB_BASE_URL}${path}`);
   if (locale) url.searchParams.set('language', toTmdbLanguage(locale));
@@ -37,21 +39,59 @@ function retryDelayMs(response: Response): number {
   return Math.min(seconds * 1000, MAX_RETRY_DELAY_MS);
 }
 
+// Single logging point for every failure; not_found is expected control flow, so it stays quiet.
+function fail(
+  kind: TmdbErrorKind,
+  path: string,
+  status: number | null,
+  cause?: unknown,
+  detail?: unknown
+): TmdbError {
+  if (kind !== 'not_found') {
+    console.error(
+      '[tmdb]',
+      path,
+      kind,
+      status,
+      ...(detail === undefined ? [] : [detail])
+    );
+  }
+  return new TmdbError(
+    kind,
+    path,
+    status,
+    cause === undefined ? undefined : { cause }
+  );
+}
+
 async function request(
   url: string,
   path: string,
   init: Omit<NextFetchInit, 'signal'>,
-  timeoutMs: number,
+  timeoutMs: number
 ): Promise<Response> {
   try {
-    return await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) } as NextFetchInit);
+    return await fetch(url, {
+      ...init,
+      signal: AbortSignal.timeout(timeoutMs),
+    } as NextFetchInit);
   } catch (error) {
-    throw new TmdbError('network', path, null, { cause: error });
+    throw fail('network', path, null, error);
   }
 }
 
-export async function tmdbFetch<T>(path: string, opts: TmdbFetchOptions<T>): Promise<T> {
-  const { schema, locale, params, revalidate, tags, timeoutMs = DEFAULT_TIMEOUT_MS } = opts;
+export async function tmdbFetch<T>(
+  path: string,
+  opts: TmdbFetchOptions<T>
+): Promise<T> {
+  const {
+    schema,
+    locale,
+    params,
+    revalidate,
+    tags,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+  } = opts;
   const url = buildUrl(path, locale, params);
   const init: NextFetchInit = {
     headers: {
@@ -68,23 +108,27 @@ export async function tmdbFetch<T>(path: string, opts: TmdbFetchOptions<T>): Pro
   }
 
   if (!response.ok) {
-    if (response.status === 404) throw new TmdbError('not_found', path, 404);
-    if (response.status === 429) throw new TmdbError('rate_limit', path, 429);
-    throw new TmdbError('server', path, response.status);
+    if (response.status === 404) throw fail('not_found', path, 404);
+    if (response.status === 429) throw fail('rate_limit', path, 429);
+    throw fail('server', path, response.status);
   }
 
   let body: unknown;
   try {
     body = await response.json();
   } catch (error) {
-    console.error('[tmdb]', path, error);
-    throw new TmdbError('invalid_response', path, response.status, { cause: error });
+    throw fail('invalid_response', path, response.status, error);
   }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    console.error('[tmdb]', path, parsed.error.issues);
-    throw new TmdbError('invalid_response', path, response.status, { cause: parsed.error });
+    throw fail(
+      'invalid_response',
+      path,
+      response.status,
+      parsed.error,
+      parsed.error.issues
+    );
   }
   return parsed.data;
 }
