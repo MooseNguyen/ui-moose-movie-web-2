@@ -34,6 +34,7 @@ export function MediaCard({ item, priority = false, action }: MediaCardProps) {
             alt=""
             fill
             sizes={POSTER_SIZES}
+            unoptimized={!item.posterPath}
             priority={priority}
             className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />

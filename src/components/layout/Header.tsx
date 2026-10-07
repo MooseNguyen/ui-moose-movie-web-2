@@ -42,7 +42,12 @@ export function Header() {
             width={32}
             height={36}
             className="h-9 w-auto"
-            priority
+            // Above the fold, so not lazy; but React preloads every eager
+            // <img> in the shell unless it is low priority, and that preload
+            // would compete with the hero backdrop (LCP).
+            loading="eager"
+            fetchPriority="low"
+            unoptimized
           />
           <span className="text-lg font-bold">{t('appName')}</span>
         </Link>

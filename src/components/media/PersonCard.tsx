@@ -18,6 +18,7 @@ export function PersonCard({ person }: { person: PersonSummary }) {
           alt=""
           fill
           sizes={PROFILE_SIZES}
+          unoptimized={!person.profilePath}
           className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       </div>

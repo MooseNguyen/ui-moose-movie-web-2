@@ -40,6 +40,7 @@ export function VideoLiteEmbed({ video }: { video: Video }) {
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               loading="lazy"
+              unoptimized
               className="object-cover"
             />
             <span className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/40">

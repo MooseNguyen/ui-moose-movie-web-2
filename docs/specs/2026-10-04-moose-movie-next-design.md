@@ -128,9 +128,9 @@ tests/
 
 ### 4.1 Home `/[locale]`
 - **Hero slider:** 5 items from `/trending/all/week` (movie/tv only). Autoplay 5s, pauses on hover or while a trailer is open. Arrows, dots, swipe on mobile. Each slide: backdrop, poster, title, rating, overview clamped to 3 lines, **Details**, **Trailer**, **Favorite** buttons. The first slide's backdrop is loaded with priority.
-- **6 carousels:** Trending Movies (`movie/popular`), Top Rated Movies, Upcoming Movies, Popular TV, Top Rated TV, On Air TV. Each row has a "See all" link to `/[mediaType]?list=...`.
+- **6 carousels:** Popular Movies (`movie/popular`), Top Rated Movies (`movie/top_rated`), Upcoming Movies (`movie/upcoming`), Popular TV Series (`tv/popular`), Top Rated TV Series (`tv/top_rated`), On The Air TV Series (`tv/on_the_air`). Each row has a "See all" link to `/[mediaType]?list=...`.
 - **Trailer:** a Dialog with a YouTube iframe, created only when opened; closes on ESC / outside click / X; closing removes the iframe. The video is fetched on click (Server Action `getTrailer`). Without a trailer the dialog shows "No trailer available".
-- Each carousel streams independently via `<Suspense>` + its own error boundary.
+- Each carousel streams independently via `<Suspense>`. Home is ISR: data failures are caught per row/hero (a failing row shows an inline error, a failing trending list hides the hero) instead of being thrown, because a thrown Server Component error fails the prerender. The error state may be cached until the next revalidation (≤ 1h). A client error boundary per row stays as a safety net for client-side render errors only.
 
 ### 4.2 Lists `/[locale]/[mediaType]`
 - `mediaType ∈ {movie, tv}`, otherwise 404.
