@@ -6,7 +6,7 @@
 
 **Architecture:** Server-first: Server Components fetch TMDB through `lib/tmdb` (server-only, cached with `fetch` revalidate, validated with Zod, normalized to `MediaItem`). Interactivity (slider, trailer, load more, favorites, filters) lives in leaf Client Components; "Load more" calls Server Actions. next-intl drives `/[locale]` routing.
 
-**Tech Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript strict, Tailwind CSS v4, shadcn/ui, next-themes, Embla Carousel, next-intl v4, Zod v4, Zustand v5, Vitest + Testing Library + MSW v2, Playwright, Lighthouse CI, GitHub Actions.
+**Tech Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript strict, Tailwind CSS v4, shadcn/ui, in-house theme module (replaced next-themes in Task 7), Embla Carousel, next-intl v4, Zod v4, Zustand v5, Vitest + Testing Library + MSW v2, Playwright, Lighthouse CI, GitHub Actions.
 
 **Spec:** `docs/specs/2026-10-04-moose-movie-next-design.md`
 
