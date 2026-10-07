@@ -39,6 +39,13 @@
     "retry": "Try again",
     "notFoundTitle": "Page not found",
     "notFoundDescription": "The page you are looking for does not exist or has been moved.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "generic": "Could not load the video. Please try again."
+  },
+  "detail": {
+    "trailer": "Trailer",
+    "trailerTitle": "Trailer: {title}",
+    "noTrailer": "No trailer available.",
+    "playVideo": "Play: {name}"
   }
 }

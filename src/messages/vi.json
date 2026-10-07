@@ -39,6 +39,13 @@
     "retry": "Thử lại",
     "notFoundTitle": "Không tìm thấy trang",
     "notFoundDescription": "Trang bạn tìm không tồn tại hoặc đã được di chuyển.",
-    "backHome": "Về trang chủ"
+    "backHome": "Về trang chủ",
+    "generic": "Không thể tải video. Vui lòng thử lại."
+  },
+  "detail": {
+    "trailer": "Trailer",
+    "trailerTitle": "Trailer: {title}",
+    "noTrailer": "Chưa có trailer.",
+    "playVideo": "Phát: {name}"
   }
 }
