@@ -1,4 +1,5 @@
 // @vitest-environment node
+import type { MockInstance } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { resetEnvCache } from '@/lib/env';
 import type { DiscoverParams } from '@/features/discover/params';
@@ -26,7 +27,10 @@ import { REVALIDATE } from './constants';
 
 const BASE = 'https://api.themoviedb.org/3';
 
+let consoleError: MockInstance<typeof console.error>;
+
 beforeEach(() => {
+  consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   vi.stubEnv('TMDB_READ_TOKEN', 'test-token');
   resetEnvCache();
 });
@@ -173,6 +177,12 @@ describe('getDetail', () => {
 
     expect(detail.overview).toBe('');
     expect(detail.overviewIsFallback).toBe(false);
+    expect(consoleError).toHaveBeenCalledWith(
+      '[tmdb]',
+      '/movie/550',
+      'server',
+      500
+    );
   });
 
   it('propagates not_found', async () => {
@@ -229,6 +239,21 @@ describe('search', () => {
     expect(calls[0].searchParams.get('page')).toBe('2');
     expect(result.items.some((i) => i.mediaType === 'person')).toBe(true);
     expect(revalidate()).toBe(REVALIDATE.search);
+  });
+
+  it('stamps person results returned without media_type', async () => {
+    const person = searchMulti.results.find((r) => r.media_type === 'person')!;
+    const untyped: Record<string, unknown> = { ...person };
+    delete untyped.media_type;
+    mockGet('/search/person', { ...searchMulti, results: [untyped] });
+
+    const result = await search('person', 'brad', 1, 'en');
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      id: person.id,
+      mediaType: 'person',
+    });
   });
 
   it('maps movie searches to media items', async () => {
@@ -324,10 +349,33 @@ describe('getPerson', () => {
 
     expect(person.biography).toBe('');
     expect(person.biographyIsFallback).toBe(false);
+    expect(consoleError).toHaveBeenCalledWith(
+      '[tmdb]',
+      '/person/287',
+      'server',
+      500
+    );
   });
 });
 
 describe('getPopularIds', () => {
+  it('dedupes ids repeated across pages', async () => {
+    mockGet('/tv/popular', (url) => {
+      const page = Number(url.searchParams.get('page'));
+      // Page 2 repeats the last id of page 1 (TMDB popularity shifts between requests).
+      return {
+        page,
+        total_pages: 500,
+        total_results: 10000,
+        results: [{ id: page === 2 ? 11 : page * 10 }, { id: page * 10 + 1 }],
+      };
+    });
+
+    const ids = await getPopularIds('tv');
+
+    expect(ids).toEqual([10, 11, 21, 30, 31, 40, 41, 50, 51]);
+  });
+
   it('returns 100 ids from pages 1-5 using locale en', async () => {
     const calls = mockGet('/movie/popular', (url) => {
       const page = Number(url.searchParams.get('page'));

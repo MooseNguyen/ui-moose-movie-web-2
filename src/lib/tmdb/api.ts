@@ -109,7 +109,7 @@ export async function getDetail(
       });
       fallbackOverview = en.overview;
     } catch {
-      fallbackOverview = undefined;
+      // Already logged by tmdbFetch.
     }
   }
   return toMediaDetail(raw, mediaType, fallbackOverview);
@@ -142,12 +142,12 @@ export async function search(
     params: { query: q, page },
     revalidate: REVALIDATE.search,
   });
-  // /search/movie and /search/tv results carry no media_type, so stamp it from the endpoint.
+  // Only /search/multi sets media_type; the typed endpoints omit it, so stamp it from the endpoint.
   return toPaginated(raw, (results) =>
     toGridItems(
-      type === 'movie' || type === 'tv'
-        ? results.map((r) => ({ ...r, media_type: type }))
-        : results
+      type === 'multi'
+        ? results
+        : results.map((r) => ({ ...r, media_type: type }))
     )
   );
 }
@@ -201,7 +201,7 @@ export async function getPerson(
       });
       fallbackBiography = en.biography;
     } catch {
-      fallbackBiography = undefined;
+      // Already logged by tmdbFetch.
     }
   }
   return toPersonDetail(raw, fallbackBiography);
@@ -214,5 +214,5 @@ export async function getPopularIds(mediaType: MediaType): Promise<number[]> {
       getList(mediaType, 'popular', i + 1, 'en')
     )
   );
-  return pages.flatMap((p) => p.items.map((item) => item.id));
+  return [...new Set(pages.flatMap((p) => p.items.map((item) => item.id)))];
 }
