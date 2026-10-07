@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 export default function HomePage() {
   const t = useTranslations('common');
   return (
-    <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-24">
+    <div className="mx-auto w-full max-w-7xl flex-1 px-4 pt-24">
       <h1 className="text-3xl font-bold">{t('homeHeading')}</h1>
-    </main>
+    </div>
   );
 }

@@ -19,6 +19,8 @@
 - TypeScript `strict: true`; alias `@/*` → `src/*`.
 - Only one required env var: `TMDB_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL` (default `http://localhost:3000`).
 - Every file in `src/lib/tmdb/` starts with `import 'server-only';`. The token never gets a `NEXT_PUBLIC_` prefix.
+- The layout owns the single `<main>` landmark; pages render container `<div>`s, never their own `<main>`.
+  The layout `<main>` is a block container; never make it a flex/grid container — centred page containers with `mx-auto` inside a flex parent shrink to fit-content and carousels then overflow the viewport.
 - Locales: `vi` (default), `en`. TMDB mapping: `vi → vi-VN`, `en → en-US`.
 - Revalidate: lists/trending `3600`; detail/person/videos `86400`; genres `604800`; search/discover `600`.
 - TMDB page limit: `MAX_PAGE = 500`. Server Actions accept `page` in `2..500`.
@@ -166,10 +168,10 @@ it('maps schema mismatch to kind invalid_response', /* body {page:'x'} */);
 ### Task 3: Schemas, normalized types, images
 
 **Files:**
-- Create: `src/lib/tmdb/types.ts`, `src/lib/tmdb/schemas.ts`, `src/lib/tmdb/normalize.ts`, `src/lib/tmdb/images.ts`
+- Create: `src/lib/tmdb/types.ts`, `src/lib/tmdb/schemas.ts`, `src/lib/tmdb/normalize.ts`, `src/lib/images.ts` (moved out of `tmdb/` in Task 8: pure URL builder, no `server-only`, so client components can use it)
 - Create: `public/placeholder-poster.svg`, `public/placeholder-profile.svg`, `public/placeholder-backdrop.svg`
 - Create: `tests/fixtures/movie-popular.json`, `tv-popular.json`, `search-multi.json`, `movie-detail.json`, `tv-detail.json`, `person-detail.json` (real TMDB responses, trimmed to ~3 items; manually add one item without `poster_path` and one TV item without `first_air_date`)
-- Test: `src/lib/tmdb/normalize.test.ts`, `src/lib/tmdb/images.test.ts`
+- Test: `src/lib/tmdb/normalize.test.ts`, `src/lib/images.test.ts`
 
 **Interfaces:**
 - Produces (`types.ts`):
@@ -375,7 +377,7 @@ expect(isActivePath('/', '/')).toBe(true);
   - `PersonCard({ person }: { person: PersonSummary })` — links to `/person/{id}`, image `w185` of kind `profile`
   - `GridItemCard({ item }: { item: GridItem })` — picks PersonCard or MediaCard (`action` slot left empty; Task 9 plugs in FavoriteButton)
   - `MediaGrid({ children })` — grid `grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6`
-  - `MediaCarousel({ items }: { items: MediaItem[] })` — client, Embla via shadcn `Carousel`, `slidesToScroll: 'auto'`, prev/next buttons with `aria-label`
+  - `MediaCarousel({ children, label }: { children: ReactNode; label: string })` — client, scrolling only (Embla via shadcn `Carousel`, `slidesToScroll: 'auto'`), wraps each child in a slide, prev/next buttons with translated names; it does not import MediaCard — Tasks 12/14 pass server-rendered cards as children
   - `ErrorBoundary({ fallback, children })` — client class component
 
 - [ ] **Step 1: Write the failing test**
@@ -643,6 +645,7 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 
 - [ ] **Step 1: Install** — `pnpm add -D @playwright/test && pnpm exec playwright install chromium`
 - [ ] **Step 2: Write the 5 scenarios from spec section 7.3.** Assertions check structure only (card count > 0, heading present, URL changed), never specific titles.
+- [ ] **Step 2b: No horizontal scroll.** On Home, a list page and a Detail page, at 360px and 1280px viewports, assert `document.documentElement.scrollWidth <= document.documentElement.clientWidth`.
 - [ ] **Step 3: Run** — `pnpm e2e` (needs `TMDB_READ_TOKEN` in `.env.local`). Expected: 5 scenarios PASS on both projects. Also assert that `/vi/does-not-exist` returns HTTP 404 (guards against soft 404s).
 - [ ] **Step 4: Commit** — `git commit -m "test(e2e): add Playwright smoke tests"`
 
