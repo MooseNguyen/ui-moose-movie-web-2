@@ -48,6 +48,11 @@ const POPULAR_ID_PAGES = 5;
 const overviewOnlySchema = z.object({ overview: z.string().catch('') });
 const biographyOnlySchema = z.object({ biography: z.string().catch('') });
 
+// TMDB filters videos by the request language, and most trailers are English
+// or language-less: always include those next to the locale.
+const videoLanguages = (locale: Locale) =>
+  [...new Set([locale, 'en', 'null'])].join(',');
+
 const itemSchema = (mediaType: MediaType) =>
   mediaType === 'movie' ? rawMovieSchema : rawTvSchema;
 
@@ -86,7 +91,10 @@ export async function getDetail(
 ): Promise<MediaDetail> {
   const options = {
     locale,
-    params: { append_to_response: 'credits,videos,recommendations,similar' },
+    params: {
+      append_to_response: 'credits,videos,recommendations,similar',
+      include_video_language: videoLanguages(locale),
+    },
     revalidate: REVALIDATE.detail,
   };
   // The two schemas have different output types, so each branch keeps its own type.
@@ -120,11 +128,10 @@ export async function getVideos(
   id: number,
   locale: Locale
 ): Promise<Video[]> {
-  const languages = [...new Set([locale, 'en', 'null'])].join(',');
   const raw = await tmdbFetch(`/${mediaType}/${id}/videos`, {
     schema: rawVideosSchema,
     locale,
-    params: { include_video_language: languages },
+    params: { include_video_language: videoLanguages(locale) },
     revalidate: REVALIDATE.detail,
   });
   return pickVideos(raw.results);

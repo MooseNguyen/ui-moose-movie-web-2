@@ -6,7 +6,16 @@ import type { PersonSummary } from '@/lib/tmdb/types';
 const PROFILE_SIZES =
   '(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw';
 
-export function PersonCard({ person }: { person: PersonSummary }) {
+type PersonCardProps = {
+  person: PersonSummary;
+  /** Second line under the name (e.g. a cast character); defaults to the department. */
+  subtitle?: string;
+};
+
+export function PersonCard({
+  person,
+  subtitle = person.knownForDepartment ?? undefined,
+}: PersonCardProps) {
   return (
     <Link
       href={`/person/${person.id}`}
@@ -23,9 +32,9 @@ export function PersonCard({ person }: { person: PersonSummary }) {
         />
       </div>
       <h3 className="mt-2 line-clamp-2 text-sm font-medium">{person.name}</h3>
-      {person.knownForDepartment && (
-        <p className="text-muted-foreground mt-0.5 text-xs">
-          {person.knownForDepartment}
+      {subtitle && (
+        <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
+          {subtitle}
         </p>
       )}
     </Link>
