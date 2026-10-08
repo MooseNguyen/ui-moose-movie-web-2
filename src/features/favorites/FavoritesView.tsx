@@ -27,9 +27,12 @@ type Filter = 'all' | 'movie' | 'tv';
 
 const FILTERS = ['all', 'movie', 'tv'] as const;
 const SKELETON_COUNT = 12;
+// Sonner's 4s default is too short to reach "Undo" by keyboard or screen
+// reader, so the removal toast stays up longer (WCAG 2.2.1 spirit).
+const UNDO_TOAST_DURATION_MS = 10_000;
 
-/** Marks the per-card remove buttons so focus can be moved between them. */
-const REMOVE_ATTR = 'data-favorite-remove';
+/** Selects the per-card remove buttons (`data-favorite-remove`) for focus moves. */
+const REMOVE_SELECTOR = '[data-favorite-remove]';
 
 function toCardItem(item: FavoriteItem): MediaCardItem {
   return {
@@ -91,9 +94,8 @@ export function FavoritesView({ headingId }: FavoritesViewProps) {
       document.getElementById(headingId)?.focus();
       return;
     }
-    const buttons = panelRef.current?.querySelectorAll<HTMLButtonElement>(
-      `[${REMOVE_ATTR}]`
-    );
+    const buttons =
+      panelRef.current?.querySelectorAll<HTMLButtonElement>(REMOVE_SELECTOR);
     if (!buttons?.length) return;
     // The item that slid into the removed slot, or the new last one.
     buttons[Math.min(pending.index, buttons.length - 1)].focus();
@@ -133,9 +135,17 @@ export function FavoritesView({ headingId }: FavoritesViewProps) {
   }
 
   function handleRemove(item: FavoriteItem, index: number) {
-    pendingFocus.current = { filter, index };
+    const before = useFavorites.getState().items;
     remove(item.mediaType, item.id);
+    // Already gone (e.g. removed in another tab before this render): nothing
+    // changed, so the focus effect would not run and a pending flag would
+    // fire later on an unrelated update. Nothing to undo either.
+    if (useFavorites.getState().items === before) return;
+    // Store updates from an event handler render after it returns, so the
+    // effect still sees this flag.
+    pendingFocus.current = { filter, index };
     toast(t('removed', { title: item.title }), {
+      duration: UNDO_TOAST_DURATION_MS,
       action: { label: t('undo'), onClick: () => restore(item) },
     });
   }
@@ -204,7 +214,7 @@ export function FavoritesView({ headingId }: FavoritesViewProps) {
                   action={
                     <button
                       type="button"
-                      {...{ [REMOVE_ATTR]: '' }}
+                      data-favorite-remove=""
                       aria-label={t('removeItem', { title: item.title })}
                       onClick={() => handleRemove(item, index)}
                       className="bg-background/70 hover:bg-background/90 text-foreground hover:text-destructive focus-visible:ring-ring inline-flex size-10 items-center justify-center rounded-full backdrop-blur transition-colors outline-none focus-visible:ring-2"

@@ -174,8 +174,32 @@ describe('FavoritesView', () => {
         'First removed from favorites',
         expect.objectContaining({
           action: expect.objectContaining({ label: 'Undo' }),
+          // Longer than sonner's 4s default so Undo stays reachable.
+          duration: 10_000,
         })
       );
+      expect(removeButton('Second')).toHaveFocus();
+    });
+
+    it('leaves focus alone when the removal turns out to be a no-op', async () => {
+      const user = userEvent.setup();
+      seed(items);
+      renderView();
+      // Simulates an item already removed elsewhere (e.g. another tab) before
+      // this view re-rendered: the store action changes nothing.
+      act(() => useFavorites.setState({ remove: () => {} }));
+
+      await user.click(removeButton('Second'));
+      expect(removeButton('Second')).toHaveFocus();
+      expect(toast).not.toHaveBeenCalled();
+
+      // An unrelated later change must not move focus to a stale index.
+      act(() =>
+        useFavorites.setState((s) => ({
+          items: [...s.items, fav(9, 'movie', 999, { title: 'Newest' })],
+        }))
+      );
+      expect(cardHrefs()[0]).toBe('/en/movie/9');
       expect(removeButton('Second')).toHaveFocus();
     });
 
