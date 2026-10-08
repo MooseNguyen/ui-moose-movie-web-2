@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { MobileNav } from './MobileNav';
 import { NavLinks } from './NavLinks';
+import { SearchDialog } from './SearchDialog';
 import { ThemeToggle } from './ThemeToggle';
 
 const SCROLL_THRESHOLD = 80;
@@ -49,12 +50,18 @@ export function Header() {
             fetchPriority="low"
             unoptimized
           />
-          <span className="text-lg font-bold">{t('appName')}</span>
+          {/* Below 400px the logo, nav button and right cluster leave too
+              little room: show the logo alone, keep the text as the link's
+              accessible name (sr-only, not hidden). */}
+          <span className="sr-only text-lg font-bold whitespace-nowrap min-[400px]:not-sr-only">
+            {t('appName')}
+          </span>
         </Link>
         <div className="ml-6 hidden md:block">
           <NavLinks />
         </div>
         <div className="ml-auto flex items-center gap-1">
+          <SearchDialog />
           <LocaleSwitcher />
           <ThemeToggle />
         </div>

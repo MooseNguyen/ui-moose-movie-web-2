@@ -12,7 +12,8 @@
     "carouselNext": "Cuộn tiếp",
     "loading": "Đang tải…",
     "rating": "Đánh giá",
-    "close": "Đóng"
+    "close": "Đóng",
+    "search": "Tìm kiếm"
   },
   "nav": {
     "home": "Trang chủ",
@@ -168,5 +169,24 @@
     "showMoreTitles": "Xem thêm phim",
     "shownMore": "Đã hiện thêm {count, number} phim, {shown, number}/{total, number}",
     "metaDescription": "Tiểu sử và các phim đã tham gia của {name}."
+  },
+  "search": {
+    "title": "Tìm kiếm",
+    "titleWithQuery": "Kết quả tìm kiếm cho “{query}”",
+    "heading": "Tìm kiếm",
+    "dialogTitle": "Tìm phim lẻ, phim bộ và người",
+    "label": "Từ khóa tìm kiếm",
+    "placeholder": "Phim lẻ, phim bộ, diễn viên…",
+    "submit": "Tìm kiếm",
+    "prompt": "Nhập từ khóa để tìm phim lẻ, phim bộ và người.",
+    "empty": "Không tìm thấy kết quả cho “{query}”.",
+    "loadError": "Không thể tải kết quả tìm kiếm lúc này. Vui lòng thử lại.",
+    "tabsLabel": "Chọn loại kết quả",
+    "tabs": {
+      "multi": "Tất cả",
+      "movie": "Phim lẻ",
+      "tv": "Phim bộ",
+      "person": "Người"
+    }
   }
 }

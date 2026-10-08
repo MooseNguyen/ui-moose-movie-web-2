@@ -2,6 +2,7 @@
 import type { MockInstance } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { resetEnvCache } from '@/lib/env';
+import { MAX_QUERY_LENGTH } from '@/lib/route-params';
 import * as api from '@/lib/tmdb/api';
 import { server } from '../../../tests/msw/server';
 import moviePopular from '../../../tests/fixtures/movie-popular.json';
@@ -185,7 +186,10 @@ describe('loadMoreSearch', () => {
   it.each([
     ['empty q', { ...SEARCH_BASE, q: '' }],
     ['whitespace q', { ...SEARCH_BASE, q: '   ' }],
-    ['a 101-char q', { ...SEARCH_BASE, q: 'a'.repeat(101) }],
+    [
+      'a q over the shared limit',
+      { ...SEARCH_BASE, q: 'a'.repeat(MAX_QUERY_LENGTH + 1) },
+    ],
     ['an unknown type', { ...SEARCH_BASE, type: 'collection' }],
     ['locale fr', { ...SEARCH_BASE, locale: 'fr' }],
     ['null', null],
@@ -198,10 +202,11 @@ describe('loadMoreSearch', () => {
     expect(counter.count).toBe(0);
   });
 
-  it('accepts a 100-char q', async () => {
+  it('accepts a q at the shared limit used by the page and the input', async () => {
+    expect(MAX_QUERY_LENGTH).toBe(100);
     mockTmdb('/search/multi', searchMulti);
     const result = await loadMoreSearch(
-      { ...SEARCH_BASE, q: 'a'.repeat(100) },
+      { ...SEARCH_BASE, q: 'a'.repeat(MAX_QUERY_LENGTH) },
       2
     );
     expect(result.ok).toBe(true);

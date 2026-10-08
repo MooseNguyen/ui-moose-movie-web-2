@@ -1,4 +1,11 @@
-import { parseListName, parseMediaType, parsePositiveId } from './route-params';
+import {
+  MAX_QUERY_LENGTH,
+  parseListName,
+  parseMediaType,
+  parsePositiveId,
+  parseSearchQuery,
+  parseSearchType,
+} from './route-params';
 
 describe('parseMediaType', () => {
   it('accepts movie and tv only', () => {
@@ -53,5 +60,60 @@ describe('parsePositiveId', () => {
     expect(parsePositiveId('9007199254740991')).toBe(9007199254740991);
     expect(parsePositiveId('9007199254740992')).toBeNull();
     expect(parsePositiveId('9'.repeat(400))).toBeNull();
+  });
+});
+
+describe('parseSearchType', () => {
+  it.each(['multi', 'movie', 'tv', 'person'] as const)('keeps %s', (type) => {
+    expect(parseSearchType(type)).toBe(type);
+  });
+
+  it.each([undefined, '', 'collection', 'Movie', 'constructor'])(
+    'falls back to multi for %j',
+    (value) => {
+      expect(parseSearchType(value)).toBe('multi');
+    }
+  );
+
+  it('uses the first value of a repeated param', () => {
+    expect(parseSearchType(['tv', 'movie'])).toBe('tv');
+    expect(parseSearchType(['nope', 'movie'])).toBe('multi');
+    expect(parseSearchType([])).toBe('multi');
+  });
+});
+
+describe('parseSearchQuery', () => {
+  it('limits queries to 100 characters', () => {
+    expect(MAX_QUERY_LENGTH).toBe(100);
+  });
+
+  // Next has already decoded the URL: the parser must keep the exact string.
+  it.each(['người nhện', 'a/b', '50%', 'a&b=c', '#1 ?'])(
+    'keeps %j unchanged',
+    (value) => {
+      expect(parseSearchQuery(value)).toBe(value);
+    }
+  );
+
+  it('trims surrounding whitespace', () => {
+    expect(parseSearchQuery('  người nhện \n')).toBe('người nhện');
+  });
+
+  it.each([undefined, '', '   ', '\t\n'])('returns null for %j', (value) => {
+    expect(parseSearchQuery(value)).toBeNull();
+  });
+
+  it('uses the first value of a repeated param', () => {
+    expect(parseSearchQuery(['  dune ', 'matrix'])).toBe('dune');
+    expect(parseSearchQuery([' ', 'matrix'])).toBeNull();
+    expect(parseSearchQuery([])).toBeNull();
+  });
+
+  it('cuts long queries to the limit and trims the cut end', () => {
+    expect(parseSearchQuery('a'.repeat(150))).toBe('a'.repeat(100));
+    expect(parseSearchQuery('a'.repeat(100))).toBe('a'.repeat(100));
+    // The cut lands right after a space: no trailing whitespace survives.
+    expect(parseSearchQuery('a'.repeat(99) + ' bcd')).toBe('a'.repeat(99));
+    expect(parseSearchQuery('  ' + 'b'.repeat(120))).toBe('b'.repeat(100));
   });
 });

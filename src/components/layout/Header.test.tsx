@@ -38,13 +38,27 @@ describe('Header', () => {
     );
   });
 
-  it('exposes accessible controls for menu, language and theme', () => {
+  it('exposes accessible controls for menu, search, language and theme', () => {
     renderWithIntl(<Header />);
     expect(screen.getByRole('button', { name: 'Open menu' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Language' })).toBeVisible();
     expect(
       screen.getByRole('button', { name: 'Switch to light theme' })
     ).toBeVisible();
+  });
+
+  it('keeps the brand name as the home link name when it is visually hidden', () => {
+    renderWithIntl(<Header />);
+
+    const home = screen.getByRole('link', { name: 'Moose Movie' });
+    expect(home).toHaveAttribute('href', '/');
+    // Below 400px only the logo shows; sr-only (not display:none) keeps the
+    // text in the accessibility tree, and it never wraps when visible.
+    const brand = screen.getByText('Moose Movie');
+    expect(brand).toHaveClass('sr-only', 'min-[400px]:not-sr-only');
+    expect(brand).toHaveClass('whitespace-nowrap');
+    expect(brand).not.toHaveClass('hidden');
   });
 
   it('becomes solid only after scrolling past 80px', () => {
