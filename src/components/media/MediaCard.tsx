@@ -9,8 +9,20 @@ import type { MediaItem } from '@/lib/tmdb/types';
 const POSTER_SIZES =
   '(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw';
 
+/** Only the fields the card reads, so callers can pass slim items (e.g. person credits). */
+export type MediaCardItem = Pick<
+  MediaItem,
+  | 'id'
+  | 'mediaType'
+  | 'title'
+  | 'posterPath'
+  | 'year'
+  | 'voteAverage'
+  | 'voteCount'
+>;
+
 type MediaCardProps = {
-  item: MediaItem;
+  item: MediaCardItem;
   /** Set for above-the-fold cards so the poster is not lazy-loaded. */
   priority?: boolean;
   /** Slot for an overlay control (e.g. FavoriteButton), rendered outside the link. */
