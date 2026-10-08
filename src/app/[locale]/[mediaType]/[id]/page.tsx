@@ -12,6 +12,7 @@ import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { routing } from '@/i18n/routing';
 import { tmdbImage } from '@/lib/images';
 import { parseMediaType, parsePositiveId } from '@/lib/route-params';
+import { truncate } from '@/lib/utils';
 import { getDetail } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 
@@ -39,12 +40,6 @@ async function loadDetail({ params }: DetailPageProps) {
     // Anything else is a real failure for error.tsx (never cache it as a 404).
     throw error;
   }
-}
-
-function truncate(text: string, max: number) {
-  const normalized = text.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= max) return normalized;
-  return normalized.slice(0, max - 1).trimEnd() + '…';
 }
 
 // Nothing is prerendered at build time; titles render on first request and
