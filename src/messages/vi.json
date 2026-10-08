@@ -130,5 +130,43 @@
       "topRatedTv": "Phim bộ đánh giá cao",
       "onTheAirTv": "Phim bộ đang phát sóng"
     }
+  },
+  "person": {
+    "knownFor": "Nghề nghiệp",
+    "born": "Ngày sinh",
+    "died": "Ngày mất",
+    "placeOfBirth": "Nơi sinh",
+    "dateWithAge": "{date} ({age, number} tuổi)",
+    "dateWithAgeAtDeath": "{date} (lúc {age, number} tuổi)",
+    "departments": {
+      "acting": "Diễn xuất",
+      "directing": "Đạo diễn",
+      "writing": "Biên kịch",
+      "production": "Sản xuất",
+      "sound": "Âm thanh",
+      "art": "Mỹ thuật",
+      "camera": "Quay phim",
+      "editing": "Dựng phim",
+      "costumeMakeUp": "Phục trang và hóa trang",
+      "crew": "Đoàn phim",
+      "visualEffects": "Kỹ xảo hình ảnh",
+      "lighting": "Ánh sáng",
+      "creator": "Người sáng tạo"
+    },
+    "biography": "Tiểu sử",
+    "noBiography": "Chưa có tiểu sử.",
+    "showMore": "Xem thêm",
+    "showLess": "Thu gọn",
+    "filmography": "Các phim đã tham gia",
+    "tabsLabel": "Lọc danh sách phim",
+    "tabs": {
+      "all": "Tất cả ({count, number})",
+      "movie": "Phim lẻ ({count, number})",
+      "tv": "Phim bộ ({count, number})"
+    },
+    "noCredits": "Chưa có phim nào.",
+    "showMoreTitles": "Xem thêm phim",
+    "shownMore": "Đã hiện thêm {count, number} phim, {shown, number}/{total, number}",
+    "metaDescription": "Tiểu sử và các phim đã tham gia của {name}."
   }
 }

@@ -130,5 +130,43 @@
       "topRatedTv": "Top Rated TV Series",
       "onTheAirTv": "On The Air TV Series"
     }
+  },
+  "person": {
+    "knownFor": "Known for",
+    "born": "Born",
+    "died": "Died",
+    "placeOfBirth": "Place of birth",
+    "dateWithAge": "{date} (age {age, number})",
+    "dateWithAgeAtDeath": "{date} (aged {age, number})",
+    "departments": {
+      "acting": "Acting",
+      "directing": "Directing",
+      "writing": "Writing",
+      "production": "Production",
+      "sound": "Sound",
+      "art": "Art",
+      "camera": "Camera",
+      "editing": "Editing",
+      "costumeMakeUp": "Costume & Make-Up",
+      "crew": "Crew",
+      "visualEffects": "Visual Effects",
+      "lighting": "Lighting",
+      "creator": "Creator"
+    },
+    "biography": "Biography",
+    "noBiography": "No biography available.",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "filmography": "Filmography",
+    "tabsLabel": "Filter credits",
+    "tabs": {
+      "all": "All ({count, number})",
+      "movie": "Movies ({count, number})",
+      "tv": "TV Series ({count, number})"
+    },
+    "noCredits": "No credits yet.",
+    "showMoreTitles": "Show more titles",
+    "shownMore": "{count, plural, one {Showing # more title} other {Showing # more titles}}, {shown, number} of {total, number}",
+    "metaDescription": "Biography and filmography of {name}."
   }
 }

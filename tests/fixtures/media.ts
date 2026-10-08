@@ -1,4 +1,9 @@
-import type { MediaDetail, MediaItem, PersonSummary } from '@/lib/tmdb/types';
+import type {
+  MediaDetail,
+  MediaItem,
+  PersonDetail,
+  PersonSummary,
+} from '@/lib/tmdb/types';
 
 export const tvItem: MediaItem = {
   id: 1399,
@@ -80,4 +85,20 @@ export const tvDetail: MediaDetail = {
   seasons: 8,
   episodes: 73,
   releaseDate: '2011-04-17',
+};
+
+export const personDetail: PersonDetail = {
+  id: 287,
+  name: 'Brad Pitt',
+  profilePath: '/brad.jpg',
+  knownForDepartment: 'Acting',
+  birthday: '1963-12-18',
+  deathday: null,
+  placeOfBirth: 'Shawnee, Oklahoma, USA',
+  biography: 'William Bradley Pitt is an American actor and film producer.',
+  biographyIsFallback: false,
+  credits: [
+    { ...tvItem, id: 550, mediaType: 'movie', title: 'Fight Club' },
+    { ...tvItem, id: 1100, mediaType: 'tv', title: 'Friends' },
+  ],
 };
