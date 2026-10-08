@@ -12,7 +12,8 @@
     "carouselNext": "Next",
     "loading": "Loading…",
     "rating": "Rating",
-    "close": "Close"
+    "close": "Close",
+    "search": "Search"
   },
   "nav": {
     "home": "Home",
@@ -168,5 +169,24 @@
     "showMoreTitles": "Show more titles",
     "shownMore": "{count, plural, one {Showing # more title} other {Showing # more titles}}, {shown, number} of {total, number}",
     "metaDescription": "Biography and filmography of {name}."
+  },
+  "search": {
+    "title": "Search",
+    "titleWithQuery": "Search results for “{query}”",
+    "heading": "Search",
+    "dialogTitle": "Search movies, TV series and people",
+    "label": "Search keyword",
+    "placeholder": "Movies, TV series, people…",
+    "submit": "Search",
+    "prompt": "Enter a keyword to search for movies, TV series and people.",
+    "empty": "No results for “{query}”.",
+    "loadError": "Could not load search results right now. Please try again.",
+    "tabsLabel": "Choose a result type",
+    "tabs": {
+      "multi": "All",
+      "movie": "Movies",
+      "tv": "TV Series",
+      "person": "People"
+    }
   }
 }

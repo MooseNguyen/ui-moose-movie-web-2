@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { parseDiscoverParams } from '@/features/discover/params';
+import { MAX_QUERY_LENGTH } from '@/lib/route-params';
 import { discover, getList, getVideos, search } from '@/lib/tmdb/api';
 import {
   LOCALES,
@@ -36,7 +37,7 @@ const listBaseSchema = z.discriminatedUnion('mediaType', [
 
 const searchBaseSchema = z.object({
   type: z.enum(SEARCH_TYPES),
-  q: z.string().trim().min(1).max(100),
+  q: z.string().trim().min(1).max(MAX_QUERY_LENGTH),
   locale: localeSchema,
 });
 

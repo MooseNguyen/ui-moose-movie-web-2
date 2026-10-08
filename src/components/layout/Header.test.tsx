@@ -38,9 +38,10 @@ describe('Header', () => {
     );
   });
 
-  it('exposes accessible controls for menu, language and theme', () => {
+  it('exposes accessible controls for menu, search, language and theme', () => {
     renderWithIntl(<Header />);
     expect(screen.getByRole('button', { name: 'Open menu' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Language' })).toBeVisible();
     expect(
       screen.getByRole('button', { name: 'Switch to light theme' })

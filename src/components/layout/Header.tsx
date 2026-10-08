@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { MobileNav } from './MobileNav';
 import { NavLinks } from './NavLinks';
+import { SearchDialog } from './SearchDialog';
 import { ThemeToggle } from './ThemeToggle';
 
 const SCROLL_THRESHOLD = 80;
@@ -55,6 +56,7 @@ export function Header() {
           <NavLinks />
         </div>
         <div className="ml-auto flex items-center gap-1">
+          <SearchDialog />
           <LocaleSwitcher />
           <ThemeToggle />
         </div>
