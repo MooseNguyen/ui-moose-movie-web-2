@@ -21,6 +21,8 @@ type FavoritesState = {
   storageAvailable: boolean;
   toggle: (item: Omit<FavoriteItem, 'addedAt'>) => void;
   remove: (mediaType: MediaType, id: number) => void;
+  /** Undo for `remove`: re-adds the item with its original `addedAt`. */
+  restore: (item: FavoriteItem) => void;
   clear: () => void;
 };
 
@@ -160,7 +162,7 @@ const itemsOf = (persisted: unknown): FavoriteItem[] =>
 /**
  * Favorites store.
  *
- * Writes (`toggle`, `remove`, `clear`) are no-ops until `hasHydrated` is true:
+ * Writes (`toggle`, `remove`, `restore`, `clear`) are no-ops until `hasHydrated` is true:
  * a write before the first rehydrate would persist over the saved list, and
  * the later rehydrate would then read the overwritten value, losing data.
  * `toggle` also normalizes its input so everything stored passes
@@ -205,6 +207,15 @@ export const useFavorites = create<FavoritesState>()(
             (i) => !(i.mediaType === mediaType && i.id === id)
           ),
         }));
+      },
+      restore: (item) => {
+        if (!get().hasHydrated) return;
+        // The item comes back from UI state (an undo toast), so validate it
+        // like stored data before it can be persisted.
+        if (!isFavoriteItem(item)) return;
+        if (isFavorite(get(), item.mediaType, item.id)) return;
+        // Keeping addedAt puts the item back at its old newest-first position.
+        set((state) => ({ items: [...state.items, pickFields(item)] }));
       },
       clear: () => {
         if (!get().hasHydrated) return;

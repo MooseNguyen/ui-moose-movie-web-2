@@ -107,6 +107,7 @@ describe('before hydration', () => {
     ['toggle', () => useFavorites.getState().toggle(movie)],
     ['remove', () => useFavorites.getState().remove('tv', 5)],
     ['clear', () => useFavorites.getState().clear()],
+    ['restore', () => useFavorites.getState().restore(stored(8, 'movie', 2))],
   ])(
     '%s is a no-op: state and stored payload stay unchanged',
     async (_n, act) => {
@@ -128,6 +129,56 @@ describe('before hydration', () => {
     expect(useFavorites.getState().items).toHaveLength(1);
     useFavorites.getState().clear();
     expect(useFavorites.getState().items).toEqual([]);
+  });
+});
+
+describe('restore', () => {
+  it('puts a removed item back at its previous newest-first position', () => {
+    useFavorites.setState({
+      items: [
+        stored(1, 'movie', 100),
+        stored(2, 'tv', 200),
+        stored(3, 'movie', 300),
+      ],
+    });
+    const removed = useFavorites.getState().items[1];
+    useFavorites.getState().remove('tv', 2);
+
+    useFavorites.getState().restore(removed);
+
+    const state = useFavorites.getState();
+    expect(selectSorted(state, 'all').map((i) => i.id)).toEqual([3, 2, 1]);
+    expect(state.items.find((i) => i.id === 2)?.addedAt).toBe(200);
+  });
+
+  it('persists the restored item', () => {
+    useFavorites.getState().restore(stored(4, 'tv', 5));
+    const raw = JSON.parse(storage.getItem(KEY) as string);
+    expect(raw.state.items).toEqual([stored(4, 'tv', 5)]);
+  });
+
+  it('does not add a duplicate when the item is already present', () => {
+    useFavorites.setState({ items: [stored(1, 'movie', 100)] });
+    useFavorites.getState().restore(stored(1, 'movie', 999));
+    expect(useFavorites.getState().items).toEqual([stored(1, 'movie', 100)]);
+  });
+
+  it.each([
+    ['an invalid id', { ...stored(1, 'movie', 1), id: 0 }],
+    ['an empty title', { ...stored(1, 'movie', 1), title: '' }],
+    ['a missing addedAt', { ...movie }],
+  ])('ignores an item with %s and does not write', (_n, item) => {
+    const before = storage.getItem(KEY);
+    useFavorites.getState().restore(item as FavoriteItem);
+    expect(useFavorites.getState().items).toEqual([]);
+    expect(storage.getItem(KEY)).toBe(before);
+  });
+
+  it('stores only the known fields', () => {
+    useFavorites
+      .getState()
+      .restore({ ...stored(1, 'movie', 1), extra: 'x' } as FavoriteItem);
+    expect(useFavorites.getState().items[0]).not.toHaveProperty('extra');
   });
 });
 
