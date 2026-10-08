@@ -7,8 +7,8 @@ import { loadMoreList } from '@/lib/actions/media';
 import { getList } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { MediaItem } from '@/lib/tmdb/types';
-import { tvItem } from '../../../../tests/fixtures/media';
-import { renderServerTree } from '../../../../tests/utils/render-server';
+import { tvItem } from '../../../../../tests/fixtures/media';
+import { renderServerTree } from '../../../../../tests/utils/render-server';
 import ListPage, { generateMetadata } from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ getList: vi.fn() }));
@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock(
   '@/i18n/navigation',
-  () => import('../../../../tests/utils/mock-navigation')
+  () => import('../../../../../tests/utils/mock-navigation')
 );
 vi.mock('next-intl/server', async () => {
   const { createTranslator } = await import('next-intl');
