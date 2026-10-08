@@ -51,6 +51,13 @@ describe('ListTabs', () => {
     );
   });
 
+  it('wraps instead of scrolling so the active tab is always visible', () => {
+    renderWithIntl(<ListTabs mediaType="tv" active="airing_today" />);
+    const list = screen.getByRole('list');
+    expect(list).toHaveClass('flex-wrap');
+    expect(list.className).not.toMatch(/overflow/);
+  });
+
   it('does not use the ARIA tab pattern', () => {
     renderWithIntl(<ListTabs mediaType="movie" active="popular" />);
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();

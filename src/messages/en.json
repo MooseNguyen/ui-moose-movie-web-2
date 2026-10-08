@@ -77,7 +77,8 @@
       }
     },
     "metaDescription": "Browse {title} with posters, ratings and details powered by TMDB.",
-    "loadError": "Could not load {title} right now. Please try again."
+    "loadError": "Could not load {title} right now. Please try again.",
+    "empty": "No titles in this list yet."
   },
   "detail": {
     "trailer": "Trailer",

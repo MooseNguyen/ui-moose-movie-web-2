@@ -56,12 +56,19 @@ export default async function ListPage(props: ListPageProps) {
       <div className="mt-6 mb-8">
         <ListTabs mediaType={mediaType} active={list} />
       </div>
-      {initial && initial.items.length > 0 ? (
+      {initial?.items.length ? (
         <LoadMoreGrid
           key={list}
           initial={initial}
           loadMore={loadMoreList.bind(null, { mediaType, list, locale })}
         />
+      ) : initial ? (
+        <p
+          role="status"
+          className="text-muted-foreground rounded-lg border p-6 text-sm"
+        >
+          {t('empty')}
+        </p>
       ) : (
         <div
           role="status"

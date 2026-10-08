@@ -77,7 +77,8 @@
       }
     },
     "metaDescription": "Duyệt {title} với poster, điểm đánh giá và thông tin chi tiết từ TMDB.",
-    "loadError": "Không thể tải {title} lúc này. Vui lòng thử lại."
+    "loadError": "Không thể tải {title} lúc này. Vui lòng thử lại.",
+    "empty": "Chưa có tiêu đề nào trong danh sách này."
   },
   "detail": {
     "trailer": "Trailer",

@@ -167,12 +167,18 @@ describe('ListPage', () => {
     spy.mockRestore();
   });
 
-  it('shows the message without a load more button when the list is empty', async () => {
+  it('shows a distinct empty message (no retry) when the list has no items', async () => {
     mockedGetList.mockResolvedValue({ items: [], page: 1, totalPages: 0 });
 
     await renderServerTree(await ListPage(props('en', 'movie')));
 
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'No titles in this list yet.'
+    );
+    expect(screen.queryByText(/Could not load/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'Try again' })
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Load more' })
     ).not.toBeInTheDocument();

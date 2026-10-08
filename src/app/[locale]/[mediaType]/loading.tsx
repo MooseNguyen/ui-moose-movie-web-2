@@ -10,9 +10,9 @@ export default function ListLoading() {
       <div aria-hidden="true">
         {/* text-3xl line height (2.25rem) = h-9 */}
         <Skeleton className="h-9 w-48" />
-        <div className="mt-6 mb-8 flex gap-2 p-1">
+        <div className="mt-6 mb-8 flex flex-wrap gap-2">
           {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} className="h-10 w-28 shrink-0 rounded-full" />
+            <Skeleton key={i} className="h-[38px] w-28 rounded-full" />
           ))}
         </div>
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

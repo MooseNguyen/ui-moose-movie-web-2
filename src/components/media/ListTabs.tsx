@@ -16,12 +16,12 @@ export function ListTabs({ mediaType, active }: Props) {
   const lists = mediaType === 'movie' ? MOVIE_LISTS : TV_LISTS;
 
   return (
-    <nav aria-label={t('tabsLabel')} className="min-w-0">
-      {/* The list scrolls horizontally on narrow screens; the page does not.
-          Padding + negative margin keep focus rings from being clipped. */}
-      <ul className="-mx-1 flex min-w-0 gap-2 overflow-x-auto p-1">
+    <nav aria-label={t('tabsLabel')}>
+      {/* Wraps instead of scrolling: every tab, including the active one,
+          stays visible on narrow screens without client JS. */}
+      <ul className="flex flex-wrap gap-2">
         {lists.map((list) => (
-          <li key={list} className="shrink-0">
+          <li key={list}>
             <Link
               href={`/${mediaType}?list=${list}`}
               aria-current={list === active ? 'page' : undefined}
