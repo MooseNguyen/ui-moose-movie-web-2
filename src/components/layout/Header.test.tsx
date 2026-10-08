@@ -48,6 +48,19 @@ describe('Header', () => {
     ).toBeVisible();
   });
 
+  it('keeps the brand name as the home link name when it is visually hidden', () => {
+    renderWithIntl(<Header />);
+
+    const home = screen.getByRole('link', { name: 'Moose Movie' });
+    expect(home).toHaveAttribute('href', '/');
+    // Below 400px only the logo shows; sr-only (not display:none) keeps the
+    // text in the accessibility tree, and it never wraps when visible.
+    const brand = screen.getByText('Moose Movie');
+    expect(brand).toHaveClass('sr-only', 'min-[400px]:not-sr-only');
+    expect(brand).toHaveClass('whitespace-nowrap');
+    expect(brand).not.toHaveClass('hidden');
+  });
+
   it('becomes solid only after scrolling past 80px', () => {
     const { container } = renderWithIntl(<Header />);
     const header = container.querySelector('header')!;
