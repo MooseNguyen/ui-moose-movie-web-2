@@ -188,5 +188,35 @@
       "tv": "TV Series",
       "person": "People"
     }
+  },
+  "discover": {
+    "title": {
+      "movie": "Discover movies",
+      "tv": "Discover TV series"
+    },
+    "description": {
+      "movie": "Browse movies by genre, release year and sort order, with data from TMDB.",
+      "tv": "Browse TV series by genre, first air year and sort order, with data from TMDB."
+    },
+    "filtersLabel": "Filters",
+    "typeLabel": "Type",
+    "types": {
+      "movie": "Movies",
+      "tv": "TV Series"
+    },
+    "genresLabel": "Genres",
+    "genresError": "Genres could not be loaded right now.",
+    "yearLabel": "Year",
+    "allYears": "All years",
+    "sortLabel": "Sort by",
+    "sorts": {
+      "popularity": "Most popular",
+      "rating": "Top rated",
+      "releaseDate": "Newest",
+      "title": "Title (A–Z)"
+    },
+    "clear": "Clear filters",
+    "empty": "No titles match these filters.",
+    "loadError": "Could not load titles right now. Please try again."
   }
 }

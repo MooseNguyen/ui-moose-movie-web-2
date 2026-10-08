@@ -188,5 +188,35 @@
       "tv": "Phim bộ",
       "person": "Người"
     }
+  },
+  "discover": {
+    "title": {
+      "movie": "Khám phá phim lẻ",
+      "tv": "Khám phá phim bộ"
+    },
+    "description": {
+      "movie": "Duyệt phim lẻ theo thể loại, năm phát hành và cách sắp xếp, dữ liệu từ TMDB.",
+      "tv": "Duyệt phim bộ theo thể loại, năm phát sóng và cách sắp xếp, dữ liệu từ TMDB."
+    },
+    "filtersLabel": "Bộ lọc",
+    "typeLabel": "Loại",
+    "types": {
+      "movie": "Phim lẻ",
+      "tv": "Phim bộ"
+    },
+    "genresLabel": "Thể loại",
+    "genresError": "Không thể tải danh sách thể loại lúc này.",
+    "yearLabel": "Năm",
+    "allYears": "Tất cả các năm",
+    "sortLabel": "Sắp xếp theo",
+    "sorts": {
+      "popularity": "Phổ biến nhất",
+      "rating": "Đánh giá cao",
+      "releaseDate": "Mới nhất",
+      "title": "Tên (A–Z)"
+    },
+    "clear": "Xóa bộ lọc",
+    "empty": "Không có tiêu đề nào khớp với bộ lọc này.",
+    "loadError": "Không thể tải danh sách lúc này. Vui lòng thử lại."
   }
 }
