@@ -32,7 +32,26 @@
   },
   "favorites": {
     "toggle": "Yêu thích: {title}",
-    "storageUnavailable": "Trình duyệt đang chặn bộ nhớ cục bộ, nên danh sách yêu thích sẽ không được lưu sau khi bạn đóng tab này."
+    "storageUnavailable": "Trình duyệt đang chặn bộ nhớ cục bộ, nên danh sách yêu thích sẽ không được lưu sau khi bạn đóng tab này.",
+    "title": "Yêu thích",
+    "heading": "Danh sách yêu thích",
+    "loading": "Đang tải danh sách yêu thích…",
+    "tabsLabel": "Lọc danh sách yêu thích",
+    "tabs": {
+      "all": "Tất cả ({count, number})",
+      "movie": "Phim lẻ ({count, number})",
+      "tv": "Phim bộ ({count, number})"
+    },
+    "removeItem": "Xóa {title} khỏi danh sách yêu thích",
+    "removed": "Đã xóa {title} khỏi danh sách yêu thích",
+    "undo": "Hoàn tác",
+    "clearAll": "Xóa tất cả",
+    "clearTitle": "Xóa toàn bộ danh sách yêu thích?",
+    "clearDescription": "Thao tác này sẽ xóa {count, number} mục khỏi danh sách yêu thích và không thể hoàn tác.",
+    "clearCancel": "Hủy",
+    "clearConfirm": "Có, xóa tất cả",
+    "empty": "Bạn chưa lưu mục yêu thích nào. Nhấn nút trái tim trên phim lẻ hoặc phim bộ để lưu vào đây.",
+    "emptyCta": "Khám phá phim lẻ và phim bộ"
   },
   "errors": {
     "title": "Đã có lỗi xảy ra",

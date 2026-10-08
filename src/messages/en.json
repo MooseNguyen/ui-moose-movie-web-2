@@ -32,7 +32,26 @@
   },
   "favorites": {
     "toggle": "Favorite: {title}",
-    "storageUnavailable": "Your browser is blocking local storage, so favorites will not be saved after you close this tab."
+    "storageUnavailable": "Your browser is blocking local storage, so favorites will not be saved after you close this tab.",
+    "title": "Favorites",
+    "heading": "Your favorites",
+    "loading": "Loading favorites…",
+    "tabsLabel": "Filter favorites",
+    "tabs": {
+      "all": "All ({count, number})",
+      "movie": "Movies ({count, number})",
+      "tv": "TV Series ({count, number})"
+    },
+    "removeItem": "Remove {title} from favorites",
+    "removed": "{title} removed from favorites",
+    "undo": "Undo",
+    "clearAll": "Clear all",
+    "clearTitle": "Clear all favorites?",
+    "clearDescription": "This removes {count, plural, one {# title} other {# titles}} from your favorites. It cannot be undone.",
+    "clearCancel": "Cancel",
+    "clearConfirm": "Yes, clear all",
+    "empty": "You have not saved any favorites yet. Use the heart button on a movie or TV series to save it here.",
+    "emptyCta": "Discover movies and TV series"
   },
   "errors": {
     "title": "Something went wrong",
