@@ -48,7 +48,36 @@
   "list": {
     "loadMore": "Load more",
     "loadedMore": "{count, plural, =0 {No new titles loaded} one {Loaded # more title} other {Loaded # more titles}}, {total} in total",
-    "allLoaded": "You've reached the end"
+    "allLoaded": "You've reached the end",
+    "heading": {
+      "movie": "Movies",
+      "tv": "TV Series"
+    },
+    "tabsLabel": "Choose a list",
+    "tabs": {
+      "popular": "Popular",
+      "top_rated": "Top Rated",
+      "upcoming": "Upcoming",
+      "now_playing": "Now Playing",
+      "on_the_air": "On The Air",
+      "airing_today": "Airing Today"
+    },
+    "titles": {
+      "movie": {
+        "popular": "Popular Movies",
+        "top_rated": "Top Rated Movies",
+        "upcoming": "Upcoming Movies",
+        "now_playing": "Now Playing Movies"
+      },
+      "tv": {
+        "popular": "Popular TV Series",
+        "top_rated": "Top Rated TV Series",
+        "on_the_air": "On The Air TV Series",
+        "airing_today": "TV Series Airing Today"
+      }
+    },
+    "metaDescription": "Browse {title} with posters, ratings and details powered by TMDB.",
+    "loadError": "Could not load {title} right now. Please try again."
   },
   "detail": {
     "trailer": "Trailer",
