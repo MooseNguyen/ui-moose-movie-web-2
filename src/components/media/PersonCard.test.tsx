@@ -26,6 +26,12 @@ describe('PersonCard', () => {
     );
     expect(screen.queryByText('null')).not.toBeInTheDocument();
   });
+
+  it('shows the subtitle instead of the department when given', () => {
+    renderWithIntl(<PersonCard person={person} subtitle="Tyler Durden" />);
+    expect(screen.getByText('Tyler Durden')).toBeInTheDocument();
+    expect(screen.queryByText('Acting')).not.toBeInTheDocument();
+  });
 });
 
 describe('GridItemCard', () => {
