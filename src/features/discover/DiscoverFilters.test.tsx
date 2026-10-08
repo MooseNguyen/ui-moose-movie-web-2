@@ -1,5 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 import type { Genre } from '@/lib/tmdb/types';
 import { renderWithIntl } from '../../../tests/utils/render';
 import { DiscoverFilters } from './DiscoverFilters';
@@ -18,6 +20,9 @@ beforeAll(() => {
 });
 
 beforeEach(() => push.mockClear());
+
+// Deliberately not the test machine's year: the list must come from the prop.
+const CURRENT_YEAR = 2030;
 
 const genres: Genre[] = [
   { id: 12, name: 'Adventure' },
@@ -41,7 +46,11 @@ describe('DiscoverFilters', () => {
   it('adds a genre to the selection', async () => {
     const user = userEvent.setup();
     renderWithIntl(
-      <DiscoverFilters value={value({ genres: [12] })} genres={genres} />
+      <DiscoverFilters
+        value={value({ genres: [12] })}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
     );
 
     await user.click(screen.getByRole('button', { name: 'Action' }));
@@ -61,6 +70,7 @@ describe('DiscoverFilters', () => {
       <DiscoverFilters
         value={value({ genres: [12, 28], year: 2020 })}
         genres={genres}
+        currentYear={CURRENT_YEAR}
       />
     );
 
@@ -74,7 +84,11 @@ describe('DiscoverFilters', () => {
 
   it('exposes selection with aria-pressed and constant names', () => {
     renderWithIntl(
-      <DiscoverFilters value={value({ genres: [28] })} genres={genres} />
+      <DiscoverFilters
+        value={value({ genres: [28] })}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
     );
 
     const group = screen.getByRole('group', { name: 'Genres' });
@@ -109,6 +123,7 @@ describe('DiscoverFilters', () => {
           sort: 'vote_average.desc',
         })}
         genres={genres}
+        currentYear={CURRENT_YEAR}
       />
     );
 
@@ -126,7 +141,11 @@ describe('DiscoverFilters', () => {
   it('switches type to tv', async () => {
     const user = userEvent.setup();
     renderWithIntl(
-      <DiscoverFilters value={value({ genres: [12] })} genres={genres} />
+      <DiscoverFilters
+        value={value({ genres: [12] })}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
     );
 
     await user.click(screen.getByRole('button', { name: 'TV Series' }));
@@ -136,7 +155,13 @@ describe('DiscoverFilters', () => {
 
   it('does not navigate when the active type is clicked again', async () => {
     const user = userEvent.setup();
-    renderWithIntl(<DiscoverFilters value={value()} genres={genres} />);
+    renderWithIntl(
+      <DiscoverFilters
+        value={value()}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
+    );
 
     await user.click(screen.getByRole('button', { name: 'Movies' }));
 
@@ -145,8 +170,14 @@ describe('DiscoverFilters', () => {
 
   it('picks a year from the current year down to 1950', async () => {
     const user = userEvent.setup();
-    const currentYear = new Date().getFullYear();
-    renderWithIntl(<DiscoverFilters value={value()} genres={genres} />);
+    const currentYear = CURRENT_YEAR;
+    renderWithIntl(
+      <DiscoverFilters
+        value={value()}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
+    );
 
     const trigger = screen.getByRole('combobox', { name: 'Year' });
     expect(trigger).toHaveTextContent('All years');
@@ -172,6 +203,7 @@ describe('DiscoverFilters', () => {
       <DiscoverFilters
         value={value({ type: 'tv', year: 2001 })}
         genres={genres}
+        currentYear={CURRENT_YEAR}
       />
     );
 
@@ -188,7 +220,13 @@ describe('DiscoverFilters', () => {
 
   it('changes the sort order', async () => {
     const user = userEvent.setup();
-    renderWithIntl(<DiscoverFilters value={value()} genres={genres} />);
+    renderWithIntl(
+      <DiscoverFilters
+        value={value()}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
+    );
 
     const trigger = screen.getByRole('combobox', { name: 'Sort by' });
     expect(trigger).toHaveTextContent('Most popular');
@@ -213,6 +251,7 @@ describe('DiscoverFilters', () => {
       <DiscoverFilters
         value={value({ type: 'tv', genres: [12], year: 2001 })}
         genres={genres}
+        currentYear={CURRENT_YEAR}
       />
     );
 
@@ -225,8 +264,43 @@ describe('DiscoverFilters', () => {
     expect(pushedUrl()).toBe('/discover');
   });
 
+  it('keeps keyboard focus inside the filters after clearing', async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderWithIntl(
+      <DiscoverFilters
+        value={value({ type: 'tv', genres: [12] })}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
+    );
+
+    screen.getByRole('button', { name: 'Clear filters' }).focus();
+    await user.keyboard('{Enter}');
+    // The navigation lands: the button disappears at the defaults.
+    rerender(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <DiscoverFilters
+          value={value()}
+          genres={genres}
+          currentYear={CURRENT_YEAR}
+        />
+      </NextIntlClientProvider>
+    );
+
+    expect(
+      screen.queryByRole('button', { name: 'Clear filters' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Movies' })).toHaveFocus();
+  });
+
   it('hides "Clear filters" at the defaults', () => {
-    renderWithIntl(<DiscoverFilters value={value()} genres={genres} />);
+    renderWithIntl(
+      <DiscoverFilters
+        value={value()}
+        genres={genres}
+        currentYear={CURRENT_YEAR}
+      />
+    );
 
     expect(
       screen.queryByRole('button', { name: 'Clear filters' })
@@ -234,7 +308,9 @@ describe('DiscoverFilters', () => {
   });
 
   it('is a labelled region and omits the genre group without genres', () => {
-    renderWithIntl(<DiscoverFilters value={value()} genres={[]} />);
+    renderWithIntl(
+      <DiscoverFilters value={value()} genres={[]} currentYear={CURRENT_YEAR} />
+    );
 
     expect(screen.getByRole('region', { name: 'Filters' })).toBeVisible();
     expect(

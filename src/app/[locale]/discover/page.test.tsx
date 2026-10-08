@@ -134,6 +134,8 @@ describe('DiscoverPage', () => {
     );
     expect(findByType(tree, DiscoverFilters)?.props).toMatchObject({
       value: { genres: [28] },
+      // Year options come from the server clock, not the client's.
+      currentYear: new Date().getFullYear(),
     });
     expect(screen.getByRole('button', { name: 'Action' })).toHaveAttribute(
       'aria-pressed',

@@ -1,7 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useId, useOptimistic, useTransition, type ReactNode } from 'react';
+import {
+  useId,
+  useOptimistic,
+  useRef,
+  useTransition,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -23,7 +30,12 @@ import {
   type DiscoverSort,
 } from './params';
 
-type Props = { value: DiscoverParams; genres: Genre[] };
+type Props = {
+  value: DiscoverParams;
+  genres: Genre[];
+  /** From the server, the same clock that validates `year` in the URL. */
+  currentYear: number;
+};
 
 const TYPES: readonly MediaType[] = ['movie', 'tv'];
 const MIN_YEAR = 1950;
@@ -52,10 +64,11 @@ function yearsFrom(currentYear: number): number[] {
  * Discover filters. The URL is the single source of truth: every change
  * navigates to the new query and the server renders the results.
  */
-export function DiscoverFilters({ value, genres }: Props) {
+export function DiscoverFilters({ value, genres, currentYear }: Props) {
   const t = useTranslations('discover');
   const router = useRouter();
   const id = useId();
+  const defaultTypeRef = useRef<HTMLButtonElement>(null);
   const [, startTransition] = useTransition();
   // `value` only changes once the navigation has rendered. Deriving the next
   // query from the optimistic value keeps rapid clicks (two genres in a row)
@@ -87,7 +100,14 @@ export function DiscoverFilters({ value, genres }: Props) {
   }
 
   const isDefault = serializeDiscoverParams(current) === '';
-  const years = yearsFrom(new Date().getFullYear());
+  const years = yearsFrom(currentYear);
+
+  function clear() {
+    apply(DEFAULT_DISCOVER);
+    // The Clear button unmounts at the defaults; move focus to the first
+    // control (the now-pressed default type) so it does not drop to <body>.
+    defaultTypeRef.current?.focus();
+  }
 
   return (
     <section aria-label={t('filtersLabel')} className="flex flex-col gap-5">
@@ -95,6 +115,7 @@ export function DiscoverFilters({ value, genres }: Props) {
         {TYPES.map((type) => (
           <Chip
             key={type}
+            ref={type === DEFAULT_DISCOVER.type ? defaultTypeRef : undefined}
             pressed={current.type === type}
             onClick={() => selectType(type)}
           >
@@ -166,11 +187,7 @@ export function DiscoverFilters({ value, genres }: Props) {
         </div>
 
         {!isDefault && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => apply(DEFAULT_DISCOVER)}
-          >
+          <Button type="button" variant="ghost" onClick={clear}>
             {t('clear')}
           </Button>
         )}
@@ -201,16 +218,19 @@ function FilterGroup({
 }
 
 function Chip({
+  ref,
   pressed,
   onClick,
   children,
 }: {
+  ref?: Ref<HTMLButtonElement>;
   pressed: boolean;
   onClick: () => void;
   children: ReactNode;
 }) {
   return (
     <button
+      ref={ref}
       type="button"
       // Constant name; the state is conveyed by aria-pressed only.
       aria-pressed={pressed}

@@ -25,7 +25,13 @@ async function resolveParams({ params, searchParams }: DiscoverPageProps) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   // Next has already decoded the URL (`genres=12%2C28` arrives as "12,28").
-  return { locale, value: parseDiscoverParams(await searchParams) };
+  // One clock for the URL validation and the year options in the filters.
+  const now = new Date();
+  return {
+    locale,
+    value: parseDiscoverParams(await searchParams, now),
+    currentYear: now.getFullYear(),
+  };
 }
 
 /** Back to a query object for object hrefs (next-intl encodes it). */
@@ -59,7 +65,7 @@ async function loadGenres(
 }
 
 export default async function DiscoverPage(props: DiscoverPageProps) {
-  const { locale, value: parsed } = await resolveParams(props);
+  const { locale, value: parsed, currentYear } = await resolveParams(props);
   const t = await getTranslations({ locale, namespace: 'discover' });
   const tCommon = await getTranslations({ locale, namespace: 'common' });
   const genres = await loadGenres(parsed.type, locale);
@@ -78,7 +84,11 @@ export default async function DiscoverPage(props: DiscoverPageProps) {
     <div className="mx-auto max-w-7xl px-4 pt-24 pb-10">
       <h1 className="text-3xl font-bold">{t(`title.${value.type}`)}</h1>
       <div className="mt-6 mb-8">
-        <DiscoverFilters value={value} genres={genres ?? []} />
+        <DiscoverFilters
+          value={value}
+          genres={genres ?? []}
+          currentYear={currentYear}
+        />
         {genres === null && (
           <p className="text-muted-foreground mt-3 text-sm">
             {t('genresError')}
