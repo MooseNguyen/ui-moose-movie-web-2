@@ -129,6 +129,20 @@ describe('getDetail', () => {
     expect(revalidate()).toBe(REVALIDATE.detail);
   });
 
+  it('includes vi, en and language-less videos for vi', async () => {
+    const calls = mockGet('/movie/550', movieDetail);
+    await getDetail('movie', 550, 'vi');
+    expect(calls[0].searchParams.get('include_video_language')).toBe(
+      'vi,en,null'
+    );
+  });
+
+  it('dedupes the video languages for en', async () => {
+    const calls = mockGet('/tv/1399', tvDetail);
+    await getDetail('tv', 1399, 'en');
+    expect(calls[0].searchParams.get('include_video_language')).toBe('en,null');
+  });
+
   it('works for tv', async () => {
     mockGet('/tv/1399', tvDetail);
     const detail = await getDetail('tv', 1399, 'en');
