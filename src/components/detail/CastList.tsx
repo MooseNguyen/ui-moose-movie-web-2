@@ -12,9 +12,10 @@ export function CastList({ cast }: { cast: CastMember[] }) {
     <section>
       <h2 className="mb-4 text-xl font-bold">{t('cast')}</h2>
       <MediaCarousel label={t('cast')}>
-        {cast.map((member) => (
+        {cast.map((member, index) => (
           <PersonCard
-            key={member.id}
+            // One actor can appear several times (multiple roles).
+            key={`${member.id}-${index}`}
             person={{
               id: member.id,
               mediaType: 'person',

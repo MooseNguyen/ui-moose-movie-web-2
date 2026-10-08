@@ -115,6 +115,21 @@ describe('DetailHero', () => {
     expect(screen.getByText('(30,000 votes)')).toBeInTheDocument();
   });
 
+  it('groups vote and episode counts with the Vietnamese locale', () => {
+    renderWithIntl(
+      <DetailHero detail={{ ...tvDetail, voteCount: 27892, episodes: 1200 }} />,
+      'vi'
+    );
+    expect(screen.getByText('(27.892 lượt đánh giá)')).toBeInTheDocument();
+    expect(screen.getByText('8 mùa · 1.200 tập')).toBeInTheDocument();
+    expect(screen.getByText('Thời lượng')).toBeInTheDocument();
+  });
+
+  it('labels the tv season/episode row as the length', () => {
+    renderWithIntl(<DetailHero detail={tvDetail} />);
+    expect(screen.getByText('Length')).toBeInTheDocument();
+  });
+
   it('lists at most three studios', () => {
     renderWithIntl(<DetailHero detail={movieDetail} />);
     expect(

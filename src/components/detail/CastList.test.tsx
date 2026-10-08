@@ -44,6 +44,29 @@ describe('CastList', () => {
     ).toHaveAttribute('href', '/en/person/819');
   });
 
+  it('renders one card per role when an actor plays several roles', () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const actor = movieDetail.cast[0];
+    renderWithIntl(
+      <CastList
+        cast={[
+          { ...actor, character: 'Role A' },
+          { ...actor, character: 'Role B' },
+        ]}
+      />
+    );
+
+    expect(screen.getByText('Role A')).toBeInTheDocument();
+    expect(screen.getByText('Role B')).toBeInTheDocument();
+    // React reports duplicate keys through console.error.
+    expect(
+      consoleError.mock.calls.some((args) => String(args[0]).includes('key'))
+    ).toBe(false);
+    consoleError.mockRestore();
+  });
+
   it('renders nothing without cast', () => {
     const { container } = renderWithIntl(<CastList cast={[]} />);
     expect(container).toBeEmptyDOMElement();
