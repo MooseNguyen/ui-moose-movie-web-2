@@ -330,6 +330,20 @@ describe('discover params', () => {
       expect(deserialized).toEqual(p);
     });
 
+    // next-intl encodes the comma (`genres=12%2C28`); Next hands the page the
+    // decoded value, so both spellings of the URL parse the same.
+    it.each(['genres=12%2C28', 'genres=12,28'])(
+      'parses %s from a real URL',
+      (search) => {
+        expect(
+          parseDiscoverParams(
+            Object.fromEntries(new URLSearchParams(search)),
+            new Date('2026-10-04')
+          ).genres
+        ).toEqual([12, 28]);
+      }
+    );
+
     it('handles messy input with leading zeros and duplicates', () => {
       // Input: genres with leading zeros, duplicates, and type override
       const messyInput =
