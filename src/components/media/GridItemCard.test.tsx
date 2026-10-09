@@ -21,4 +21,18 @@ describe('GridItemCard', () => {
     renderWithIntl(<GridItemCard item={person} />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
+
+  it.each([tvItem, person])(
+    'forwards priority to the card image ($mediaType)',
+    (item) => {
+      const { unmount } = renderWithIntl(<GridItemCard item={item} />);
+      expect(document.querySelector('img')).toHaveAttribute('loading', 'lazy');
+      unmount();
+      renderWithIntl(<GridItemCard item={item} priority />);
+      expect(document.querySelector('img')).not.toHaveAttribute(
+        'loading',
+        'lazy'
+      );
+    }
+  );
 });

@@ -313,4 +313,18 @@ describe('LoadMoreGrid', () => {
       screen.getByRole('button', { name: 'Tải thêm' })
     ).toBeInTheDocument();
   });
+
+  it('prioritizes only the first two posters (the first mobile row)', () => {
+    const three: Paginated<GridItem> = {
+      ...page1,
+      items: [...page1.items, media(3, 'Gamma')],
+    };
+    renderWithIntl(<LoadMoreGrid initial={three} loadMore={vi.fn()} />);
+    const loading = Array.from(document.querySelectorAll('img')).map((img) =>
+      img.getAttribute('loading')
+    );
+    expect(loading).toHaveLength(3);
+    expect(loading.slice(0, 2)).not.toContain('lazy');
+    expect(loading[2]).toBe('lazy');
+  });
 });
