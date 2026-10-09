@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
+import { PHASE_PRODUCTION_BUILD } from 'next/constants';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { assertBuildEnv } from './src/lib/build-env';
 import { TMDB_WIDTHS } from './src/lib/tmdb-image-loader';
 
 const withNextIntl = createNextIntlPlugin();
@@ -19,4 +21,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default function config(phase: string): NextConfig {
+  // Next loads .env* files before evaluating this file, so process.env is
+  // complete here. Only the build checks: `next dev` and `next start` keep
+  // reporting a missing token at request time via getEnv().
+  if (phase === PHASE_PRODUCTION_BUILD) assertBuildEnv(process.env);
+  return withNextIntl(nextConfig);
+}
