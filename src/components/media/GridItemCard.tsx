@@ -5,30 +5,17 @@ import { PersonCard } from './PersonCard';
 
 type GridItemCardProps = {
   item: GridItem;
-  /** Set for above-the-fold cards so the image is not lazy-loaded. */
-  priority?: boolean;
   headingLevel?: 'h2' | 'h3';
 };
 
-export function GridItemCard({
-  item,
-  priority = false,
-  headingLevel,
-}: GridItemCardProps) {
+export function GridItemCard({ item, headingLevel }: GridItemCardProps) {
   if (item.mediaType === 'person') {
-    return (
-      <PersonCard
-        person={item}
-        priority={priority}
-        headingLevel={headingLevel}
-      />
-    );
+    return <PersonCard person={item} headingLevel={headingLevel} />;
   }
 
   return (
     <MediaCard
       item={item}
-      priority={priority}
       headingLevel={headingLevel}
       action={
         <FavoriteButton

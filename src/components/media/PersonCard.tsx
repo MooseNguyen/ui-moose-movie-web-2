@@ -10,8 +10,6 @@ type PersonCardProps = {
   person: PersonSummary;
   /** Second line under the name (e.g. a cast character); defaults to the department. */
   subtitle?: string;
-  /** Set for above-the-fold cards so the photo is not lazy-loaded. */
-  priority?: boolean;
   /**
    * Title element. h3 under a section h2 (rows, filmography); h2 when the
    * grid sits directly under the page h1, so no heading level is skipped.
@@ -22,7 +20,6 @@ type PersonCardProps = {
 export function PersonCard({
   person,
   subtitle = person.knownForDepartment ?? undefined,
-  priority = false,
   headingLevel: Heading = 'h3',
 }: PersonCardProps) {
   return (
@@ -37,7 +34,6 @@ export function PersonCard({
           fill
           sizes={PROFILE_SIZES}
           unoptimized={!person.profilePath}
-          priority={priority}
           className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       </div>
