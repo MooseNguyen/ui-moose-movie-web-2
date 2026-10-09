@@ -211,6 +211,8 @@ export function FavoritesView({ headingId }: FavoritesViewProps) {
                 <MediaCard
                   key={`${item.mediaType}-${item.id}`}
                   item={toCardItem(item)}
+                  // The grid sits directly under the page h1.
+                  headingLevel="h2"
                   action={
                     <button
                       type="button"

@@ -27,9 +27,19 @@ type MediaCardProps = {
   priority?: boolean;
   /** Slot for an overlay control (e.g. FavoriteButton), rendered outside the link. */
   action?: ReactNode;
+  /**
+   * Title element. h3 under a section h2 (rows, filmography); h2 when the
+   * grid sits directly under the page h1, so no heading level is skipped.
+   */
+  headingLevel?: 'h2' | 'h3';
 };
 
-export function MediaCard({ item, priority = false, action }: MediaCardProps) {
+export function MediaCard({
+  item,
+  priority = false,
+  action,
+  headingLevel: Heading = 'h3',
+}: MediaCardProps) {
   const format = useFormatter();
   const t = useTranslations('common');
   const showRating = item.voteCount > 0;
@@ -53,7 +63,9 @@ export function MediaCard({ item, priority = false, action }: MediaCardProps) {
             className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         </div>
-        <h3 className="mt-2 line-clamp-2 text-sm font-medium">{item.title}</h3>
+        <Heading className="mt-2 line-clamp-2 text-sm font-medium">
+          {item.title}
+        </Heading>
         {(item.year !== null || showRating) && (
           <p className="text-muted-foreground mt-0.5 flex gap-2 text-xs">
             {item.year !== null && <span>{item.year}</span>}

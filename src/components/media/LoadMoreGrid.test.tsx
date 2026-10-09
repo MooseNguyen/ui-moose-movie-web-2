@@ -313,4 +313,11 @@ describe('LoadMoreGrid', () => {
       screen.getByRole('button', { name: 'Tải thêm' })
     ).toBeInTheDocument();
   });
+
+  it('titles cards with h2: the grid sits directly under the page h1', () => {
+    renderWithIntl(<LoadMoreGrid initial={page1} loadMore={vi.fn()} />);
+    expect(
+      screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+    ).toEqual(['Alpha', 'Beta']);
+  });
 });

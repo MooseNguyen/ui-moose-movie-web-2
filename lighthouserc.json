@@ -1,0 +1,41 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "pnpm start -p 3200",
+      "startServerReadyPattern": "Ready",
+      "url": [
+        "http://localhost:3200/vi",
+        "http://localhost:3200/vi/movie",
+        "http://localhost:3200/vi/movie/550"
+      ],
+      "numberOfRuns": 3
+    },
+    "assert": {
+      "assertMatrix": [
+        {
+          "assertions": {
+            "categories:performance": ["warn", { "minScore": 0.9 }],
+            "categories:accessibility": ["error", { "minScore": 0.95 }],
+            "categories:seo": ["error", { "minScore": 1 }],
+            "resource-summary:script:size": [
+              "error",
+              { "maxNumericValue": 256000 }
+            ]
+          }
+        },
+        {
+          "assertions": {
+            "resource-summary:script:size": [
+              "warn",
+              { "maxNumericValue": 204800 }
+            ]
+          }
+        }
+      ]
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}

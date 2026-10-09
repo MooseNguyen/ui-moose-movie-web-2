@@ -123,7 +123,12 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
     <div ref={gridRef}>
       <MediaGrid>
         {items.map((item) => (
-          <GridItemCard key={itemKey(item)} item={item} />
+          <GridItemCard
+            key={itemKey(item)}
+            item={item}
+            // Every caller renders the grid right under the page h1.
+            headingLevel="h2"
+          />
         ))}
       </MediaGrid>
 
