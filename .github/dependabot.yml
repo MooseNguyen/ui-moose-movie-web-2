@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Covers package.json + pnpm-lock.yaml.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Asia/Ho_Chi_Minh
+    # Matches pnpm's minimumReleaseAge: never propose a version published
+    # less than a day ago.
+    cooldown:
+      default-days: 1
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      # Tooling bumps are low risk: one PR per week instead of one per package.
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Asia/Ho_Chi_Minh
+    cooldown:
+      default-days: 1
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci(deps)
+    groups:
+      github-actions:
+        patterns: ['*']

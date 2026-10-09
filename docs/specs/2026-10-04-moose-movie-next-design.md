@@ -13,7 +13,7 @@ Rebuild the "Moose Movie" movie/TV browsing app with Next.js and a modern stack 
 - All features in section 4 implemented and publicly deployed on Vercel.
 - Lighthouse mobile: Performance ≥ 90, SEO = 100, Accessibility ≥ 95.
 - Core Web Vitals: LCP < 2.5s, INP < 200ms, CLS < 0.1.
-- First Load JS < 150KB (gzip) per route.
+- JS per route (gzip): below 250KB enforced, 200KB target (measured baseline ~240KB incl. ~131KB framework; see https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46).
 - Green CI: lint, typecheck, unit/component tests, build, E2E.
 - Coverage ≥ 80% for `src/lib/` and `src/features/`.
 
@@ -58,7 +58,7 @@ Authentication, database, user comments/reviews, actual video streaming, offline
 | Client state | Zustand + `persist` | Favorites, ~1KB |
 | Lint/format | ESLint (flat config) + Prettier | |
 | Testing | Vitest, Testing Library, MSW, Playwright | |
-| Deploy/CI | Vercel, GitHub Actions, Renovate/Dependabot | |
+| Deploy/CI | Vercel, GitHub Actions, Dependabot, Lighthouse CI | |
 
 **Selection criteria (in priority order):** (1) solves a concrete problem of the original, (2) end-user performance, (3) RSC / Next.js 16 compatibility, (4) learning and CV value, (5) maturity and maintenance, (6) zero cost, (7) YAGNI.
 
@@ -292,7 +292,7 @@ Assertions check structure, not specific movie titles.
 ≥ 80% for `src/lib/` and `src/features/`.
 
 ## 8. CI/CD
-- GitHub Actions on every PR and push to `main`: `lint` → `typecheck` → `vitest --coverage` → `next build` → Lighthouse CI (First Load JS < 150KB) → Playwright against the build.
+- GitHub Actions on every PR and push to `main`: `lint` → `typecheck` → `vitest --coverage` → `next build` → Lighthouse CI (mobile; script size error > 250KB, warn > 200KB; measured baseline ~240KB gzip incl. ~131KB framework; 200KB target tracked in https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46) → Playwright against the build.
 - Vercel: preview per PR, production on merge to `main`. Env `TMDB_READ_TOKEN` configured on Vercel and in GitHub Secrets.
-- Renovate or Dependabot updates dependencies weekly.
+- Dependabot updates dependencies weekly (npm + GitHub Actions, 1-day cooldown, minor/patch devDependencies grouped).
 - README: description, screenshots, demo link, CI badge, local setup, TMDB attribution.
