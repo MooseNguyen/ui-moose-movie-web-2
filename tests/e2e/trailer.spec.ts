@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 
 // Fight Club: a stable TMDB title with a trailer and videos.
 const DETAIL = '/vi/movie/550';
+// The request is aborted below, but the attribute still proves the source.
+const EMBED = /youtube-nocookie\.com\/embed\//;
 
 test.beforeEach(async ({ page }) => {
   // The tests only check that the iframe is mounted; never load YouTube.
@@ -18,6 +20,7 @@ test('trailer dialog shows an iframe and Escape restores focus', async ({
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('iframe')).toBeVisible();
+  await expect(dialog.locator('iframe')).toHaveAttribute('src', EMBED);
 
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
@@ -33,5 +36,6 @@ test('detail videos mount an iframe only after a click', async ({ page }) => {
 
   await play.click();
   await expect(page.locator('iframe')).toHaveCount(1);
+  await expect(page.locator('iframe')).toHaveAttribute('src', EMBED);
   await expect(page.locator('iframe')).toBeFocused();
 });

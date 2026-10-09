@@ -23,6 +23,8 @@ test('a favorite survives reload and a locale switch, and undo restores it', asy
   await page.getByRole('button', { name: 'Ngôn ngữ' }).click();
   await page.getByRole('menuitemradio', { name: 'English' }).click();
   await expect(page).toHaveURL(/\/en\/favorites$/);
+  // Wait for the en render, so the count below cannot match the stale vi DOM.
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(cards).toHaveCount(1);
 
   await page

@@ -16,7 +16,13 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 7'] },
+      // Smoke tests set their own viewports and check status codes, so a
+      // second device would only repeat them against TMDB.
+      testIgnore: /smoke\.spec\.ts/,
+    },
   ],
   webServer: {
     command: `pnpm build && pnpm start -p ${PORT}`,
