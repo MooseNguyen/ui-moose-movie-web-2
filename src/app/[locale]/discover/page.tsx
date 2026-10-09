@@ -7,6 +7,7 @@ import { LoadMoreGrid } from '@/components/media/LoadMoreGrid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DiscoverFilters } from '@/features/discover/DiscoverFilters';
 import {
+  DEFAULT_DISCOVER,
   parseDiscoverParams,
   serializeDiscoverParams,
   type DiscoverParams,
@@ -14,6 +15,7 @@ import {
 import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { loadMoreDiscover } from '@/lib/actions/media';
+import { buildMetadata } from '@/lib/seo';
 import { discover, getGenres } from '@/lib/tmdb/api';
 import type { Locale, MediaType } from '@/lib/tmdb/constants';
 import { TmdbError } from '@/lib/tmdb/errors';
@@ -43,10 +45,21 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { locale, value } = await resolveParams(props);
   const t = await getTranslations({ locale, namespace: 'discover' });
-  return {
+  // Only the unfiltered movie and tv views are indexed; every filter
+  // combination is a near-duplicate of them (noindex, links still followed).
+  const filtered =
+    value.genres.length > 0 ||
+    value.year !== null ||
+    value.sort !== DEFAULT_DISCOVER.sort;
+  return buildMetadata({
+    locale,
+    path: '/discover',
+    // Normalized: unknown params dropped, `type=movie` omitted.
+    query: new URLSearchParams(serializeDiscoverParams(value)),
     title: t(`title.${value.type}`),
     description: t(`description.${value.type}`),
-  };
+    noIndex: filtered,
+  });
 }
 
 async function loadGenres(

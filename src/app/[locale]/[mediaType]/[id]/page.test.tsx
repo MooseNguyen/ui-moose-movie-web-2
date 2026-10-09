@@ -3,11 +3,13 @@ import { notFound } from 'next/navigation';
 import { getDetail } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import { movieDetail, tvDetail } from '../../../../../tests/fixtures/media';
+import { TEST_SITE_URL } from '../../../../../tests/utils/mock-env';
 import { renderServerTree } from '../../../../../tests/utils/render-server';
 import DetailPage, { generateMetadata, generateStaticParams } from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ getDetail: vi.fn() }));
 vi.mock('@/lib/actions/media', () => ({ getTrailer: vi.fn() }));
+vi.mock('@/lib/env', () => import('../../../../../tests/utils/mock-env'));
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
@@ -93,6 +95,17 @@ describe('DetailPage', () => {
     expect(document.querySelector('main')).toBeNull();
   });
 
+  it('renders Movie JSON-LD with the canonical URL', async () => {
+    await renderServerTree(await DetailPage(props('en', 'movie', '550')));
+
+    const script = document.querySelector('script[type="application/ld+json"]');
+    expect(JSON.parse(script!.innerHTML)).toMatchObject({
+      '@type': 'Movie',
+      name: 'Fight Club',
+      url: `${TEST_SITE_URL}/en/movie/550`,
+    });
+  });
+
   it('fetches tv details for the tv segment', async () => {
     mockedGetDetail.mockResolvedValue(tvDetail);
     await renderServerTree(await DetailPage(props('vi', 'tv', '1399')), 'vi');
@@ -167,20 +180,48 @@ describe('generateStaticParams', () => {
 
 describe('generateMetadata', () => {
   it('uses the title, overview and w1280 backdrop', async () => {
+    const image = {
+      url: 'https://image.tmdb.org/t/p/w1280/backdrop550.jpg',
+      width: 1280,
+      height: 720,
+    };
     expect(await generateMetadata(props('en', 'movie', '550'))).toEqual({
       title: 'Fight Club',
       description: movieDetail.overview,
+      alternates: {
+        canonical: `${TEST_SITE_URL}/en/movie/550`,
+        languages: {
+          vi: `${TEST_SITE_URL}/vi/movie/550`,
+          en: `${TEST_SITE_URL}/en/movie/550`,
+          'x-default': `${TEST_SITE_URL}/vi/movie/550`,
+        },
+      },
       openGraph: {
+        type: 'video.movie',
+        siteName: 'Moose Movie',
+        locale: 'en_US',
+        url: `${TEST_SITE_URL}/en/movie/550`,
         title: 'Fight Club',
         description: movieDetail.overview,
-        images: [
-          {
-            url: 'https://image.tmdb.org/t/p/w1280/backdrop550.jpg',
-            width: 1280,
-            height: 720,
-          },
-        ],
+        images: [image],
       },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Fight Club',
+        description: movieDetail.overview,
+        images: [image.url],
+      },
+    });
+  });
+
+  it('uses the tv path and Open Graph type for tv', async () => {
+    mockedGetDetail.mockResolvedValue(tvDetail);
+    const metadata = await generateMetadata(props('vi', 'tv', '1399'));
+
+    expect(metadata.alternates?.canonical).toBe(`${TEST_SITE_URL}/vi/tv/1399`);
+    expect(metadata.openGraph).toMatchObject({
+      type: 'video.tv_show',
+      locale: 'vi_VN',
     });
   });
 
@@ -207,6 +248,7 @@ describe('generateMetadata', () => {
       'Details, cast and trailers for Fight Club.'
     );
     expect(metadata.openGraph).not.toHaveProperty('images');
+    expect(metadata.twitter).toMatchObject({ card: 'summary' });
   });
 
   it('404s for invalid params and unknown ids', async () => {

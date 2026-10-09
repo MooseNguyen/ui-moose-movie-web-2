@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import { Be_Vietnam_Pro } from 'next/font/google';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { ThemeScript } from '@/components/theme/ThemeScript';
 import { Providers } from '@/components/providers';
 import { routing } from '@/i18n/routing';
+import { SITE_NAME, siteUrl } from '@/lib/seo';
 import '../globals.css';
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -16,10 +18,19 @@ const beVietnamPro = Be_Vietnam_Pro({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: { default: 'Moose Movie', template: '%s | Moose Movie' },
-  description: 'Browse movies and TV series powered by TMDB.',
-};
+export async function generateMetadata({
+  params,
+}: LayoutProps<'/[locale]'>): Promise<Metadata> {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  const t = await getTranslations({ locale, namespace: 'layout' });
+  return {
+    // Resolves any relative metadata URL (e.g. local images) against the site.
+    metadataBase: new URL(siteUrl()),
+    title: { default: t('metaTitle'), template: `%s | ${SITE_NAME}` },
+    description: t('metaDescription'),
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

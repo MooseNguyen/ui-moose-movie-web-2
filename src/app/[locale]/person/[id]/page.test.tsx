@@ -4,10 +4,12 @@ import { PersonCredits } from '@/components/person/PersonCredits';
 import { getPerson } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import { personDetail } from '../../../../../tests/fixtures/media';
+import { TEST_SITE_URL } from '../../../../../tests/utils/mock-env';
 import { renderServerTree } from '../../../../../tests/utils/render-server';
 import PersonPage, { generateMetadata, generateStaticParams } from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ getPerson: vi.fn() }));
+vi.mock('@/lib/env', () => import('../../../../../tests/utils/mock-env'));
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
@@ -90,6 +92,17 @@ describe('PersonPage', () => {
       '/en/movie/550'
     );
     expect(document.querySelector('main')).toBeNull();
+  });
+
+  it('renders Person JSON-LD with the canonical URL', async () => {
+    await renderServerTree(await PersonPage(props('en', '287')));
+
+    const script = document.querySelector('script[type="application/ld+json"]');
+    expect(JSON.parse(script!.innerHTML)).toMatchObject({
+      '@type': 'Person',
+      name: 'Brad Pitt',
+      url: `${TEST_SITE_URL}/en/person/287`,
+    });
   });
 
   it('passes only slim credit items to the client component', async () => {
@@ -202,13 +215,32 @@ describe('generateStaticParams', () => {
 
 describe('generateMetadata', () => {
   it('uses the name, biography and profile image', async () => {
+    const image = { url: 'https://image.tmdb.org/t/p/w780/brad.jpg' };
     expect(await generateMetadata(props('en', '287'))).toEqual({
       title: 'Brad Pitt',
       description: personDetail.biography,
+      alternates: {
+        canonical: `${TEST_SITE_URL}/en/person/287`,
+        languages: {
+          vi: `${TEST_SITE_URL}/vi/person/287`,
+          en: `${TEST_SITE_URL}/en/person/287`,
+          'x-default': `${TEST_SITE_URL}/vi/person/287`,
+        },
+      },
       openGraph: {
+        type: 'profile',
+        siteName: 'Moose Movie',
+        locale: 'en_US',
+        url: `${TEST_SITE_URL}/en/person/287`,
         title: 'Brad Pitt',
         description: personDetail.biography,
-        images: [{ url: 'https://image.tmdb.org/t/p/w780/brad.jpg' }],
+        images: [image],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Brad Pitt',
+        description: personDetail.biography,
+        images: [image.url],
       },
     });
   });

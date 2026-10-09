@@ -9,6 +9,7 @@ import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { loadMoreSearch } from '@/lib/actions/media';
 import { parseSearchQuery, parseSearchType } from '@/lib/route-params';
+import { buildMetadata } from '@/lib/seo';
 import { search } from '@/lib/tmdb/api';
 import {
   SEARCH_TYPES,
@@ -35,14 +36,17 @@ async function resolveParams({ params, searchParams }: SearchPageProps) {
 export async function generateMetadata(
   props: SearchPageProps
 ): Promise<Metadata> {
-  const { locale, q } = await resolveParams(props);
+  const { locale, q, type } = await resolveParams(props);
   const t = await getTranslations({ locale, namespace: 'search' });
-  return {
+  return buildMetadata({
+    locale,
+    path: '/search',
+    query: q ? { q, type: type === 'multi' ? undefined : type } : undefined,
     title: q ? t('titleWithQuery', { query: q }) : t('title'),
     // Result pages are endless, thin and user-generated: keep them out of
     // the index, but let crawlers follow the links to real titles.
-    robots: { index: false, follow: true },
-  };
+    noIndex: true,
+  });
 }
 
 async function loadFirstPage(

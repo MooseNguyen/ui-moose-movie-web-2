@@ -2,9 +2,11 @@ import { screen } from '@testing-library/react';
 import { notFound } from 'next/navigation';
 import { useFavorites } from '@/features/favorites/store';
 import { stubLocalStorage } from '../../../../tests/utils/memory-storage';
+import { TEST_SITE_URL } from '../../../../tests/utils/mock-env';
 import { renderServerTree } from '../../../../tests/utils/render-server';
 import FavoritesPage, { generateMetadata } from './page';
 
+vi.mock('@/lib/env', () => import('../../../../tests/utils/mock-env'));
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
@@ -65,9 +67,10 @@ describe('FavoritesPage', () => {
 
 describe('generateMetadata', () => {
   it('is never indexed but lets crawlers follow links', async () => {
-    expect(await generateMetadata(props('en'))).toEqual({
+    expect(await generateMetadata(props('en'))).toMatchObject({
       title: 'Favorites',
       robots: { index: false, follow: true },
+      alternates: { canonical: `${TEST_SITE_URL}/en/favorites` },
     });
     expect(await generateMetadata(props('vi'))).toMatchObject({
       title: 'Yêu thích',

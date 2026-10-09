@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { cache } from 'react';
 import { CastList } from '@/components/detail/CastList';
 import { DetailHero } from '@/components/detail/DetailHero';
+import { JsonLd } from '@/components/JsonLd';
 import { VideoList } from '@/components/detail/VideoList';
 import { MediaCard } from '@/components/media/MediaCard';
 import { MediaCarousel } from '@/components/media/MediaCarousel';
@@ -12,6 +13,7 @@ import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { routing } from '@/i18n/routing';
 import { tmdbImage } from '@/lib/images';
 import { parseMediaType, parsePositiveId } from '@/lib/route-params';
+import { absoluteUrl, buildMetadata, movieJsonLd } from '@/lib/seo';
 import { truncate } from '@/lib/utils';
 import { getDetail } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
@@ -34,7 +36,11 @@ async function loadDetail({ params }: DetailPageProps) {
     notFound();
   }
   try {
-    return { locale, detail: await getDetailCached(mediaType, id, locale) };
+    return {
+      locale,
+      path: `/${mediaType}/${id}`,
+      detail: await getDetailCached(mediaType, id, locale),
+    };
   } catch (error) {
     if (error instanceof TmdbError && error.kind === 'not_found') notFound();
     // Anything else is a real failure for error.tsx (never cache it as a 404).
@@ -51,38 +57,36 @@ export function generateStaticParams() {
 export async function generateMetadata(
   props: DetailPageProps
 ): Promise<Metadata> {
-  const { locale, detail } = await loadDetail(props);
+  const { locale, path, detail } = await loadDetail(props);
   const t = await getTranslations({ locale, namespace: 'detail' });
   const title = detail.title;
   const description = detail.overview.trim()
     ? truncate(detail.overview, META_DESCRIPTION_LENGTH)
     : t('metaDescription', { title });
 
-  return {
+  return buildMetadata({
+    locale,
+    path,
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      ...(detail.backdropPath && {
-        images: [
-          {
-            url: tmdbImage(detail.backdropPath, 'w1280', 'backdrop'),
-            width: 1280,
-            height: 720,
-          },
-        ],
-      }),
-    },
-  };
+    type: detail.mediaType === 'tv' ? 'video.tv_show' : 'video.movie',
+    image: detail.backdropPath
+      ? {
+          url: tmdbImage(detail.backdropPath, 'w1280', 'backdrop'),
+          width: 1280,
+          height: 720,
+        }
+      : undefined,
+  });
 }
 
 export default async function DetailPage(props: DetailPageProps) {
-  const { locale, detail } = await loadDetail(props);
+  const { locale, path, detail } = await loadDetail(props);
   const t = await getTranslations({ locale, namespace: 'detail' });
 
   return (
     <div className="pb-10">
+      <JsonLd data={movieJsonLd(detail, absoluteUrl(locale, path))} />
       <DetailHero detail={detail} />
       {/* Block layout (space-y), not flex: flex items default to min-width:auto and the carousels would overflow. */}
       <div className="mx-auto max-w-7xl space-y-12 px-4">

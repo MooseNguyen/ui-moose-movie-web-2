@@ -14,11 +14,13 @@ import { discover, getGenres } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { MediaItem } from '@/lib/tmdb/types';
 import { tvItem } from '../../../../tests/fixtures/media';
+import { TEST_SITE_URL } from '../../../../tests/utils/mock-env';
 import { renderServerTree } from '../../../../tests/utils/render-server';
 import DiscoverPage, { generateMetadata } from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ discover: vi.fn(), getGenres: vi.fn() }));
 vi.mock('@/lib/actions/media', () => ({ loadMoreDiscover: vi.fn() }));
+vi.mock('@/lib/env', () => import('../../../../tests/utils/mock-env'));
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
@@ -268,7 +270,7 @@ describe('DiscoverPage', () => {
 
 describe('generateMetadata', () => {
   it('uses a title and description per media type', async () => {
-    expect(await generateMetadata(props('en'))).toEqual({
+    expect(await generateMetadata(props('en'))).toMatchObject({
       title: 'Discover movies',
       description:
         'Browse movies by genre, release year and sort order, with data from TMDB.',
@@ -276,5 +278,47 @@ describe('generateMetadata', () => {
     expect(await generateMetadata(props('vi', { type: 'tv' }))).toMatchObject({
       title: 'Khám phá phim bộ',
     });
+  });
+
+  it('indexes the default movie view at the bare /discover URL', async () => {
+    // Unknown params are dropped from the canonical.
+    const metadata = await generateMetadata(props('en', { foo: 'bar' }));
+
+    expect(metadata).not.toHaveProperty('robots');
+    expect(metadata.alternates).toEqual({
+      canonical: `${TEST_SITE_URL}/en/discover`,
+      languages: {
+        vi: `${TEST_SITE_URL}/vi/discover`,
+        en: `${TEST_SITE_URL}/en/discover`,
+        'x-default': `${TEST_SITE_URL}/vi/discover`,
+      },
+    });
+  });
+
+  it('indexes the default tv view with ?type=tv', async () => {
+    const metadata = await generateMetadata(props('vi', { type: 'tv' }));
+
+    expect(metadata).not.toHaveProperty('robots');
+    expect(metadata.alternates?.canonical).toBe(
+      `${TEST_SITE_URL}/vi/discover?type=tv`
+    );
+  });
+
+  it.each([
+    ['genres', { genres: '28' }],
+    ['a year', { year: '2020' }],
+    ['a non-default sort', { sort: 'title.asc' }],
+    ['tv with genres', { type: 'tv', genres: '18,35' }],
+  ])('keeps filtered views (%s) out of the index', async (_label, query) => {
+    const metadata = await generateMetadata(props('en', query));
+    expect(metadata.robots).toEqual({ index: false, follow: true });
+  });
+
+  it('treats an explicit default sort as unfiltered', async () => {
+    const metadata = await generateMetadata(
+      props('en', { sort: 'popularity.desc' })
+    );
+    expect(metadata).not.toHaveProperty('robots');
+    expect(metadata.alternates?.canonical).toBe(`${TEST_SITE_URL}/en/discover`);
   });
 });

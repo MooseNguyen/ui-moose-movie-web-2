@@ -24,6 +24,23 @@ describe('getEnv', () => {
     expect(getEnv().SITE_URL).toBe('https://moose.example');
   });
 
+  it.each(['example.com', 'localhost:3000', 'not a url'])(
+    'rejects a SITE_URL without an http(s) scheme: %s',
+    (value) => {
+      vi.stubEnv('TMDB_READ_TOKEN', 'abc');
+      vi.stubEnv('NEXT_PUBLIC_SITE_URL', value);
+      expect(() => getEnv()).toThrow(
+        /NEXT_PUBLIC_SITE_URL must be an absolute http\(s\) URL/
+      );
+    }
+  );
+
+  it('rejects a non-http scheme', () => {
+    vi.stubEnv('TMDB_READ_TOKEN', 'abc');
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'ftp://moose.example');
+    expect(() => getEnv()).toThrow(/NEXT_PUBLIC_SITE_URL/);
+  });
+
   it('caches the parsed env until resetEnvCache is called', () => {
     vi.stubEnv('TMDB_READ_TOKEN', 'abc');
     const first = getEnv();

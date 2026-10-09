@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { ListTabs } from '@/components/media/ListTabs';
+import { ListTabs, listHref } from '@/components/media/ListTabs';
 import { LoadMoreGrid } from '@/components/media/LoadMoreGrid';
 import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { loadMoreList } from '@/lib/actions/media';
+import { buildMetadata } from '@/lib/seo';
 import { parseListName, parseMediaType } from '@/lib/route-params';
 import { getList } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
@@ -28,7 +29,14 @@ export async function generateMetadata(
   const { locale, mediaType, list } = await resolveParams(props);
   const t = await getTranslations({ locale, namespace: 'list' });
   const title = t(`titles.${mediaType}.${list}`);
-  return { title, description: t('metaDescription', { title }) };
+  return buildMetadata({
+    locale,
+    path: `/${mediaType}`,
+    // `popular` is the default list: one canonical URL without `?list`.
+    query: list === 'popular' ? undefined : { list },
+    title,
+    description: t('metaDescription', { title }),
+  });
 }
 
 export default async function ListPage(props: ListPageProps) {
@@ -76,7 +84,7 @@ export default async function ListPage(props: ListPageProps) {
         >
           <p>{t('loadError', { title: t(`titles.${mediaType}.${list}`) })}</p>
           <Link
-            href={`/${mediaType}?list=${list}`}
+            href={listHref(mediaType, list)}
             className="text-foreground focus-visible:ring-ring rounded-sm font-medium underline outline-none focus-visible:ring-2"
           >
             {tErrors('retry')}

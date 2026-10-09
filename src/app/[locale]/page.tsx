@@ -8,6 +8,7 @@ import { HeroSlider } from '@/components/media/HeroSlider';
 import { MediaRow } from '@/components/media/MediaRow';
 import { MediaRowSkeleton } from '@/components/media/MediaRowSkeleton';
 import { routing } from '@/i18n/routing';
+import { buildMetadata } from '@/lib/seo';
 import { getTrending } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { Locale } from '@/lib/tmdb/constants';
@@ -52,7 +53,12 @@ export async function generateMetadata({
 }: PageProps<'/[locale]'>): Promise<Metadata> {
   const locale = await getLocale(params);
   const t = await getTranslations({ locale, namespace: 'home' });
-  return { title: t('metaTitle'), description: t('metaDescription') };
+  return buildMetadata({
+    locale,
+    path: '',
+    title: t('metaTitle'),
+    description: t('metaDescription'),
+  });
 }
 
 export default async function HomePage({ params }: PageProps<'/[locale]'>) {

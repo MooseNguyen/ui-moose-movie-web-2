@@ -5,6 +5,11 @@ import { LinkTabs } from './LinkTabs';
 
 type Props = { mediaType: MediaType; active: MovieList | TvList };
 
+/** `popular` is the default list: its URL is the canonical one, without `?list`. */
+export function listHref(mediaType: MediaType, list: MovieList | TvList) {
+  return list === 'popular' ? `/${mediaType}` : `/${mediaType}?list=${list}`;
+}
+
 /** List switcher for the movie / tv list pages. */
 export function ListTabs({ mediaType, active }: Props) {
   const t = useTranslations('list');
@@ -15,7 +20,7 @@ export function ListTabs({ mediaType, active }: Props) {
       label={t('tabsLabel')}
       items={lists.map((list) => ({
         key: list,
-        href: `/${mediaType}?list=${list}`,
+        href: listHref(mediaType, list),
         label: t(`tabs.${list}`),
         active: list === active,
       }))}

@@ -8,11 +8,13 @@ import { getList } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { MediaItem } from '@/lib/tmdb/types';
 import { tvItem } from '../../../../../tests/fixtures/media';
+import { TEST_SITE_URL } from '../../../../../tests/utils/mock-env';
 import { renderServerTree } from '../../../../../tests/utils/render-server';
 import ListPage, { generateMetadata } from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ getList: vi.fn() }));
 vi.mock('@/lib/actions/media', () => ({ loadMoreList: vi.fn() }));
+vi.mock('@/lib/env', () => import('../../../../../tests/utils/mock-env'));
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
@@ -163,6 +165,11 @@ describe('ListPage', () => {
     await renderServerTree(await ListPage(props('en', 'tv')));
 
     expect(screen.getByRole('status')).toBeInTheDocument();
+    // Popular retries its canonical URL, like the tab: no `?list=popular`.
+    expect(screen.getByRole('link', { name: 'Try again' })).toHaveAttribute(
+      'href',
+      '/en/tv'
+    );
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
   });
@@ -234,11 +241,15 @@ describe('ListPage', () => {
 
 describe('generateMetadata', () => {
   it('has a translated title per media type and list', async () => {
-    expect(await generateMetadata(props('en', 'movie', 'top_rated'))).toEqual({
+    expect(
+      await generateMetadata(props('en', 'movie', 'top_rated'))
+    ).toMatchObject({
       title: 'Top Rated Movies',
       description: expect.stringContaining('Top Rated Movies'),
     });
-    expect(await generateMetadata(props('vi', 'tv', 'on_the_air'))).toEqual({
+    expect(
+      await generateMetadata(props('vi', 'tv', 'on_the_air'))
+    ).toMatchObject({
       title: 'Phim bộ đang phát sóng',
       description: expect.stringContaining('Phim bộ đang phát sóng'),
     });
@@ -251,5 +262,33 @@ describe('generateMetadata', () => {
     await expect(generateMetadata(props('en', 'anime'))).rejects.toThrow(
       'NEXT_NOT_FOUND'
     );
+  });
+
+  it('is canonical without ?list for the default popular list', async () => {
+    for (const list of [undefined, 'popular', 'bogus']) {
+      const { alternates } = await generateMetadata(props('en', 'movie', list));
+      expect(alternates).toEqual({
+        canonical: `${TEST_SITE_URL}/en/movie`,
+        languages: {
+          vi: `${TEST_SITE_URL}/vi/movie`,
+          en: `${TEST_SITE_URL}/en/movie`,
+          'x-default': `${TEST_SITE_URL}/vi/movie`,
+        },
+      });
+    }
+  });
+
+  it('keeps ?list in the canonical and alternates of other lists', async () => {
+    const metadata = await generateMetadata(props('vi', 'tv', 'top_rated'));
+
+    expect(metadata.alternates).toEqual({
+      canonical: `${TEST_SITE_URL}/vi/tv?list=top_rated`,
+      languages: {
+        vi: `${TEST_SITE_URL}/vi/tv?list=top_rated`,
+        en: `${TEST_SITE_URL}/en/tv?list=top_rated`,
+        'x-default': `${TEST_SITE_URL}/vi/tv?list=top_rated`,
+      },
+    });
+    expect(metadata).not.toHaveProperty('robots');
   });
 });
