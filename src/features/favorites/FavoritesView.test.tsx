@@ -103,6 +103,15 @@ describe('FavoritesView', () => {
     expect(cardHrefs()).toEqual(['/en/tv/2', '/en/movie/3', '/en/movie/1']);
   });
 
+  it('titles cards with h2 under the page h1 (no skipped level)', () => {
+    seed([fav(1, 'movie', 100)]);
+    renderView();
+
+    expect(
+      within(panel()).getByRole('heading', { level: 2 })
+    ).toBeInTheDocument();
+  });
+
   it('shows tab counts and hides a media type tab without items', () => {
     seed([fav(1, 'movie', 1), fav(2, 'movie', 2)]);
     renderView();

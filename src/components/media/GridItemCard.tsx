@@ -7,17 +7,29 @@ type GridItemCardProps = {
   item: GridItem;
   /** Set for above-the-fold cards so the image is not lazy-loaded. */
   priority?: boolean;
+  headingLevel?: 'h2' | 'h3';
 };
 
-export function GridItemCard({ item, priority = false }: GridItemCardProps) {
+export function GridItemCard({
+  item,
+  priority = false,
+  headingLevel,
+}: GridItemCardProps) {
   if (item.mediaType === 'person') {
-    return <PersonCard person={item} priority={priority} />;
+    return (
+      <PersonCard
+        person={item}
+        priority={priority}
+        headingLevel={headingLevel}
+      />
+    );
   }
 
   return (
     <MediaCard
       item={item}
       priority={priority}
+      headingLevel={headingLevel}
       action={
         <FavoriteButton
           item={{

@@ -35,4 +35,15 @@ describe('GridItemCard', () => {
       );
     }
   );
+
+  it.each([tvItem, person])(
+    'renders the title as h3 by default and as the given level ($mediaType)',
+    (item) => {
+      const { unmount } = renderWithIntl(<GridItemCard item={item} />);
+      expect(screen.getByRole('heading', { level: 3 })).toBeInTheDocument();
+      unmount();
+      renderWithIntl(<GridItemCard item={item} headingLevel="h2" />);
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
+    }
+  );
 });

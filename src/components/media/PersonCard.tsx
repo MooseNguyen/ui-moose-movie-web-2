@@ -12,12 +12,18 @@ type PersonCardProps = {
   subtitle?: string;
   /** Set for above-the-fold cards so the photo is not lazy-loaded. */
   priority?: boolean;
+  /**
+   * Title element. h3 under a section h2 (rows, filmography); h2 when the
+   * grid sits directly under the page h1, so no heading level is skipped.
+   */
+  headingLevel?: 'h2' | 'h3';
 };
 
 export function PersonCard({
   person,
   subtitle = person.knownForDepartment ?? undefined,
   priority = false,
+  headingLevel: Heading = 'h3',
 }: PersonCardProps) {
   return (
     <Link
@@ -35,7 +41,9 @@ export function PersonCard({
           className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       </div>
-      <h3 className="mt-2 line-clamp-2 text-sm font-medium">{person.name}</h3>
+      <Heading className="mt-2 line-clamp-2 text-sm font-medium">
+        {person.name}
+      </Heading>
       {subtitle && (
         <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
           {subtitle}

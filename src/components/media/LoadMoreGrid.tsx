@@ -134,6 +134,8 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
             // Initial items come first and keep their index, so appended
             // pages are never prioritized.
             priority={index < PRIORITY_CARD_COUNT}
+            // Every caller renders the grid right under the page h1.
+            headingLevel="h2"
           />
         ))}
       </MediaGrid>
