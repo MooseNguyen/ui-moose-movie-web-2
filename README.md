@@ -181,12 +181,6 @@ check. Dependabot opens grouped dependency update PRs every Monday.
 - **JavaScript budget:** every page ships ~240 KB of gzipped JavaScript
   (Lighthouse warns above 200 KB). Reducing it is tracked in
   [#46](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46).
-- **Discover title after a client-side filter change:** Next.js can keep the
-  title and canonical of the prefetched `/discover` route after a filter
-  navigation; the E2E test for it is timing-sensitive. Prioritizing the
-  first grid posters (an LCP improvement of ~300 ms on `/vi/movie`) made it
-  fail reliably and was reverted. Both are tracked in
-  [#47](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/47).
 
 ## Attribution
 

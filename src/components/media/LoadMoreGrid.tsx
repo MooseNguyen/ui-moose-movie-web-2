@@ -19,6 +19,11 @@ type Announcement =
   | { kind: 'loading' }
   | { kind: 'loaded'; count: number; total: number; done: boolean };
 
+// The first mobile row (2 columns) sits above the fold, under the page title
+// and tabs; its posters are the LCP candidates. More would compete with them
+// for bandwidth on mobile.
+const PRIORITY_CARD_COUNT = 2;
+
 const itemKey = (item: GridItem) => `${item.mediaType}-${item.id}`;
 
 const ERROR_KEY: Record<ActionError, 'rateLimit' | 'network' | 'loadMore'> = {
@@ -122,10 +127,14 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
   return (
     <div ref={gridRef}>
       <MediaGrid>
-        {items.map((item) => (
+        {items.map((item, index) => (
           <GridItemCard
             key={itemKey(item)}
             item={item}
+            // Only the first items of the initial page are prioritized;
+            // appended items follow them (an initial page shorter than
+            // PRIORITY_CARD_COUNT is the only exception, and it is harmless).
+            priority={index < PRIORITY_CARD_COUNT}
             // Every caller renders the grid right under the page h1.
             headingLevel="h2"
           />

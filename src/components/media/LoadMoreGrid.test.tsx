@@ -50,6 +50,20 @@ afterEach(() => vi.unstubAllGlobals());
 const loadButton = () => screen.getByRole('button', { name: 'Load more' });
 
 describe('LoadMoreGrid', () => {
+  it('prioritizes only the first two posters (the first mobile row)', () => {
+    const three: Paginated<GridItem> = {
+      ...page1,
+      items: [...page1.items, media(3, 'Gamma')],
+    };
+    renderWithIntl(<LoadMoreGrid initial={three} loadMore={vi.fn()} />);
+    const loading = Array.from(document.querySelectorAll('img')).map((img) =>
+      img.getAttribute('loading')
+    );
+    expect(loading).toHaveLength(3);
+    expect(loading.slice(0, 2)).not.toContain('lazy');
+    expect(loading[2]).toBe('lazy');
+  });
+
   it('appends the next page after a click', async () => {
     const user = userEvent.setup();
     const d = deferred();
@@ -67,6 +81,11 @@ describe('LoadMoreGrid', () => {
     await act(async () => d.resolve(ok([media(3, 'Gamma')], 2)));
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(screen.getByText('Gamma')).toBeInTheDocument();
+    // Appended posters stay lazy: only the first initial row is prioritized.
+    expect(document.querySelectorAll('img')[2]).toHaveAttribute(
+      'loading',
+      'lazy'
+    );
     expect(loadButton()).not.toHaveAttribute('aria-disabled');
   });
 
