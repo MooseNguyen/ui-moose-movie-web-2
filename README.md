@@ -77,10 +77,10 @@ cp .env.example .env.local
 
 Then fill in `.env.local`:
 
-| Variable               | Required | Description                                                                                           |
-| ---------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
-| `TMDB_READ_TOKEN`      | yes      | TMDB **API Read Access Token** (v4 bearer token). It stays on the server and is never `NEXT_PUBLIC_`. |
-| `NEXT_PUBLIC_SITE_URL` | no       | Absolute origin used for canonical, hreflang and sitemap URLs. Defaults to `http://localhost:3000`.   |
+| Variable               | Required      | Description                                                                                                                                             |
+| ---------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TMDB_READ_TOKEN`      | yes           | TMDB **API Read Access Token** (v4 bearer token). It stays on the server and is never `NEXT_PUBLIC_`.                                                   |
+| `NEXT_PUBLIC_SITE_URL` | in production | Absolute origin used for canonical, hreflang and sitemap URLs. Defaults to `http://localhost:3000` locally; a Vercel production build fails without it. |
 
 To get a token:
 
@@ -89,9 +89,10 @@ To get a token:
 3. Copy the **API Read Access Token** (the long JWT), not the short v3 "API
    Key".
 
-`pnpm build` checks both variables first. A missing token or an invalid site
-URL stops the build with a clear message instead of producing pages full of
-TMDB errors.
+`pnpm build` checks both variables first. A missing token, an invalid site
+URL, or (on a Vercel production deploy) a missing site URL stops the build
+with a clear message instead of producing pages full of TMDB errors or
+localhost canonicals. `pnpm typecheck` does not need the token.
 
 ```bash
 pnpm dev   # http://localhost:3000
@@ -145,11 +146,13 @@ tests/
   empty states. Coverage must stay at or above 80% of lines.
 - **E2E (Playwright, real TMDB):** run against a production build. They cover
   Home → detail, the trailer dialog, search with "Load more", Discover filters
-  that survive a reload, and favorites across reloads and a locale switch. Smoke
-  tests check 404 responses and that key pages never scroll horizontally. Assertions check structure, never specific movie
-  titles, because TMDB data changes daily.
+  that survive a reload, and favorites across reloads and a locale switch.
+  Smoke tests check 404 responses and that key pages never scroll
+  horizontally. Assertions check structure, never specific movie titles,
+  because TMDB data changes daily.
 - **Lighthouse CI:** checks `/vi`, `/vi/movie` and `/vi/movie/550` on a
-  mobile profile, 3 runs each. Failing any of these fails the build:
+  mobile profile, 3 runs each. Failing any of these fails the `lighthouse` CI
+  job:
   accessibility ≥ 0.95, SEO = 1, script transfer ≤ 250 KB. Two targets only
   warn: performance ≥ 0.9 and script ≤ 200 KB. The measured baseline is
   ~240 KB of gzipped JavaScript, ~131 KB of which is the Next.js/React
@@ -167,9 +170,23 @@ these environment variables for Production and Preview:
   `https://moose-movie.vercel.app`, with no trailing path. Canonical URLs,
   hreflang and the sitemap are built from it.
 
-GitHub Actions needs the `TMDB_READ_TOKEN` repository secret for the build,
-E2E and Lighthouse jobs. Dependabot opens grouped dependency update PRs every
-Monday.
+GitHub Actions needs the `TMDB_READ_TOKEN` secret for the build, E2E and
+Lighthouse jobs. Workflows triggered by Dependabot cannot read Actions
+secrets, so add the same token a second time under **Settings → Secrets and
+variables → Dependabot**; otherwise every Dependabot PR fails the token
+check. Dependabot opens grouped dependency update PRs every Monday.
+
+## Known issues
+
+- **JavaScript budget:** every page ships ~240 KB of gzipped JavaScript
+  (Lighthouse warns above 200 KB). Reducing it is tracked in
+  [#46](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46).
+- **Discover title after a client-side filter change:** Next.js can keep the
+  title and canonical of the prefetched `/discover` route after a filter
+  navigation; the E2E test for it is timing-sensitive. Prioritizing the
+  first grid posters (an LCP improvement of ~300 ms on `/vi/movie`) made it
+  fail reliably and was reverted. Both are tracked in
+  [#47](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/47).
 
 ## Attribution
 
