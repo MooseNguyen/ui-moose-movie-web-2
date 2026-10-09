@@ -653,11 +653,11 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 ### Task 21: CI, performance budget, README
 
 **Files:**
-- Modify: `.github/workflows/ci.yml` (the `check` job already exists — added early in issue #38 so every PR from Task 15 on is checked)
+- Modify: `.github/workflows/ci.yml` (the `check` job already exists — added early in issue #38 so every PR from Task 15 on is checked; the `e2e` job was added in Task 20)
 - Create: `lighthouserc.json`, `renovate.json`, `README.md`
 
 **Interfaces:**
-- `ci.yml`: the existing job `check` (issue #38: `pull_request` + `push` to `main`; Node 24; `pnpm/action-setup`; `pnpm install --frozen-lockfile`; `lint` → `typecheck` → `test:coverage` → empty-token guard → `build` with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}`) stays. Add job `e2e` (needs `check`) running Playwright with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}` and uploading the report on failure, and job `lighthouse` (needs `check`) running `pnpm dlx @lhci/cli autorun`.
+- `ci.yml`: the existing job `check` (issue #38: `pull_request` + `push` to `main`; Node 24; `pnpm/action-setup`; `pnpm install --frozen-lockfile`; `lint` → `typecheck` → `test:coverage` → empty-token guard → `build` with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}`) stays. Job `e2e` (needs `check`; Playwright with `TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}`, report uploaded on failure) already exists since Task 20. Add job `lighthouse` (needs `check`) running `pnpm dlx @lhci/cli autorun`.
 - App-level fail-fast env check at build time (a missing token must fail `pnpm build`, not only CI).
 - `lighthouserc.json`: `startServerCommand: 'pnpm start'`; URLs `/vi`, `/vi/movie`, `/vi/movie/550`; mobile preset; assertions `categories:performance ≥ 0.9`, `categories:seo ≥ 1`, `categories:accessibility ≥ 0.95`, `resource-summary:script:size` `maxNumericValue: 153600`.
 - `renovate.json`: `extends: ['config:recommended']`, `schedule: ['before 6am on monday']`, group minor/patch devDependencies.
@@ -665,5 +665,5 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 
 - [ ] **Step 1: Write the files above.**
 - [ ] **Step 2: Run locally** — `pnpm build && pnpm dlx @lhci/cli autorun`. Expected: every assertion PASS. On failure fix the actual cause (hero image not prioritized, `"use client"` too broad, iframe loaded early…) instead of loosening the budget.
-- [ ] **Step 3: Commit** — `git commit -m "ci: add e2e and Lighthouse jobs, Renovate and README"`
+- [ ] **Step 3: Commit** — `git commit -m "ci: add Lighthouse job, Renovate and README"`
 - [ ] **Step 4 (done by the user):** (the `TMDB_READ_TOKEN` repository secret already exists since issue #38) import the repo into Vercel and set `TMDB_READ_TOKEN` and `NEXT_PUBLIC_SITE_URL`; confirm CI is green and the preview deploy works.

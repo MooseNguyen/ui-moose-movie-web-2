@@ -35,7 +35,9 @@ export function MediaCard({ item, priority = false, action }: MediaCardProps) {
   const showRating = item.voteCount > 0;
 
   return (
-    <div className="group relative">
+    // data-testid: E2E needs to count cards, and their accessible names are
+    // TMDB titles that change daily.
+    <div data-testid="media-card" className="group relative">
       <Link
         href={`/${item.mediaType}/${item.id}`}
         className="focus-visible:ring-ring block rounded-lg outline-none focus-visible:ring-2"
