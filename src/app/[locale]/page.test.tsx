@@ -4,9 +4,11 @@ import { TmdbError } from '@/lib/tmdb/errors';
 import type { MediaItem } from '@/lib/tmdb/types';
 import { renderServerTree } from '../../../tests/utils/render-server';
 import { tvItem } from '../../../tests/fixtures/media';
+import { TEST_SITE_URL } from '../../../tests/utils/mock-env';
 import HomePage, { generateMetadata, revalidate } from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ getList: vi.fn(), getTrending: vi.fn() }));
+vi.mock('@/lib/env', () => import('../../../tests/utils/mock-env'));
 vi.mock(
   '@/i18n/navigation',
   () => import('../../../tests/utils/mock-navigation')
@@ -74,11 +76,25 @@ describe('HomePage', () => {
   });
 
   it('has translated metadata', async () => {
-    expect(await generateMetadata(params('en'))).toEqual({
+    const metadata = await generateMetadata(params('en'));
+    expect(metadata).toMatchObject({
       // The layout's title template does not apply to its own segment's page,
       // so the brand is part of the translated title.
       title: 'Moose Movie: trending movies and TV series',
       description: expect.stringContaining('TMDB'),
+    });
+    expect(metadata).not.toHaveProperty('robots');
+  });
+
+  it('is canonical at the bare locale URL with hreflang alternates', async () => {
+    const { alternates } = await generateMetadata(params('en'));
+    expect(alternates).toEqual({
+      canonical: `${TEST_SITE_URL}/en`,
+      languages: {
+        vi: `${TEST_SITE_URL}/vi`,
+        en: `${TEST_SITE_URL}/en`,
+        'x-default': `${TEST_SITE_URL}/vi`,
+      },
     });
   });
 

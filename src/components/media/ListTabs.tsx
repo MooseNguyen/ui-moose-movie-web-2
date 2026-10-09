@@ -15,7 +15,9 @@ export function ListTabs({ mediaType, active }: Props) {
       label={t('tabsLabel')}
       items={lists.map((list) => ({
         key: list,
-        href: `/${mediaType}?list=${list}`,
+        // `popular` is the default list: link its canonical URL, without `?list`.
+        href:
+          list === 'popular' ? `/${mediaType}` : `/${mediaType}?list=${list}`,
         label: t(`tabs.${list}`),
         active: list === active,
       }))}

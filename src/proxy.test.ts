@@ -12,7 +12,14 @@ describe('proxy matcher', () => {
     expect(matches(url)).toBe(true);
   });
 
-  it.each(['/logo.png', '/_next/static/x.js', '/api/x'])('skips %s', (url) => {
+  it.each([
+    '/logo.png',
+    '/_next/static/x.js',
+    '/api/x',
+    // Metadata routes must not be redirected to a locale.
+    '/sitemap.xml',
+    '/robots.txt',
+  ])('skips %s', (url) => {
     expect(matches(url)).toBe(false);
   });
 });

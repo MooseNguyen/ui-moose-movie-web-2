@@ -8,11 +8,13 @@ import { search } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { GridItem } from '@/lib/tmdb/types';
 import { person, tvItem } from '../../../../tests/fixtures/media';
+import { TEST_SITE_URL } from '../../../../tests/utils/mock-env';
 import { renderServerTree } from '../../../../tests/utils/render-server';
 import SearchPage, { generateMetadata } from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ search: vi.fn() }));
 vi.mock('@/lib/actions/media', () => ({ loadMoreSearch: vi.fn() }));
+vi.mock('@/lib/env', () => import('../../../../tests/utils/mock-env'));
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
@@ -279,7 +281,7 @@ describe('SearchPage', () => {
 
 describe('generateMetadata', () => {
   it('is never indexed', async () => {
-    expect(await generateMetadata(props('en'))).toEqual({
+    expect(await generateMetadata(props('en'))).toMatchObject({
       title: 'Search',
       robots: { index: false, follow: true },
     });
@@ -288,12 +290,24 @@ describe('generateMetadata', () => {
   it('puts the keyword in the title', async () => {
     expect(
       await generateMetadata(props('en', { q: ' dune ', type: 'tv' }))
-    ).toEqual({
+    ).toMatchObject({
       title: 'Search results for “dune”',
       robots: { index: false, follow: true },
     });
     expect(
       await generateMetadata(props('vi', { q: 'người nhện' }))
     ).toMatchObject({ title: 'Kết quả tìm kiếm cho “người nhện”' });
+  });
+
+  it('keeps the keyword and a non-default type in the canonical', async () => {
+    const { alternates } = await generateMetadata(
+      props('en', { q: 'a/b', type: 'tv' })
+    );
+    expect(alternates?.canonical).toBe(
+      `${TEST_SITE_URL}/en/search?q=a%2Fb&type=tv`
+    );
+    expect((await generateMetadata(props('en'))).alternates?.canonical).toBe(
+      `${TEST_SITE_URL}/en/search`
+    );
   });
 });

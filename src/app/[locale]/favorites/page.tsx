@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { FavoritesView } from '@/features/favorites/FavoritesView';
 import { routing } from '@/i18n/routing';
+import { buildMetadata } from '@/lib/seo';
 
 type FavoritesPageProps = PageProps<'/[locale]/favorites'>;
 
@@ -22,11 +23,13 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const locale = await resolveLocale(props);
   const t = await getTranslations({ locale, namespace: 'favorites' });
-  return {
+  return buildMetadata({
+    locale,
+    path: '/favorites',
     title: t('title'),
     // A per-browser list (localStorage): nothing for search engines to index.
-    robots: { index: false, follow: true },
-  };
+    noIndex: true,
+  });
 }
 
 export default async function FavoritesPage(props: FavoritesPageProps) {

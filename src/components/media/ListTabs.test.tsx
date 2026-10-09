@@ -20,7 +20,8 @@ describe('ListTabs', () => {
       'Now Playing',
     ]);
     expect(links.map((l) => l.getAttribute('href'))).toEqual([
-      '/en/movie?list=popular',
+      // Popular is the default list: no ?list, matching its canonical URL.
+      '/en/movie',
       '/en/movie?list=top_rated',
       '/en/movie?list=upcoming',
       '/en/movie?list=now_playing',
@@ -33,7 +34,7 @@ describe('ListTabs', () => {
     expect(
       screen.getAllByRole('link').map((l) => l.getAttribute('href'))
     ).toEqual([
-      '/en/tv?list=popular',
+      '/en/tv',
       '/en/tv?list=top_rated',
       '/en/tv?list=on_the_air',
       '/en/tv?list=airing_today',

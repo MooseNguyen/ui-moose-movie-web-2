@@ -4,6 +4,7 @@ import { hasLocale, useFormatter, useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Fragment, cache, type ReactNode } from 'react';
+import { JsonLd } from '@/components/JsonLd';
 import { calcAge } from '@/components/person/age';
 import { PersonBio } from '@/components/person/PersonBio';
 import {
@@ -13,6 +14,7 @@ import {
 import { routing } from '@/i18n/routing';
 import { tmdbImage } from '@/lib/images';
 import { parsePositiveId } from '@/lib/route-params';
+import { absoluteUrl, buildMetadata, personJsonLd } from '@/lib/seo';
 import { getPerson } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { PersonDetail } from '@/lib/tmdb/types';
@@ -50,7 +52,11 @@ async function loadPerson({ params }: PersonPageProps) {
   const id = parsePositiveId(rawId);
   if (!hasLocale(routing.locales, locale) || id === null) notFound();
   try {
-    return { locale, person: await getPersonCached(id, locale) };
+    return {
+      locale,
+      path: `/person/${id}`,
+      person: await getPersonCached(id, locale),
+    };
   } catch (error) {
     if (error instanceof TmdbError && error.kind === 'not_found') notFound();
     // Anything else is a real failure for error.tsx (never cache it as a 404).
@@ -67,29 +73,28 @@ export function generateStaticParams() {
 export async function generateMetadata(
   props: PersonPageProps
 ): Promise<Metadata> {
-  const { locale, person } = await loadPerson(props);
+  const { locale, path, person } = await loadPerson(props);
   const t = await getTranslations({ locale, namespace: 'person' });
   const title = person.name;
   const description = person.biography.trim()
     ? truncate(person.biography, META_DESCRIPTION_LENGTH)
     : t('metaDescription', { name: title });
 
-  return {
+  return buildMetadata({
+    locale,
+    path,
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      // No width/height: TMDB profiles are usually, not always, 2:3.
-      ...(person.profilePath && {
-        images: [{ url: tmdbImage(person.profilePath, 'w780', 'profile') }],
-      }),
-    },
-  };
+    type: 'profile',
+    // No width/height: TMDB profiles are usually, not always, 2:3.
+    image: person.profilePath
+      ? { url: tmdbImage(person.profilePath, 'w780', 'profile') }
+      : undefined,
+  });
 }
 
 export default async function PersonPage(props: PersonPageProps) {
-  const { locale, person } = await loadPerson(props);
+  const { locale, path, person } = await loadPerson(props);
   const t = await getTranslations({ locale, namespace: 'person' });
 
   // Only what the cards read crosses to the client (see CreditItem).
@@ -106,6 +111,7 @@ export default async function PersonPage(props: PersonPageProps) {
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-4 pt-24 pb-10">
       {/* pt-24: clears the fixed 4rem header. */}
+      <JsonLd data={personJsonLd(person, absoluteUrl(locale, path))} />
       <PersonProfile person={person} />
       <section>
         <h2 className="mb-4 text-xl font-bold">{t('filmography')}</h2>

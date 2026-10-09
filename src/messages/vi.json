@@ -126,6 +126,10 @@
     "related": "Có thể bạn cũng thích",
     "metaDescription": "Thông tin, diễn viên và trailer của {title}."
   },
+  "layout": {
+    "metaTitle": "Moose Movie",
+    "metaDescription": "Duyệt phim lẻ và phim bộ với dữ liệu từ TMDB."
+  },
   "home": {
     "heading": "Moose Movie: phim lẻ và phim bộ thịnh hành",
     "metaTitle": "Moose Movie: phim lẻ và phim bộ thịnh hành",

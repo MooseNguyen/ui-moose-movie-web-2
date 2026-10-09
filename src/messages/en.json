@@ -126,6 +126,10 @@
     "related": "More like this",
     "metaDescription": "Details, cast and trailers for {title}."
   },
+  "layout": {
+    "metaTitle": "Moose Movie",
+    "metaDescription": "Browse movies and TV series powered by TMDB."
+  },
   "home": {
     "heading": "Moose Movie: trending movies and TV series",
     "metaTitle": "Moose Movie: trending movies and TV series",
