@@ -126,6 +126,8 @@ export function movieJsonLd(detail: MediaDetail, url: string): JsonLdObject {
             ratingValue: Math.round(detail.voteAverage * 10) / 10,
             ratingCount: detail.voteCount,
             bestRating: 10,
+            // schema.org defaults to 1; TMDB averages can be lower.
+            worstRating: 0,
           }
         : undefined,
     actor: detail.cast

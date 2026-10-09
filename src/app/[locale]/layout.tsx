@@ -8,8 +8,7 @@ import { Header } from '@/components/layout/Header';
 import { ThemeScript } from '@/components/theme/ThemeScript';
 import { Providers } from '@/components/providers';
 import { routing } from '@/i18n/routing';
-import { getEnv } from '@/lib/env';
-import { SITE_NAME } from '@/lib/seo';
+import { SITE_NAME, siteUrl } from '@/lib/seo';
 import '../globals.css';
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -27,7 +26,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: 'layout' });
   return {
     // Resolves any relative metadata URL (e.g. local images) against the site.
-    metadataBase: new URL(getEnv().SITE_URL),
+    metadataBase: new URL(siteUrl()),
     title: { default: t('metaTitle'), template: `%s | ${SITE_NAME}` },
     description: t('metaDescription'),
   };

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { ListTabs } from '@/components/media/ListTabs';
+import { ListTabs, listHref } from '@/components/media/ListTabs';
 import { LoadMoreGrid } from '@/components/media/LoadMoreGrid';
 import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
@@ -84,7 +84,7 @@ export default async function ListPage(props: ListPageProps) {
         >
           <p>{t('loadError', { title: t(`titles.${mediaType}.${list}`) })}</p>
           <Link
-            href={`/${mediaType}?list=${list}`}
+            href={listHref(mediaType, list)}
             className="text-foreground focus-visible:ring-ring rounded-sm font-medium underline outline-none focus-visible:ring-2"
           >
             {tErrors('retry')}

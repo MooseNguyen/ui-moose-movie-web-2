@@ -165,6 +165,8 @@ describe('movieJsonLd', () => {
         ratingValue: 8.4,
         ratingCount: 30000,
         bestRating: 10,
+        // TMDB averages can fall below schema.org's default worstRating of 1.
+        worstRating: 0,
       },
       actor: [
         { '@type': 'Person', name: 'Edward Norton' },

@@ -52,6 +52,8 @@ describe('sitemap', () => {
     expect(new Set(urls).size).toBe(urls.length);
     expect(mockedGetPopularIds).toHaveBeenCalledWith('movie');
     expect(mockedGetPopularIds).toHaveBeenCalledWith('tv');
+    // Once per type, shared by both locales.
+    expect(mockedGetPopularIds).toHaveBeenCalledTimes(2);
   });
 
   it('never lists search, favorites, people or filtered discover URLs', async () => {

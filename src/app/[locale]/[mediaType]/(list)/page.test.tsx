@@ -165,6 +165,11 @@ describe('ListPage', () => {
     await renderServerTree(await ListPage(props('en', 'tv')));
 
     expect(screen.getByRole('status')).toBeInTheDocument();
+    // Popular retries its canonical URL, like the tab: no `?list=popular`.
+    expect(screen.getByRole('link', { name: 'Try again' })).toHaveAttribute(
+      'href',
+      '/en/tv'
+    );
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
   });
