@@ -43,3 +43,8 @@ next-env.d.ts
 
 # superpowers workflow files
 .superpowers/
+
+# playwright
+/playwright-report/
+/test-results/
+/blob-report/
