@@ -131,8 +131,9 @@ export function LoadMoreGrid({ initial, loadMore }: Props) {
           <GridItemCard
             key={itemKey(item)}
             item={item}
-            // Initial items come first and keep their index, so appended pages
-            // are never prioritized.
+            // Only the first items of the initial page are prioritized;
+            // appended items follow them (an initial page shorter than
+            // PRIORITY_CARD_COUNT is the only exception, and it is harmless).
             priority={index < PRIORITY_CARD_COUNT}
             // Every caller renders the grid right under the page h1.
             headingLevel="h2"

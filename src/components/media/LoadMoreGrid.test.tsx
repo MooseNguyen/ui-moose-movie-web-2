@@ -81,6 +81,11 @@ describe('LoadMoreGrid', () => {
     await act(async () => d.resolve(ok([media(3, 'Gamma')], 2)));
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(screen.getByText('Gamma')).toBeInTheDocument();
+    // Appended posters stay lazy: only the first initial row is prioritized.
+    expect(document.querySelectorAll('img')[2]).toHaveAttribute(
+      'loading',
+      'lazy'
+    );
     expect(loadButton()).not.toHaveAttribute('aria-disabled');
   });
 
