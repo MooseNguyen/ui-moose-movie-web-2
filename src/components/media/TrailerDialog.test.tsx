@@ -9,6 +9,19 @@ import type { Video } from '@/lib/tmdb/types';
 
 vi.mock('@/lib/actions/media', () => ({ getTrailer: vi.fn() }));
 
+// Records every render of the lazily loaded dialog, so a test can tell
+// whether its chunk was loaded without opening it.
+const dialogRendered = vi.hoisted(() => vi.fn());
+vi.mock('./TrailerDialog', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./TrailerDialog')>();
+  return {
+    TrailerDialog: (props: React.ComponentProps<typeof mod.TrailerDialog>) => {
+      dialogRendered(props);
+      return <mod.TrailerDialog {...props} />;
+    },
+  };
+});
+
 const mockedGetTrailer = vi.mocked(getTrailer);
 const video: Video = {
   key: 'abc123',
@@ -30,19 +43,59 @@ function deferred<T>() {
 
 const props = { mediaType: 'movie' as const, id: 550, title: 'Fight Club' };
 const getIframe = () => document.querySelector('iframe');
-const openDialog = (user: ReturnType<typeof userEvent.setup>) =>
-  user.click(screen.getByRole('button', { name: 'Trailer: Fight Club' }));
+// The dialog component is loaded on first use, so wait until it is shown.
+async function openDialog(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Trailer: Fight Club' }));
+  await screen.findByRole('dialog');
+}
 
-beforeEach(() => mockedGetTrailer.mockReset());
+beforeEach(() => {
+  mockedGetTrailer.mockReset();
+  dialogRendered.mockClear();
+});
 
 describe('TrailerButton / TrailerDialog', () => {
   it('renders no iframe and does not fetch before opening', () => {
     renderWithIntl(<TrailerButton {...props} />);
     expect(getIframe()).toBeNull();
     expect(mockedGetTrailer).not.toHaveBeenCalled();
+    const trigger = screen.getByRole('button', { name: 'Trailer: Fight Club' });
+    expect(trigger).toHaveAttribute('type', 'button');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(dialogRendered).not.toHaveBeenCalled();
+  });
+
+  it('loads the dialog when the trigger gets focus, without opening or fetching', async () => {
+    renderWithIntl(<TrailerButton {...props} />);
+
+    act(() =>
+      screen.getByRole('button', { name: 'Trailer: Fight Club' }).focus()
+    );
+
+    await waitFor(() =>
+      expect(dialogRendered).toHaveBeenCalledWith(
+        expect.objectContaining({ open: false })
+      )
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mockedGetTrailer).not.toHaveBeenCalled();
+  });
+
+  it('opens from the keyboard', async () => {
+    mockedGetTrailer.mockResolvedValue(ok(video));
+    const user = userEvent.setup();
+    renderWithIntl(<TrailerButton {...props} />);
+    const trigger = screen.getByRole('button', { name: 'Trailer: Fight Club' });
+
+    await user.tab();
+    expect(trigger).toHaveFocus();
+    await user.keyboard('{Enter}');
+
     expect(
-      screen.getByRole('button', { name: 'Trailer: Fight Club' })
-    ).toHaveAttribute('type', 'button');
+      await screen.findByRole('dialog', { name: 'Trailer: Fight Club' })
+    ).toBeVisible();
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('fetches on open, renders the iframe with exact attributes, removes it on Esc', async () => {

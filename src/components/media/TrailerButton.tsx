@@ -2,10 +2,10 @@
 
 import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState, type ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 import { Button } from '@/components/ui/button';
+import { useLazyDialog } from '@/hooks/use-lazy-dialog';
 import type { MediaType } from '@/lib/tmdb/constants';
-import { TrailerDialog } from './TrailerDialog';
 
 type TrailerButtonProps = {
   mediaType: MediaType;
@@ -15,8 +15,11 @@ type TrailerButtonProps = {
   variant?: ComponentProps<typeof Button>['variant'];
 };
 
-// TrailerDialog is imported statically: Radix Dialog already ships in every
-// bundle (header Sheet), and the dialog only fetches once it is opened.
+const loadTrailerDialog = () =>
+  import('./TrailerDialog').then((m) => m.TrailerDialog);
+
+// The dialog (Radix Dialog + fetching logic) is loaded on first hover/focus/
+// open; it fetches the trailer only once it is opened.
 export function TrailerButton({
   mediaType,
   id,
@@ -25,30 +28,24 @@ export function TrailerButton({
   variant = 'default',
 }: TrailerButtonProps) {
   const t = useTranslations('detail');
-  const [open, setOpen] = useState(false);
-
-  function handleOpenChange(next: boolean) {
-    setOpen(next);
-    onOpenChange?.(next);
-  }
+  const { Dialog, triggerProps, dialogProps } = useLazyDialog(
+    loadTrailerDialog,
+    { onOpenChange }
+  );
 
   return (
-    <TrailerDialog
-      mediaType={mediaType}
-      id={id}
-      title={title}
-      open={open}
-      onOpenChange={handleOpenChange}
-      trigger={
-        <Button
-          type="button"
-          variant={variant}
-          aria-label={t('trailerTitle', { title })}
-        >
-          <Play aria-hidden="true" className="fill-current" />
-          {t('trailer')}
-        </Button>
-      }
-    />
+    <>
+      <Button
+        variant={variant}
+        aria-label={t('trailerTitle', { title })}
+        {...triggerProps}
+      >
+        <Play aria-hidden="true" className="fill-current" />
+        {t('trailer')}
+      </Button>
+      {Dialog && (
+        <Dialog {...dialogProps} mediaType={mediaType} id={id} title={title} />
+      )}
+    </>
   );
 }

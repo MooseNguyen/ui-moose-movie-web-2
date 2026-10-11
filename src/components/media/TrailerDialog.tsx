@@ -2,30 +2,26 @@
 
 import { hasLocale, useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { LazyDialogProps } from '@/hooks/use-lazy-dialog';
 import { getTrailer } from '@/lib/actions/media';
 import { routing } from '@/i18n/routing';
 import type { MediaType } from '@/lib/tmdb/constants';
 import type { Video } from '@/lib/tmdb/types';
 import { YouTubeFrame } from './YouTubeFrame';
 
-type TrailerDialogProps = {
+// Loaded on demand by TrailerButton (keeps Radix Dialog out of the shell).
+type TrailerDialogProps = LazyDialogProps & {
   mediaType: MediaType;
   id: number;
   title: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  // Rendered as the Radix trigger so focus returns to it when the dialog closes.
-  trigger: ReactNode;
 };
 
 type State =
@@ -40,7 +36,7 @@ export function TrailerDialog({
   title,
   open,
   onOpenChange,
-  trigger,
+  onCloseAutoFocus,
 }: TrailerDialogProps) {
   const t = useTranslations();
   const rawLocale = useLocale();
@@ -90,8 +86,11 @@ export function TrailerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent aria-describedby={undefined} className="sm:max-w-4xl">
+      <DialogContent
+        aria-describedby={undefined}
+        onCloseAutoFocus={onCloseAutoFocus}
+        className="sm:max-w-4xl"
+      >
         <DialogHeader>
           <DialogTitle className="pr-8">{dialogTitle}</DialogTitle>
         </DialogHeader>
