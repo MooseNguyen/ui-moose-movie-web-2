@@ -13,7 +13,7 @@ Rebuild the "Moose Movie" movie/TV browsing app with Next.js and a modern stack 
 - All features in section 4 implemented and publicly deployed on Vercel.
 - Lighthouse mobile: Performance ≥ 90, SEO = 100, Accessibility ≥ 95.
 - Core Web Vitals: LCP < 2.5s, INP < 200ms, CLS < 0.1.
-- JS per route (gzip): below 250KB enforced, 200KB target (measured baseline ~240KB incl. ~131KB framework; see https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46).
+- JS per route (gzip): below 215KB enforced, 200KB target (measured ~200–204KB after #46, incl. ~131–138KB Next.js/React framework; see https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46).
 - Green CI: lint, typecheck, unit/component tests, build, E2E.
 - Coverage ≥ 80% for `src/lib/` and `src/features/`.
 
@@ -292,7 +292,7 @@ Assertions check structure, not specific movie titles.
 ≥ 80% for `src/lib/` and `src/features/`.
 
 ## 8. CI/CD
-- GitHub Actions on every PR and push to `main`: `lint` → `typecheck` → `vitest --coverage` → `next build` → Lighthouse CI (mobile; script size error > 250KB, warn > 200KB; measured baseline ~240KB gzip incl. ~131KB framework; 200KB target tracked in https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46) → Playwright against the build.
+- GitHub Actions on every PR and push to `main`: `lint` → `typecheck` → `vitest --coverage` → `next build` → Lighthouse CI (mobile; script size error > 215KB, warn > 200KB; measured ~200–204KB gzip incl. ~131–138KB framework after https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46) → Playwright against the build.
 - Vercel: preview per PR, production on merge to `main`. Env `TMDB_READ_TOKEN` configured on Vercel and in GitHub Secrets.
 - Dependabot updates dependencies weekly (npm + GitHub Actions, 1-day cooldown, minor/patch devDependencies grouped).
 - README: description, screenshots, demo link, CI badge, local setup, TMDB attribution.

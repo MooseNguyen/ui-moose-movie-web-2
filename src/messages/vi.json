@@ -5,7 +5,7 @@
     "closeMenu": "Đóng menu",
     "menuTitle": "Menu",
     "menuDescription": "Điều hướng trang web",
-    "language": "Ngôn ngữ",
+    "switchLanguage": "Chuyển ngôn ngữ sang {language}",
     "switchToLight": "Chuyển sang giao diện sáng",
     "switchToDark": "Chuyển sang giao diện tối",
     "carouselPrevious": "Cuộn về trước",

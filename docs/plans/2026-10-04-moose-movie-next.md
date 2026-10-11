@@ -32,7 +32,7 @@
 - Next.js 16: page `params` and `searchParams` are `Promise`s — always `await` them. Middleware lives in `src/proxy.ts`.
 - Theme: `dark` by default, `light` available, `enableSystem={false}`.
 - Font: `next/font/google` **Be Vietnam Pro** (subsets `latin`, `vietnamese`).
-- Budget: Lighthouse mobile Performance ≥ 0.9 (warn), SEO = 1, Accessibility ≥ 0.95; JS per page (Lighthouse `resource-summary:script:size`, gzip): error above 250KB, warn above 200KB. Measured baseline in Task 21: ~240KB, of which ~131KB is the Next.js/React framework, so the original 150KB target was not reachable without removing the layout's interactive pieces; the 200KB target is tracked in https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46.
+- Budget: Lighthouse mobile Performance ≥ 0.9 (warn), SEO = 1, Accessibility ≥ 0.95; JS per page (Lighthouse `resource-summary:script:size`, gzip): error above 215KB, warn above 200KB. Measured baseline in Task 21: ~240KB, of which ~131KB is the Next.js/React framework, so the original 150KB target was not reachable without removing the layout's interactive pieces. Issue #46 replaced the locale dropdown with a link and lazy-loads the dialogs, bringing it to ~200–204KB; the remaining options (lazy toasts, no logo-link prefetch, lazy hero autoplay) trade UX or LCP for bytes while TBT is already ≤ 24ms, so the error level was re-baselined to 215KB instead (measurements: https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46).
 - Coverage ≥ 80% (lines) for `src/lib/**` and `src/features/**`.
 - Discover `sort` in the URL uses neutral keys `popularity.desc | vote_average.desc | release_date.desc | title.asc`, mapped to TMDB params per media type (spec 4.4).
 - Every UI string lives in `src/messages/{vi,en}.json`; both files have the same key set. Component tests render with the `en` locale unless the test is about Vietnamese.
@@ -661,7 +661,7 @@ it('Enter outside the input does nothing', /* keyup Enter on document.body → p
 - App-level fail-fast env check at build time (a missing token must fail `pnpm build`, not only CI).
 - `lighthouserc.json`: `startServerCommand: 'pnpm start'`; URLs `/vi`, `/vi/movie`, `/vi/movie/550`; mobile preset; assertions `categories:performance ≥ 0.9`, `categories:seo ≥ 1`, `categories:accessibility ≥ 0.95`, `resource-summary:script:size` `maxNumericValue: 153600`.
 - ~~`renovate.json`~~ → **Dependabot** (`.github/dependabot.yml`): `npm` + `github-actions`, weekly Monday 06:00 Asia/Ho_Chi_Minh, `cooldown.default-days: 1`, minor/patch devDependencies grouped into one PR. Chosen over Renovate because it is built into GitHub (no app to install or grant repo access to), its config is one small file, and `cooldown` matches pnpm's `minimumReleaseAge`; Renovate's richer grouping/automerge is not needed for a single-maintainer portfolio repo.
-- Lighthouse: `@lhci/cli` pinned as a devDependency (`pnpm lhci`), reports written to `.lighthouseci/` (filesystem, git-ignored, uploaded as a CI artifact), never to temporary public storage. Script budget as in Global Constraints (error 250KB, warn 200KB).
+- Lighthouse: `@lhci/cli` pinned as a devDependency (`pnpm lhci`), reports written to `.lighthouseci/` (filesystem, git-ignored, uploaded as a CI artifact), never to temporary public storage. Script budget as in Global Constraints (error 215KB since #46, warn 200KB).
 - README: description, screenshots, demo link, CI badge, `cp .env.example .env.local` + how to get a TMDB token, pnpm scripts, folder structure, TMDB attribution.
 
 - [ ] **Step 1: Write the files above.**

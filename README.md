@@ -153,11 +153,10 @@ tests/
 - **Lighthouse CI:** checks `/vi`, `/vi/movie` and `/vi/movie/550` on a
   mobile profile, 3 runs each. Failing any of these fails the `lighthouse` CI
   job:
-  accessibility ≥ 0.95, SEO = 1, script transfer ≤ 250 KB. Two targets only
-  warn: performance ≥ 0.9 and script ≤ 200 KB. The measured baseline is
-  ~240 KB of gzipped JavaScript, ~131 KB of which is the Next.js/React
-  framework. Getting below 200 KB is tracked in
-  [#46](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46). Reports
+  accessibility ≥ 0.95, SEO = 1, script transfer ≤ 215 KB. Two targets only
+  warn: performance ≥ 0.9 and script ≤ 200 KB. Pages currently ship
+  ~200–204 KB of gzipped JavaScript, ~131–138 KB of which is the
+  Next.js/React framework (see Known issues). Reports
   are kept as CI artifacts, never on public storage.
 
 ## Deployment
@@ -178,9 +177,15 @@ check. Dependabot opens grouped dependency update PRs every Monday.
 
 ## Known issues
 
-- **JavaScript budget:** every page ships ~240 KB of gzipped JavaScript
-  (Lighthouse warns above 200 KB). Reducing it is tracked in
-  [#46](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46).
+- **JavaScript budget:** pages ship ~200–204 KB of gzipped JavaScript
+  (measured after #46; Lighthouse warns above 200 KB and fails above
+  215 KB), ~131–138 KB of which is the Next.js/React framework.
+  [#46](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46)
+  removed ~37 KB by replacing the locale dropdown with a link and loading
+  the dialogs on first use. Going below 200 KB was not pursued: the remaining
+  options (lazy toasts, no prefetch on the logo link, lazy hero autoplay)
+  trade UX or LCP for a few KB, while Total Blocking Time is already
+  ≤ 24 ms. The measurements are in the issue.
 
 ## Attribution
 
