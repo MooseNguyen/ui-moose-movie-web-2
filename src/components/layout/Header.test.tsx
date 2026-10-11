@@ -11,11 +11,23 @@ vi.mock('@/i18n/navigation', () => ({
     href,
     children,
     ...props
-  }: React.ComponentProps<'a'> & { href: string }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
+  }: React.ComponentProps<'a'> & {
+    href: string;
+    locale?: string;
+    prefetch?: boolean;
+    replace?: boolean;
+  }) => {
+    // Router-only props must not reach the DOM.
+    const anchorProps: Record<string, unknown> = { ...props };
+    delete anchorProps.locale;
+    delete anchorProps.prefetch;
+    delete anchorProps.replace;
+    return (
+      <a href={href} {...anchorProps}>
+        {children}
+      </a>
+    );
+  },
 }));
 
 describe('Header', () => {
@@ -42,7 +54,9 @@ describe('Header', () => {
     renderWithIntl(<Header />);
     expect(screen.getByRole('button', { name: 'Open menu' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Search' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Language' })).toBeVisible();
+    expect(
+      screen.getByRole('link', { name: 'Switch language to Tiếng Việt' })
+    ).toBeVisible();
     expect(
       screen.getByRole('button', { name: 'Switch to light theme' })
     ).toBeVisible();

@@ -5,7 +5,7 @@
     "closeMenu": "Close menu",
     "menuTitle": "Menu",
     "menuDescription": "Site navigation",
-    "language": "Language",
+    "switchLanguage": "Switch language to {language}",
     "switchToLight": "Switch to light theme",
     "switchToDark": "Switch to dark theme",
     "carouselPrevious": "Previous",
