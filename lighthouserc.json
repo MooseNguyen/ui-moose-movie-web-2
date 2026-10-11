@@ -19,7 +19,7 @@
             "categories:seo": ["error", { "minScore": 1 }],
             "resource-summary:script:size": [
               "error",
-              { "maxNumericValue": 256000 }
+              { "maxNumericValue": 220160 }
             ]
           }
         },
