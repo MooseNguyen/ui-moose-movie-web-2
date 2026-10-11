@@ -1,6 +1,12 @@
 'use client';
 
-import { useCallback, useRef, useState, type ComponentType } from 'react';
+import {
+  useCallback,
+  useRef,
+  useState,
+  type ComponentType,
+  type KeyboardEvent,
+} from 'react';
 
 /** Props every lazily loaded dialog receives from useLazyDialog. */
 export type LazyDialogProps = {
@@ -23,6 +29,10 @@ type Options = {
  * Without a Radix `DialogTrigger`, Radix cannot return focus on close, so the
  * returned `onCloseAutoFocus` does it.
  *
+ * While an open waits for the download, the trigger is `aria-busy` and only
+ * reports `aria-expanded` once the dialog is actually shown; Escape on the
+ * trigger cancels that pending open.
+ *
  * `load` must be stable (declare it at module level).
  */
 export function useLazyDialog<P extends LazyDialogProps>(
@@ -32,6 +42,8 @@ export function useLazyDialog<P extends LazyDialogProps>(
   // Functional updates below store the component itself, not call it.
   const [Dialog, setDialog] = useState<ComponentType<P> | null>(null);
   const [open, setOpenState] = useState(false);
+  // Mirrors `open` for async callbacks, which would otherwise see a stale one.
+  const openRef = useRef(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const pending = useRef<Promise<ComponentType<P>> | null>(null);
 
@@ -42,7 +54,9 @@ export function useLazyDialog<P extends LazyDialogProps>(
         return component;
       },
       (error: unknown) => {
-        // Allow the next attempt to retry (e.g. after a network blip).
+        // Logged once per failed download, so production failures are
+        // diagnosable. The next attempt retries (e.g. after a network blip).
+        console.error('[lazy-dialog] Failed to load the dialog:', error);
         pending.current = null;
         throw error;
       }
@@ -56,12 +70,16 @@ export function useLazyDialog<P extends LazyDialogProps>(
 
   const setOpen = useCallback(
     (next: boolean) => {
+      openRef.current = next;
       setOpenState(next);
       onOpenChange?.(next);
       if (!next) return;
       // If the chunk cannot be loaded, fall back to closed so the trigger
-      // state stays truthful and the next click retries.
+      // state stays truthful and the next click retries. Skip it when the
+      // open was cancelled in the meantime (already closed).
       ensureLoaded().catch(() => {
+        if (!openRef.current) return;
+        openRef.current = false;
         setOpenState(false);
         onOpenChange?.(false);
       });
@@ -74,6 +92,8 @@ export function useLazyDialog<P extends LazyDialogProps>(
     triggerRef.current?.focus();
   }, []);
 
+  const loading = open && Dialog === null;
+
   return {
     Dialog,
     open,
@@ -82,8 +102,12 @@ export function useLazyDialog<P extends LazyDialogProps>(
       ref: triggerRef,
       type: 'button' as const,
       'aria-haspopup': 'dialog' as const,
-      'aria-expanded': open,
+      'aria-expanded': open && !loading,
+      'aria-busy': loading || undefined,
       onClick: () => setOpen(true),
+      onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.key === 'Escape' && loading) setOpen(false);
+      },
       onPointerEnter: warmUp,
       onFocus: warmUp,
     },

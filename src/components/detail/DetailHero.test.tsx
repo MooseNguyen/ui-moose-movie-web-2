@@ -7,7 +7,8 @@ vi.mock(
   '@/i18n/navigation',
   () => import('../../../tests/utils/mock-navigation')
 );
-// TrailerDialog imports the server action module; it is never opened here.
+// TrailerButton lazy-loads TrailerDialog (which imports the server action
+// module) on hover/focus/open; keep the action stubbed in case that happens.
 vi.mock('@/lib/actions/media', () => ({ getTrailer: vi.fn() }));
 
 describe('DetailHero', () => {

@@ -112,25 +112,92 @@ describe('useLazyDialog', () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
-  it('resets to closed when loading fails and retries on the next open', async () => {
+  it('resets to closed when loading fails, logs once and retries on the next open', async () => {
+    const error = new Error('chunk failed');
     const load = vi
       .fn<() => Promise<ComponentType<LazyDialogProps>>>()
-      .mockRejectedValueOnce(new Error('chunk failed'))
+      .mockRejectedValueOnce(error)
       .mockResolvedValueOnce(FakeDialog);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const onOpenChange = vi.fn();
     const user = userEvent.setup();
     render(<Harness load={load} onOpenChange={onOpenChange} />);
 
     // A plain click (no hover warm-up) so this open is the failing load.
     fireEvent.click(trigger());
-    await waitFor(() =>
-      expect(trigger()).toHaveAttribute('aria-expanded', 'false')
-    );
-    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    await waitFor(() => expect(onOpenChange).toHaveBeenLastCalledWith(false));
+    expect(trigger()).toHaveAttribute('aria-expanded', 'false');
+    expect(trigger()).not.toHaveAttribute('aria-busy');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[lazy-dialog]'),
+      error
+    );
 
     await user.click(trigger());
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     expect(load).toHaveBeenCalledTimes(2);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    errorSpy.mockRestore();
+  });
+
+  describe('while the dialog is still loading', () => {
+    function deferredLoad() {
+      let resolve!: (c: ComponentType<LazyDialogProps>) => void;
+      const promise = new Promise<ComponentType<LazyDialogProps>>(
+        (r) => (resolve = r)
+      );
+      return { load: vi.fn(() => promise), resolve };
+    }
+
+    it('marks the trigger busy and expands it only once loaded', async () => {
+      const { load, resolve } = deferredLoad();
+      render(<Harness load={load} />);
+
+      fireEvent.click(trigger());
+
+      expect(trigger()).toHaveAttribute('aria-busy', 'true');
+      expect(trigger()).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      await act(async () => resolve(FakeDialog));
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(trigger()).toHaveAttribute('aria-expanded', 'true');
+      expect(trigger()).not.toHaveAttribute('aria-busy');
+    });
+
+    it('cancels the pending open on Escape', async () => {
+      const { load, resolve } = deferredLoad();
+      const onOpenChange = vi.fn();
+      render(<Harness load={load} onOpenChange={onOpenChange} />);
+
+      fireEvent.click(trigger());
+      fireEvent.keyDown(trigger(), { key: 'Escape' });
+
+      expect(trigger()).not.toHaveAttribute('aria-busy');
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+
+      await act(async () => resolve(FakeDialog));
+
+      // Loaded, but the cancelled open must not pop up late.
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(trigger()).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('ignores Escape when nothing is pending', () => {
+      const onOpenChange = vi.fn();
+      render(
+        <Harness
+          load={() => Promise.resolve(FakeDialog)}
+          onOpenChange={onOpenChange}
+        />
+      );
+
+      fireEvent.keyDown(trigger(), { key: 'Escape' });
+
+      expect(onOpenChange).not.toHaveBeenCalled();
+    });
   });
 });
