@@ -9,7 +9,7 @@ statically generated for SEO and fast first paint. Client JavaScript is limited
 to interactive leaf components. Every change goes through lint, type checks,
 unit and component tests, Playwright E2E tests and Lighthouse budgets in CI.
 
-**Live demo:** TBD after Vercel deploy
+**Live demo:** [ui-moose-movie-web-2.vercel.app](https://ui-moose-movie-web-2.vercel.app)
 
 ## Features
 
