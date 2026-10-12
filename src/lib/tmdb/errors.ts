@@ -1,6 +1,7 @@
 import 'server-only';
 
-export type TmdbErrorKind = 'not_found' | 'rate_limit' | 'network' | 'server' | 'invalid_response';
+export type TmdbErrorKind =
+  'not_found' | 'rate_limit' | 'network' | 'server' | 'invalid_response';
 
 export class TmdbError extends Error {
   readonly kind: TmdbErrorKind;
@@ -11,7 +12,7 @@ export class TmdbError extends Error {
     kind: TmdbErrorKind,
     path: string,
     status: number | null = null,
-    options?: { cause?: unknown },
+    options?: { cause?: unknown }
   ) {
     super(`TMDB request failed (${kind}) for ${path}`, options);
     this.name = 'TmdbError';
