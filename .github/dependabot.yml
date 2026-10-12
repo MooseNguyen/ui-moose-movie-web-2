@@ -15,7 +15,18 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
+    ignore:
+      # @types/node must match the Node major we run (CI uses Node 24), or
+      # TypeScript accepts APIs that do not exist at runtime. Bump it by hand
+      # together with the Node version.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
     groups:
+      # react and react-dom must always share the exact same version (React
+      # refuses to run otherwise), so they and their types move together.
+      # Listed first: Dependabot puts a dependency in the first matching group.
+      react:
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
       # Tooling bumps are low risk: one PR per week instead of one per package.
       dev-dependencies:
         dependency-type: development
