@@ -1,0 +1,11 @@
+# Every checkout uses LF, whatever core.autocrlf is set to (Prettier
+# expects LF; Windows checkouts used to get CRLF).
+* text=auto eol=lf
+
+# Never touch the bytes of binary assets.
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.ico binary
+*.webp binary
+*.woff2 binary

@@ -117,6 +117,7 @@ pnpm dev   # http://localhost:3000
 | `pnpm e2e`           | Playwright E2E tests. Builds the app and serves it on port 3100          |
 | `pnpm lhci`          | Lighthouse CI on a production server (port 3200). Run `pnpm build` first |
 | `pnpm format`        | Prettier (with the Tailwind class sorter)                                |
+| `pnpm format:check`  | Fails if any file is not Prettier-formatted (run in CI)                  |
 | `pnpm screenshots`   | Regenerate the README screenshots                                        |
 
 ## Project structure

@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "e2e": "playwright test",
     "lhci": "lhci autorun",
     "screenshots": "playwright test -c scripts/screenshots.config.ts"
