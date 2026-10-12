@@ -40,7 +40,7 @@ jobs:
           TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}
         run: |
           if [ -z "$TMDB_READ_TOKEN" ]; then
-            echo "::error::TMDB_READ_TOKEN secret is missing (Settings > Secrets and variables > Actions)."
+            echo "::error::TMDB_READ_TOKEN secret is missing (Settings > Secrets and variables > Actions; Dependabot PRs read the separate Dependabot secrets)."
             exit 1
           fi
 
