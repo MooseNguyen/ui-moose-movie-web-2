@@ -59,7 +59,7 @@ function MediaRowView({
   return (
     // No aria-labelledby: the carousel region inside already carries the
     // title, and two nested regions with the same name are just noise.
-    <section>
+    <section className="row-reveal">
       {/* h-7 header: MediaRowSkeleton reserves the same height. */}
       <div className="mb-4 flex h-7 items-center justify-between gap-4">
         <h2 className="truncate text-xl font-bold">{title}</h2>

@@ -67,6 +67,13 @@ describe('CastList', () => {
     consoleError.mockRestore();
   });
 
+  it('reveals the row on scroll (CSS only, see globals.css)', () => {
+    renderWithIntl(<CastList cast={movieDetail.cast} />);
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Cast' }).closest('section')
+    ).toHaveClass('row-reveal');
+  });
+
   it('renders nothing without cast', () => {
     const { container } = renderWithIntl(<CastList cast={[]} />);
     expect(container).toBeEmptyDOMElement();

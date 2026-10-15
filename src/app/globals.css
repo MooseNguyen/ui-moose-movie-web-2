@@ -136,3 +136,69 @@
     @apply font-sans;
   }
 }
+
+/* Scroll-driven reveal for media rows (`row-reveal` on the row <section>).
+   Pure CSS, no JS: the progress follows the page scroll, so a row already on
+   screen at load is in its end state, and opacity never drops to 0, so content
+   stays readable if anything goes wrong. Only opacity/transform change: no CLS.
+   Cards cannot use `view()` themselves: the carousel viewport is
+   `overflow: hidden`, which makes it their nearest scroll container. The
+   section therefore names a view timeline (--row) that its cards reference,
+   and the first six cards enter one after another. Browsers without
+   scroll-driven animations, and reduced-motion users, get static rows. */
+@layer components {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .row-reveal {
+        view-timeline-name: --row;
+        animation: row-reveal linear both;
+        animation-timeline: --row;
+        animation-range: entry 0% entry 60%;
+      }
+
+      .row-reveal [data-slot='carousel-item'] {
+        animation: row-reveal-item linear both;
+        animation-timeline: --row;
+        animation-range: entry 10% entry 70%;
+      }
+
+      .row-reveal [data-slot='carousel-item']:nth-child(2) {
+        animation-range: entry 15% entry 75%;
+      }
+      .row-reveal [data-slot='carousel-item']:nth-child(3) {
+        animation-range: entry 20% entry 80%;
+      }
+      .row-reveal [data-slot='carousel-item']:nth-child(4) {
+        animation-range: entry 25% entry 85%;
+      }
+      .row-reveal [data-slot='carousel-item']:nth-child(5) {
+        animation-range: entry 30% entry 90%;
+      }
+      .row-reveal [data-slot='carousel-item']:nth-child(n + 6) {
+        animation-range: entry 35% entry 95%;
+      }
+    }
+  }
+}
+
+@keyframes row-reveal {
+  from {
+    opacity: 0.4;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes row-reveal-item {
+  from {
+    opacity: 0.35;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

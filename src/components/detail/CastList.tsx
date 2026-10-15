@@ -9,7 +9,7 @@ export function CastList({ cast }: { cast: CastMember[] }) {
 
   return (
     // No aria-labelledby: the carousel region inside already carries the name.
-    <section>
+    <section className="row-reveal">
       <h2 className="mb-4 text-xl font-bold">{t('cast')}</h2>
       <MediaCarousel label={t('cast')}>
         {cast.map((member, index) => (
