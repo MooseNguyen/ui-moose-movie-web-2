@@ -162,6 +162,37 @@ describe('PosterWallEnhancer', () => {
     );
   });
 
+  it('waits for the page load (the LCP hero image) before going idle', async () => {
+    stubEnv(DESKTOP);
+    const readyState = vi
+      .spyOn(document, 'readyState', 'get')
+      .mockReturnValue('interactive');
+    renderEnhancer();
+
+    await approachAndIdle();
+    expect(idleCallbacks).toHaveLength(0);
+    expect(mockedLoad).not.toHaveBeenCalled();
+
+    readyState.mockReturnValue('complete');
+    await act(async () => {
+      window.dispatchEvent(new Event('load'));
+      idleCallbacks.splice(0).forEach((callback) => callback());
+    });
+    expect(mockedLoad).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not wait for a load event after unmount', async () => {
+    stubEnv(DESKTOP);
+    vi.spyOn(document, 'readyState', 'get').mockReturnValue('interactive');
+    const { unmount } = renderEnhancer();
+    await approachAndIdle();
+
+    unmount();
+    window.dispatchEvent(new Event('load'));
+
+    expect(idleCallbacks).toHaveLength(0);
+  });
+
   it('opens the detail page of the selected poster', async () => {
     stubEnv(DESKTOP);
     renderEnhancer();

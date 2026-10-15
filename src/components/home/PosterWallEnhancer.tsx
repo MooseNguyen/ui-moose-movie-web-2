@@ -38,6 +38,26 @@ function detectEnv(): EnhanceEnv {
   return { finePointer, reducedMotion, webgl };
 }
 
+/**
+ * Runs the callback once the page has loaded and the main thread is idle.
+ * Waiting for `load` keeps three.js and the poster textures from competing
+ * with the hero image (the LCP element) for bandwidth: on desktop the wall
+ * is near the viewport right away, and the main thread is often idle while
+ * the hero image is still downloading. Returns a cancel function.
+ */
+function afterLoadWhenIdle(callback: () => void): () => void {
+  if (document.readyState === 'complete') return whenIdle(callback);
+  let cancelIdle: (() => void) | null = null;
+  const onLoad = () => {
+    cancelIdle = whenIdle(callback);
+  };
+  window.addEventListener('load', onLoad, { once: true });
+  return () => {
+    window.removeEventListener('load', onLoad);
+    cancelIdle?.();
+  };
+}
+
 function whenIdle(callback: () => void): () => void {
   if (typeof window.requestIdleCallback === 'function') {
     const id = window.requestIdleCallback(callback, {
@@ -124,12 +144,12 @@ export function PosterWallEnhancer({
     };
 
     // Download three.js only when the wall is about to be seen, and only once
-    // the main thread has nothing more urgent to do.
+    // the page has loaded and the main thread has nothing more urgent to do.
     const nearViewport = new IntersectionObserver(
       (entries) => {
         if (!entries.some((entry) => entry.isIntersecting)) return;
         nearViewport.disconnect();
-        cancelIdle = whenIdle(() => void start());
+        cancelIdle = afterLoadWhenIdle(() => void start());
       },
       { rootMargin: '50% 0px' }
     );
