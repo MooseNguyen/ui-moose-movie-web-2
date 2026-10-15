@@ -57,24 +57,33 @@ describe('wallLayout', () => {
     }
   });
 
-  it('spreads the cards over the arc, with odd rows offset by half a column', () => {
-    const arc = Math.PI;
-    const slots = wallLayout(30, { radius, rows: 3, arc });
+  it('spaces columns by the card width plus a fixed gap, odd rows offset by half a column', () => {
+    const slots = wallLayout(30, {
+      radius,
+      rows: 3,
+      cardWidth: 1.6,
+      columnGap: 0.3,
+    });
     const angle = (i: number) => Math.atan2(slots[i].x, -slots[i].z);
-    // 3 rows × 10 columns, row-major.
-    const step = arc / 10;
+    // 3 rows × 10 columns, row-major. Adjacent cards are 1.9 apart along the
+    // wall (a 0.3 gap), not spread over a fixed arc.
+    const step = 1.9 / radius;
     expect(angle(1) - angle(0)).toBeCloseTo(step);
     expect(angle(10) - angle(0)).toBeCloseTo(step / 2);
     expect(angle(20) - angle(0)).toBeCloseTo(0);
-    for (const slot of slots) {
-      expect(Math.abs(Math.atan2(slot.x, -slot.z))).toBeLessThanOrEqual(
-        arc / 2
-      );
-    }
+    // The whole pattern stays centred.
+    expect(angle(0) + angle(19)).toBeCloseTo(0);
+  });
+
+  it('uses tight defaults: ~19% column gap and a small row gap', () => {
+    const slots = wallLayout(30);
+    const angle = (i: number) => Math.atan2(slots[i].x, -slots[i].z);
+    expect(angle(1) - angle(0)).toBeCloseTo((1.6 + 0.3) / 9);
+    expect(slots[0].y - slots[10].y).toBeCloseTo(2.4 + 0.15);
   });
 
   it('stacks the rows symmetrically around y = 0', () => {
-    const slots = wallLayout(30, { rows: 3, cardHeight: 2.4, gap: 0.2 });
+    const slots = wallLayout(30, { rows: 3, cardHeight: 2.4, rowGap: 0.2 });
     expect(slots[0].y).toBeCloseTo(2.6);
     expect(slots[10].y).toBeCloseTo(0);
     expect(slots[20].y).toBeCloseTo(-2.6);

@@ -70,7 +70,10 @@ export function createPosterWall(
   // One geometry shared by every poster; one material each, because hover
   // dims the others individually.
   const posterGeometry = new THREE.PlaneGeometry(CARD_WIDTH, CARD_HEIGHT);
-  const slots = wallLayout(items.length, { cardHeight: CARD_HEIGHT });
+  const slots = wallLayout(items.length, {
+    cardWidth: CARD_WIDTH,
+    cardHeight: CARD_HEIGHT,
+  });
   const meshes: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[] = [];
   const basePositions: THREE.Vector3[] = [];
   const textures = new Set<THREE.Texture>();

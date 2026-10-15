@@ -45,11 +45,12 @@ export type WallLayoutOptions = {
   rows?: number;
   /** Cylinder radius; the camera starts on its axis. */
   radius?: number;
-  /** Horizontal angle (radians) the cards spread over, centred on -z. */
-  arc?: number;
+  cardWidth?: number;
   cardHeight?: number;
+  /** Space between neighbouring cards in a row, measured along the wall. */
+  columnGap?: number;
   /** Vertical gap between rows. */
-  gap?: number;
+  rowGap?: number;
 };
 
 export type WallSlot = {
@@ -61,7 +62,10 @@ export type WallSlot = {
 };
 
 /**
- * Lays `count` cards row-major on the inside of a cylinder arc. Odd rows are
+ * Lays `count` cards row-major on the inside of a cylinder, centred on -z.
+ * Columns are a fixed distance apart (card width + gap), so the wall stays
+ * dense whatever the count; with 30 posters it spans about 0.67π, wider than
+ * the camera's view, so the edges still wrap out of sight. Odd rows are
  * shifted by half a column (brick pattern), and the whole pattern by a
  * quarter column the other way, so it stays centred.
  */
@@ -70,15 +74,16 @@ export function wallLayout(
   {
     rows = 3,
     radius = 9,
-    arc = 1.15 * Math.PI,
+    cardWidth = 1.6,
     cardHeight = 2.4,
-    gap = 0.25,
+    columnGap = 0.3,
+    rowGap = 0.15,
   }: WallLayoutOptions = {}
 ): WallSlot[] {
   if (count <= 0) return [];
   const rowsUsed = Math.min(rows, count);
   const cols = Math.ceil(count / rowsUsed);
-  const step = arc / cols;
+  const step = (cardWidth + columnGap) / radius;
   const rowCentre = (rowsUsed - 1) / 2;
   const centring = rowsUsed > 1 ? -0.25 : 0;
 
@@ -89,7 +94,7 @@ export function wallLayout(
     const angle = (col - (cols - 1) / 2 + offset + centring) * step;
     return {
       x: radius * Math.sin(angle),
-      y: (rowCentre - row) * (cardHeight + gap),
+      y: (rowCentre - row) * (cardHeight + rowGap),
       z: -radius * Math.cos(angle),
       rotationY: -angle,
     };
