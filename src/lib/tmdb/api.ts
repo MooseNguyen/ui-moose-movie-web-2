@@ -43,6 +43,8 @@ import type {
 } from './types';
 
 const TRENDING_COUNT = 5;
+const TRENDING_WALL_PAGES = 2;
+const TRENDING_WALL_MAX = 30;
 const POPULAR_ID_PAGES = 5;
 
 const overviewOnlySchema = z.object({ overview: z.string().catch('') });
@@ -65,6 +67,34 @@ export async function getTrending(locale: Locale): Promise<MediaItem[]> {
   return toGridItems(raw.results)
     .filter((item): item is MediaItem => item.mediaType !== 'person')
     .slice(0, TRENDING_COUNT);
+}
+
+/**
+ * Posters for the Home trending wall: trending pages 1–2, movies and TV only,
+ * with a poster (the wall is posters), deduped (TMDB pages can shift while
+ * trending changes, so an item may appear on both pages).
+ */
+export async function getTrendingWall(locale: Locale): Promise<MediaItem[]> {
+  const pages = await Promise.all(
+    Array.from({ length: TRENDING_WALL_PAGES }, (_, i) =>
+      tmdbFetch('/trending/all/week', {
+        schema: pageSchema(rawMultiItemSchema),
+        locale,
+        params: { page: i + 1 },
+        revalidate: REVALIDATE.list,
+      })
+    )
+  );
+  const seen = new Set<string>();
+  const items: MediaItem[] = [];
+  for (const item of toGridItems(pages.flatMap((page) => page.results))) {
+    if (item.mediaType === 'person' || !item.posterPath) continue;
+    const key = `${item.mediaType}:${item.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push(item);
+  }
+  return items.slice(0, TRENDING_WALL_MAX);
 }
 
 export async function getList(
