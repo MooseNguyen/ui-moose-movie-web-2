@@ -100,7 +100,11 @@ const items: WallItem[] = [
   { id: 3, mediaType: 'movie', title: 'Three', posterPath: '/three.jpg' },
 ];
 
-function setup(wallItems = items, background = 'rgb(10, 10, 10)') {
+function setup(
+  wallItems = items,
+  background = 'rgb(10, 10, 10)',
+  reducedMotion = false
+) {
   const container = document.createElement('div');
   document.body.append(container);
   const onSelect = vi.fn();
@@ -108,7 +112,7 @@ function setup(wallItems = items, background = 'rgb(10, 10, 10)') {
   const wall = createPosterWall(container, wallItems, {
     onSelect,
     onError,
-    reducedMotion: false,
+    reducedMotion,
     background,
   });
   const renderer = fakes.renderers.at(-1)!;
@@ -237,6 +241,34 @@ describe('createPosterWall', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     wall.setBackground('not a colour');
     expect(renderer.clearColors.at(-1)).toBe('ffffff');
+  });
+
+  it('re-picks the hovered poster when scrolling moves the camera', () => {
+    // Reduced motion: no idle drift, so the geometry below is exact.
+    const { renderer, wall } = setup([items[0]], 'rgb(10, 10, 10)', true);
+    const canvas = renderer.domElement;
+    canvas.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 200, height: 100 }) as DOMRect;
+    intersect(true);
+    const tick = renderer.setAnimationLoop.mock.lastCall![0] as (
+      t: number
+    ) => void;
+    let now = performance.now();
+    const run = (frames: number) => {
+      for (let i = 0; i < frames; i++) tick((now += 100));
+    };
+
+    // NDC x = 0.18: beside the single card from the starting camera...
+    canvas.dispatchEvent(
+      new MouseEvent('pointermove', { clientX: 118, clientY: 50 })
+    );
+    run(20);
+    expect(canvas.style.cursor).toBe('');
+
+    // ...but on it once the camera has pushed in, without any pointer move.
+    wall.setProgress(1);
+    run(30);
+    expect(canvas.style.cursor).toBe('pointer');
   });
 
   it('reports a lost WebGL context', () => {

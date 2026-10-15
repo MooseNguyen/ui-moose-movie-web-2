@@ -38,6 +38,8 @@ const FOV_START = 55;
 const FOV_END = 43;
 const LOOK_YAW = 0.25;
 const LOOK_PITCH = 0.12;
+/** Camera travel (as progress) after which the hovered card is re-picked. */
+const REPICK_PROGRESS = 0.01;
 
 let colorProbe: CanvasRenderingContext2D | null | undefined;
 
@@ -79,9 +81,10 @@ export function createPosterWall(
 ): PosterWall {
   // Throws when WebGL2 is unavailable; nothing is attached yet, so the caller
   // only has to fall back.
+  // Default power preference: a decorative scene should not wake the
+  // discrete GPU on dual-GPU laptops.
   const renderer = new THREE.WebGLRenderer({
     antialias: window.devicePixelRatio < 2,
-    powerPreference: 'high-performance',
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   const canvas = renderer.domElement;
@@ -169,6 +172,7 @@ export function createPosterWall(
   // Interaction state. Everything the loop touches is allocated here, never
   // per frame.
   const raycaster = new THREE.Raycaster();
+  const hits: THREE.Intersection[] = [];
   const pointer = new THREE.Vector2();
   const look = new THREE.Vector2();
   const hover = new Float32Array(items.length);
@@ -177,6 +181,7 @@ export function createPosterWall(
   let pointerInside = false;
   let progress = 0;
   let shownProgress = 0;
+  let pickedAtProgress = 0;
 
   function updatePointer(event: MouseEvent) {
     const rect = canvas.getBoundingClientRect();
@@ -189,10 +194,13 @@ export function createPosterWall(
   }
 
   function pick(): number {
+    // The camera is not part of the scene graph, so update it separately.
+    camera.updateMatrixWorld();
     scene.updateMatrixWorld();
     raycaster.setFromCamera(pointer, camera);
-    const [hit] = raycaster.intersectObjects(meshes, false);
-    return hit ? (hit.object.userData.index as number) : -1;
+    hits.length = 0;
+    raycaster.intersectObjects(meshes, false, hits);
+    return hits.length > 0 ? (hits[0].object.userData.index as number) : -1;
   }
 
   function setHovered(index: number) {
@@ -204,6 +212,7 @@ export function createPosterWall(
   const onPointerMove = (event: MouseEvent) => {
     if (!updatePointer(event)) return;
     pointerInside = true;
+    pickedAtProgress = shownProgress;
     setHovered(pick());
   };
   const onPointerLeave = () => {
@@ -253,6 +262,16 @@ export function createPosterWall(
       camera.updateProjectionMatrix();
     }
     glowMaterial.opacity = GLOW_OPACITY + GLOW_OPACITY_GAIN * shownProgress;
+
+    // Scrolling moves the camera under a still pointer: re-pick so the hover
+    // (and the cursor) never refers to a card that is no longer under it.
+    if (
+      pointerInside &&
+      Math.abs(shownProgress - pickedAtProgress) > REPICK_PROGRESS
+    ) {
+      pickedAtProgress = shownProgress;
+      setHovered(pick());
+    }
 
     // The camera turns towards the pointer (parallax).
     const targetX = pointerInside ? pointer.x : 0;
