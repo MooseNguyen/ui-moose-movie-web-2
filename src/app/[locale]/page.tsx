@@ -3,6 +3,7 @@ import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { PosterWall } from '@/components/home/PosterWall';
 import { ErrorBoundary } from '@/components/media/ErrorBoundary';
 import { HeroSlider } from '@/components/media/HeroSlider';
 import { MediaRow } from '@/components/media/MediaRow';
@@ -74,6 +75,14 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
       {/* Full-bleed, under the transparent fixed header. */}
       <HeroSlider items={trending} />
       <div className="mx-auto max-w-7xl space-y-12 px-4 py-10">
+        {/* PosterWall renders nothing on data errors (it never throws); the
+            boundary only guards against a client-side crash of the 3D
+            enhancement, and the wall is optional content. */}
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <PosterWall locale={locale} />
+          </Suspense>
+        </ErrorBoundary>
         {ROWS.map(({ titleKey, mediaType, list }) => {
           const title = t(`rows.${titleKey}`);
           const errorId = `row-error-${mediaType}-${list}`;

@@ -1,5 +1,5 @@
 import { screen, within } from '@testing-library/react';
-import { getList, getTrending } from '@/lib/tmdb/api';
+import { getList, getTrending, getTrendingWall } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { MediaItem } from '@/lib/tmdb/types';
 import { renderServerTree } from '../../../tests/utils/render-server';
@@ -7,7 +7,11 @@ import { tvItem } from '../../../tests/fixtures/media';
 import { TEST_SITE_URL } from '../../../tests/utils/mock-env';
 import HomePage, { generateMetadata, revalidate } from './page';
 
-vi.mock('@/lib/tmdb/api', () => ({ getList: vi.fn(), getTrending: vi.fn() }));
+vi.mock('@/lib/tmdb/api', () => ({
+  getList: vi.fn(),
+  getTrending: vi.fn(),
+  getTrendingWall: vi.fn(),
+}));
 vi.mock('@/lib/env', () => import('../../../tests/utils/mock-env'));
 vi.mock(
   '@/i18n/navigation',
@@ -32,6 +36,11 @@ vi.mock('next-intl/server', async () => {
 
 const mockedGetList = vi.mocked(getList);
 const mockedGetTrending = vi.mocked(getTrending);
+const mockedGetTrendingWall = vi.mocked(getTrendingWall);
+
+beforeEach(() => {
+  mockedGetTrendingWall.mockResolvedValue([]);
+});
 
 beforeAll(() => {
   vi.stubGlobal('matchMedia', (query: string) => ({
@@ -125,6 +134,52 @@ describe('HomePage', () => {
     expect(mockedGetList).toHaveBeenCalledTimes(6);
     expect(mockedGetList).toHaveBeenCalledWith('movie', 'popular', 1, 'en');
     expect(mockedGetList).toHaveBeenCalledWith('tv', 'on_the_air', 1, 'en');
+  });
+
+  it('renders the trending wall between the hero and the rows', async () => {
+    mockedGetTrending.mockResolvedValue([item(1, 'movie')]);
+    mockedGetTrendingWall.mockResolvedValue([item(2, 'movie'), item(3, 'tv')]);
+    mockedGetList.mockImplementation(async (mediaType) => ({
+      items: [item(10, mediaType)],
+      page: 1,
+      totalPages: 1,
+    }));
+
+    await renderServerTree(await HomePage(params('en')));
+
+    const wall = screen.getByRole('region', { name: 'Trending poster wall' });
+    expect(within(wall).getAllByTestId('media-card')).toHaveLength(2);
+    expect(mockedGetTrendingWall).toHaveBeenCalledWith('en');
+    // Document order: hero, wall, first row (valid h1 > h2 > h3 outline).
+    const hero = screen.getByRole('region', { name: 'Trending this week' });
+    const firstRow = screen.getByRole('region', { name: 'Popular Movies' });
+    expect(
+      hero.compareDocumentPosition(wall) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      wall.compareDocumentPosition(firstRow) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('renders the page without the wall when it fails', async () => {
+    mockedGetTrending.mockResolvedValue([item(1, 'movie')]);
+    mockedGetTrendingWall.mockRejectedValue(
+      new TmdbError('network', '/trending/all/week')
+    );
+    mockedGetList.mockResolvedValue({
+      items: [item(10, 'movie')],
+      page: 1,
+      totalPages: 1,
+    });
+
+    await renderServerTree(await HomePage(params('en')));
+
+    expect(
+      screen.queryByRole('region', { name: 'Trending poster wall' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Popular Movies' })
+    ).toBeInTheDocument();
   });
 
   it('renders an inline error for a failing row and cards for the others', async () => {

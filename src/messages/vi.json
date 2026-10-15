@@ -145,6 +145,7 @@
     "detailsTitle": "Chi tiết: {title}",
     "seeAll": "Xem tất cả",
     "seeAllTitle": "Xem tất cả: {title}",
+    "trendingWall": "Bức tường poster thịnh hành",
     "rowError": "Hiện không thể tải {title}. Vui lòng thử lại sau.",
     "rows": {
       "popularMovies": "Phim lẻ phổ biến",

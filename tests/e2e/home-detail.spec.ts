@@ -8,7 +8,14 @@ test('home hero leads to a detail page with title and cast', async ({
     page.getByRole('region', { name: 'Thịnh hành tuần này' })
   ).toBeVisible();
 
-  await page.getByTestId('media-card').first().getByRole('link').click();
+  // A row card, not the trending wall: on desktop the wall's grid is hidden
+  // behind its 3D canvas (covered by poster-wall.spec.ts).
+  await page
+    .getByRole('region', { name: 'Phim lẻ phổ biến' })
+    .getByTestId('media-card')
+    .first()
+    .getByRole('link')
+    .click();
 
   await expect(page).toHaveURL(/\/vi\/(movie|tv)\/\d+$/);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

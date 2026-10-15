@@ -5,6 +5,7 @@ import { resetEnvCache } from '@/lib/env';
 import type { DiscoverParams } from '@/features/discover/params';
 import { server } from '../../../tests/msw/server';
 import trendingFixture from '../../../tests/fixtures/trending-all-week.json';
+import trendingPage2 from '../../../tests/fixtures/trending-all-week-page2.json';
 import moviePopular from '../../../tests/fixtures/movie-popular.json';
 import movieDetail from '../../../tests/fixtures/movie-detail.json';
 import tvDetail from '../../../tests/fixtures/tv-detail.json';
@@ -19,6 +20,7 @@ import {
   getPerson,
   getPopularIds,
   getTrending,
+  getTrendingWall,
   getVideos,
   search,
 } from './api';
@@ -96,6 +98,76 @@ describe('getTrending', () => {
       'tv',
     ]);
     expect(revalidate()).toBe(REVALIDATE.list);
+  });
+});
+
+describe('getTrendingWall', () => {
+  const byPage = (url: URL) =>
+    url.searchParams.get('page') === '2' ? trendingPage2 : trendingFixture;
+
+  it('requests trending pages 1 and 2 in the locale with the list cache', async () => {
+    const calls = mockGet('/trending/all/week', byPage);
+    const revalidate = spyRevalidate();
+
+    await getTrendingWall('vi');
+
+    expect(calls.map((url) => url.searchParams.get('page')).sort()).toEqual([
+      '1',
+      '2',
+    ]);
+    for (const url of calls) {
+      expect(url.searchParams.get('language')).toBe('vi-VN');
+    }
+    expect(revalidate()).toBe(REVALIDATE.list);
+  });
+
+  it('keeps movies and tv with a poster, deduped by media type and id', async () => {
+    mockGet('/trending/all/week', byPage);
+
+    const items = await getTrendingWall('en');
+
+    expect(items.map((i) => `${i.mediaType}:${i.id}`)).toEqual([
+      'movie:969681',
+      'movie:1599191',
+      'movie:1423191',
+      'tv:91759',
+      'tv:70998',
+      'tv:22980',
+      'tv:999002',
+      // Same id as the first movie, but a different title.
+      'tv:969681',
+      'movie:777001',
+    ]);
+    expect(items.every((i) => i.posterPath)).toBe(true);
+  });
+
+  it('returns at most 30 items', async () => {
+    const page = (n: number) => ({
+      page: n,
+      results: Array.from({ length: 20 }, (_, i) => ({
+        ...trendingFixture.results[0],
+        id: n * 100 + i,
+      })),
+      total_pages: 500,
+      total_results: 10000,
+    });
+    mockGet('/trending/all/week', (url) =>
+      page(Number(url.searchParams.get('page')))
+    );
+
+    const items = await getTrendingWall('en');
+
+    expect(items).toHaveLength(30);
+    expect(items[0].id).toBe(100);
+    expect(items[29].id).toBe(209);
+  });
+
+  it('rejects when a page fails', async () => {
+    mockGet('/trending/all/week', null, 500);
+
+    const error = await catchError(getTrendingWall('en'));
+
+    expect(error.kind).toBe('server');
   });
 });
 
