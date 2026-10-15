@@ -8,14 +8,21 @@ import { loadPosterWallScene } from './load-poster-wall-scene';
 import {
   scrollProgress,
   shouldEnhance,
-  type EnhanceEnv,
   type WallItem,
 } from './poster-wall-utils';
 
-type Status = 'off' | 'ready' | 'failed';
+/**
+ * - off: not enhanced (touch, reduced motion) or not decided yet.
+ * - ready: the 3D wall is showing.
+ * - unsupported: a desktop pointer without WebGL2.
+ * - failed: the scene could not start or broke later.
+ */
+type Status = 'off' | 'ready' | 'unsupported' | 'failed';
 
 const IDLE_TIMEOUT_MS = 2000;
 const IDLE_FALLBACK_MS = 200;
+const FINE_POINTER = '(pointer: fine)';
+const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
 function hasWebGL2(): boolean {
   try {
@@ -28,14 +35,15 @@ function hasWebGL2(): boolean {
   }
 }
 
-function detectEnv(): EnhanceEnv {
-  const finePointer = window.matchMedia('(pointer: fine)').matches;
-  const reducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  ).matches;
-  // Creating a context is not free: probe only when it can matter.
-  const webgl = finePointer && !reducedMotion && hasWebGL2();
-  return { finePointer, reducedMotion, webgl };
+function whenIdle(callback: () => void): () => void {
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(callback, {
+      timeout: IDLE_TIMEOUT_MS,
+    });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(callback, IDLE_FALLBACK_MS);
+  return () => window.clearTimeout(id);
 }
 
 /**
@@ -58,24 +66,13 @@ function afterLoadWhenIdle(callback: () => void): () => void {
   };
 }
 
-function whenIdle(callback: () => void): () => void {
-  if (typeof window.requestIdleCallback === 'function') {
-    const id = window.requestIdleCallback(callback, {
-      timeout: IDLE_TIMEOUT_MS,
-    });
-    return () => window.cancelIdleCallback(id);
-  }
-  const id = window.setTimeout(callback, IDLE_FALLBACK_MS);
-  return () => window.clearTimeout(id);
-}
-
 /**
- * Progressive enhancement of the trending wall: on desktop pointers that
- * accept motion and support WebGL2, the server-rendered grid (children) is
- * replaced visually by a 3D wall pinned in a sticky stage. The `immersive`
- * CSS variant (globals.css) reserves the scroll track before any JS runs, so
- * enhancing never shifts the layout; everywhere else the grid is a normal
- * grid and three.js is never downloaded.
+ * Progressive enhancement of the trending wall. The server-rendered carousel
+ * (children) is the content on every device. On desktop pointers that accept
+ * motion and support WebGL2, a 3D wall pinned in a sticky stage replaces it
+ * visually. The `immersive` CSS variant (globals.css) reserves the scroll
+ * track before any JS runs, so enhancing never shifts the layout. Everywhere
+ * else the carousel is a normal row and three.js is never downloaded.
  */
 export function PosterWallEnhancer({
   items,
@@ -97,7 +94,15 @@ export function PosterWallEnhancer({
   useEffect(() => {
     const track = trackRef.current;
     const container = canvasRef.current;
-    if (!track || !container || !shouldEnhance(detectEnv())) return;
+    // The cheap media queries decide at once; the WebGL probe waits (below).
+    if (
+      !track ||
+      !container ||
+      !window.matchMedia(FINE_POINTER).matches ||
+      window.matchMedia(REDUCED_MOTION).matches
+    ) {
+      return;
+    }
 
     let disposed = false;
     let failed = false;
@@ -109,34 +114,53 @@ export function PosterWallEnhancer({
         scrollProgress(track.getBoundingClientRect(), window.innerHeight)
       );
     };
+    const removeListeners = () => {
+      window.removeEventListener('scroll', updateProgress);
+      window.removeEventListener('resize', updateProgress);
+    };
 
     const fail = (error: unknown) => {
       if (disposed || failed) return;
       failed = true;
       console.error(
         '[poster-wall]',
-        'The 3D wall failed, showing the grid instead:',
+        'The 3D wall failed, showing the carousel instead:',
         error
       );
-      window.removeEventListener('scroll', updateProgress);
+      removeListeners();
       wall?.dispose();
       wall = null;
       setStatus('failed');
     };
 
     const start = async () => {
+      // Probed only now (near the viewport, after load, when idle), so a
+      // Home visit that never reaches the wall never creates a context.
+      const env = {
+        finePointer: window.matchMedia(FINE_POINTER).matches,
+        reducedMotion: window.matchMedia(REDUCED_MOTION).matches,
+        webgl: hasWebGL2(),
+      };
+      if (!shouldEnhance(env)) {
+        if (!env.webgl) setStatus('unsupported');
+        return;
+      }
       try {
         const { createPosterWall } = await loadPosterWallScene();
         // The user may have left Home while the chunk was downloading.
         if (disposed) return;
         wall = createPosterWall(container, items, {
-          reducedMotion: false,
+          // Always false here (the gate above excludes reduced motion); the
+          // scene still supports it for other callers.
+          reducedMotion: env.reducedMotion,
           onSelect: (item) =>
             routerRef.current.push(`/${item.mediaType}/${item.id}`),
           onError: fail,
         });
         updateProgress();
         window.addEventListener('scroll', updateProgress, { passive: true });
+        // The track and viewport heights both feed the progress.
+        window.addEventListener('resize', updateProgress);
         setStatus('ready');
       } catch (error) {
         fail(error);
@@ -159,43 +183,54 @@ export function PosterWallEnhancer({
       disposed = true;
       nearViewport.disconnect();
       cancelIdle();
-      window.removeEventListener('scroll', updateProgress);
+      removeListeners();
       wall?.dispose();
       wall = null;
     };
   }, [items]);
 
+  // Without a scene (no WebGL2, or it failed) the empty sticky stage would
+  // leave a viewport-high gap, so the track collapses to a normal row. That
+  // shift happens at most once, and only on these rare paths.
+  const collapsed = status === 'unsupported' || status === 'failed';
+
   return (
     <div
       ref={trackRef}
       data-testid="poster-wall-track"
-      className="immersive:min-h-[200vh] relative"
+      data-collapsed={collapsed || undefined}
+      className={cn('relative', !collapsed && 'immersive:min-h-[200vh]')}
     >
-      <div
-        aria-hidden="true"
-        className="immersive:block sticky top-16 hidden h-[calc(100vh-4rem)] overflow-hidden rounded-xl"
-      >
-        {status !== 'failed' && (
+      {!collapsed && (
+        <div
+          aria-hidden="true"
+          className="immersive:block sticky top-16 hidden h-[calc(100vh-4rem)] overflow-hidden rounded-xl"
+        >
           <div
             ref={canvasRef}
             data-testid="poster-wall-canvas"
             aria-hidden="true"
             className="absolute inset-0"
           />
-        )}
-      </div>
+        </div>
+      )}
       <div
-        data-testid="poster-wall-grid"
+        data-testid="poster-wall-fallback"
         data-scene={status}
         className={cn(
-          'immersive:-mt-[calc(100vh-4rem)] relative transition-opacity',
-          // Once the 3D wall shows, the grid is hidden with opacity instead
-          // of display/visibility/sr-only: its links stay in the tab order
-          // and the accessibility tree (the canvas is aria-hidden), the
+          'relative transition-opacity',
+          // An opaque surface, so the carousel stays readable whenever it is
+          // shown over the stage (before the scene is ready, or revealed by
+          // keyboard focus over the posters).
+          !collapsed &&
+            'immersive:-mt-[calc(100vh-4rem)] immersive:bg-background immersive:rounded-xl immersive:p-4',
+          // Once the 3D wall shows, the carousel is hidden with opacity
+          // instead of display/visibility/sr-only: its links stay in the tab
+          // order and the accessibility tree (the canvas is aria-hidden), the
           // layout does not change at all (no CLS), and as soon as a link
-          // receives keyboard focus the whole grid reappears over the canvas,
+          // receives keyboard focus the carousel reappears over the canvas,
           // so focus is never invisible. pointer-events lets the canvas get
-          // the mouse while the grid is hidden.
+          // the mouse while the carousel is hidden.
           status === 'ready' &&
             'immersive:pointer-events-none immersive:opacity-0 immersive:focus-within:pointer-events-auto immersive:focus-within:opacity-100'
         )}

@@ -3,11 +3,12 @@ import { expect, test, type Page } from '@playwright/test';
 const WALL = 'Bức tường poster thịnh hành';
 const DETAIL_URL = /\/vi\/(movie|tv)\/\d+$/;
 
+/** The wall's section: its h2 sits outside the carousel region. */
 async function scrollToWall(page: Page) {
   await page.goto('/vi');
-  const wall = page.getByRole('region', { name: WALL });
-  await wall.getByRole('heading', { level: 2 }).scrollIntoViewIfNeeded();
-  return wall;
+  const heading = page.getByRole('heading', { level: 2, name: WALL });
+  await heading.scrollIntoViewIfNeeded();
+  return page.locator('section', { has: heading });
 }
 
 // three.js is requested only after the browser is idle (timeout 2s); give it
@@ -24,14 +25,24 @@ test.describe('desktop', () => {
     const canvas = wall.locator('canvas');
     await expect(canvas).toBeVisible({ timeout: 15_000 });
     await expect(canvas).toHaveAttribute('aria-hidden', 'true');
-    await expect(wall.getByTestId('poster-wall-grid')).toHaveAttribute(
+    await expect(wall.getByTestId('poster-wall-fallback')).toHaveAttribute(
       'data-scene',
       'ready'
     );
 
-    // Pin the stage, then sweep along the middle row until the cursor shows
-    // a poster is under it (cards alternate with gaps).
-    await page.mouse.wheel(0, 300);
+    // Scroll into the track so the stage is pinned under the header, then
+    // sweep along the middle row until the cursor shows a poster is under it
+    // (cards alternate with gaps).
+    await page.evaluate(() => {
+      const track = document.querySelector('[data-testid=poster-wall-track]')!;
+      window.scrollTo(
+        0,
+        track.getBoundingClientRect().top + window.scrollY + 200
+      );
+    });
+    await expect
+      .poll(async () => Math.round((await canvas.boundingBox())!.y))
+      .toBe(64);
     const box = (await canvas.boundingBox())!;
     const y = box.y + box.height / 2;
     const cursor = () =>
@@ -53,13 +64,18 @@ test.describe('desktop', () => {
   }) => {
     const wall = await scrollToWall(page);
     await expect(wall.locator('canvas')).toBeVisible({ timeout: 15_000 });
-    const grid = wall.getByTestId('poster-wall-grid');
-    await expect(grid).toHaveCSS('opacity', '0');
+    const fallback = wall.getByTestId('poster-wall-fallback');
+    await expect(fallback).toHaveCSS('opacity', '0');
 
     const firstLink = wall.getByTestId('media-card').first().getByRole('link');
     await firstLink.focus();
-    // Focus reveals the grid, so the focus ring is never invisible.
-    await expect(grid).toHaveCSS('opacity', '1');
+    // Focus reveals the carousel on an opaque surface, so the focus ring
+    // and the titles are never invisible.
+    await expect(fallback).toHaveCSS('opacity', '1');
+    await expect(fallback).not.toHaveCSS(
+      'background-color',
+      'rgba(0, 0, 0, 0)'
+    );
     await page.keyboard.press('Enter');
 
     await expect(page).toHaveURL(DETAIL_URL);
@@ -68,12 +84,16 @@ test.describe('desktop', () => {
   test.describe('with reduced motion', () => {
     test.use({ reducedMotion: 'reduce' });
 
-    test('shows the plain grid and never loads the 3D scene', async ({
+    test('shows the carousel and never loads the 3D scene', async ({
       page,
     }) => {
       const wall = await scrollToWall(page);
       await page.waitForTimeout(ENHANCE_WINDOW_MS);
       await expect(wall.locator('canvas')).toHaveCount(0);
+      await expect(wall.getByRole('region', { name: WALL })).toHaveAttribute(
+        'aria-roledescription',
+        'carousel'
+      );
       await expect(
         wall.getByTestId('media-card').first().getByRole('link')
       ).toBeVisible();
@@ -81,7 +101,7 @@ test.describe('desktop', () => {
   });
 });
 
-test('mobile shows the plain grid and never loads the 3D scene', async ({
+test('mobile shows the carousel and never loads the 3D scene', async ({
   page,
   isMobile,
 }) => {
@@ -89,6 +109,10 @@ test('mobile shows the plain grid and never loads the 3D scene', async ({
   const wall = await scrollToWall(page);
   await page.waitForTimeout(ENHANCE_WINDOW_MS);
   await expect(wall.locator('canvas')).toHaveCount(0);
+  await expect(wall.getByRole('region', { name: WALL })).toHaveAttribute(
+    'aria-roledescription',
+    'carousel'
+  );
   await expect(
     wall.getByTestId('media-card').first().getByRole('link')
   ).toBeVisible();

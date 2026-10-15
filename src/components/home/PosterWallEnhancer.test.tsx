@@ -98,7 +98,7 @@ function renderEnhancer() {
   );
 }
 
-const grid = () => screen.getByTestId('poster-wall-grid');
+const fallback = () => screen.getByTestId('poster-wall-fallback');
 
 /** Section near the viewport, then the browser goes idle. */
 async function approachAndIdle() {
@@ -119,20 +119,60 @@ describe('PosterWallEnhancer', () => {
   it.each([
     ['a coarse pointer', { ...DESKTOP, finePointer: false }],
     ['reduced motion', { ...DESKTOP, reducedMotion: true }],
-    ['no WebGL', { ...DESKTOP, webgl: false }],
   ])('never loads the 3D scene with %s', async (_, env) => {
     stubEnv(env);
     renderEnhancer();
     await approachAndIdle();
 
     expect(mockedLoad).not.toHaveBeenCalled();
-    expect(grid()).toHaveAttribute('data-scene', 'off');
+    expect(fallback()).toHaveAttribute('data-scene', 'off');
     expect(screen.getByRole('link', { name: 'One' })).toBeInTheDocument();
   });
 
-  it('does not probe WebGL on touch devices', () => {
+  it('collapses the track and never loads the scene without WebGL2', async () => {
+    stubEnv({ ...DESKTOP, webgl: false });
+    renderEnhancer();
+    await approachAndIdle();
+
+    expect(mockedLoad).not.toHaveBeenCalled();
+    expect(fallback()).toHaveAttribute('data-scene', 'unsupported');
+    expect(screen.getByTestId('poster-wall-track')).toHaveAttribute(
+      'data-collapsed',
+      'true'
+    );
+    expect(screen.queryByTestId('poster-wall-canvas')).not.toBeInTheDocument();
+  });
+
+  it('probes WebGL only once near the viewport and idle', async () => {
+    stubEnv(DESKTOP);
+    renderEnhancer();
+    expect(HTMLCanvasElement.prototype.getContext).not.toHaveBeenCalled();
+
+    await approachAndIdle();
+
+    expect(HTMLCanvasElement.prototype.getContext).toHaveBeenCalledWith(
+      'webgl2'
+    );
+  });
+
+  it('keeps the carousel readable when keyboard focus reveals it', async () => {
+    stubEnv(DESKTOP);
+    renderEnhancer();
+    await approachAndIdle();
+
+    // Opaque surface over the canvas, shown on focus-within.
+    expect(fallback()).toHaveClass(
+      'immersive:bg-background',
+      'immersive:opacity-0',
+      'immersive:focus-within:opacity-100'
+    );
+  });
+
+  it('neither observes nor probes WebGL on touch devices', async () => {
     stubEnv({ ...DESKTOP, finePointer: false });
     renderEnhancer();
+    await approachAndIdle();
+    expect(observers).toHaveLength(0);
     expect(HTMLCanvasElement.prototype.getContext).not.toHaveBeenCalled();
   });
 
@@ -153,7 +193,7 @@ describe('PosterWallEnhancer', () => {
       items,
       expect.objectContaining({ reducedMotion: false })
     );
-    expect(grid()).toHaveAttribute('data-scene', 'ready');
+    expect(fallback()).toHaveAttribute('data-scene', 'ready');
     // Still in the accessibility tree and focusable.
     expect(screen.getByRole('link', { name: 'One' })).toBeInTheDocument();
     expect(screen.getByTestId('poster-wall-canvas')).toHaveAttribute(
@@ -218,6 +258,13 @@ describe('PosterWallEnhancer', () => {
     });
 
     expect(wall.setProgress).toHaveBeenLastCalledWith(0.5);
+
+    // A taller window changes the progress without any scrolling.
+    vi.stubGlobal('innerHeight', 1152);
+    await act(async () => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(wall.setProgress).toHaveBeenLastCalledWith(1);
   });
 
   it('disposes the scene on unmount', async () => {
@@ -255,12 +302,18 @@ describe('PosterWallEnhancer', () => {
     renderEnhancer();
     await approachAndIdle();
 
-    expect(grid()).toHaveAttribute('data-scene', 'failed');
+    expect(fallback()).toHaveAttribute('data-scene', 'failed');
     expect(screen.queryByTestId('poster-wall-canvas')).not.toBeInTheDocument();
+    // No empty sticky stage is left behind.
+    expect(screen.getByTestId('poster-wall-track')).toHaveAttribute(
+      'data-collapsed',
+      'true'
+    );
+    expect(fallback()).not.toHaveClass('immersive:-mt-[calc(100vh-4rem)]');
     expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith(
       '[poster-wall]',
-      'The 3D wall failed, showing the grid instead:',
+      'The 3D wall failed, showing the carousel instead:',
       failure
     );
   });
@@ -272,7 +325,7 @@ describe('PosterWallEnhancer', () => {
     renderEnhancer();
     await approachAndIdle();
 
-    expect(grid()).toHaveAttribute('data-scene', 'failed');
+    expect(fallback()).toHaveAttribute('data-scene', 'failed');
     expect(error).toHaveBeenCalledTimes(1);
   });
 
@@ -289,7 +342,7 @@ describe('PosterWallEnhancer', () => {
     });
 
     expect(wall.dispose).toHaveBeenCalledTimes(1);
-    expect(grid()).toHaveAttribute('data-scene', 'failed');
+    expect(fallback()).toHaveAttribute('data-scene', 'failed');
     expect(screen.queryByTestId('poster-wall-canvas')).not.toBeInTheDocument();
     expect(error).toHaveBeenCalledTimes(1);
   });

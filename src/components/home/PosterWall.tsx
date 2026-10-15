@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { MediaCard } from '@/components/media/MediaCard';
-import { MediaGrid } from '@/components/media/MediaGrid';
+import { MediaCarousel } from '@/components/media/MediaCarousel';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { getTrendingWall } from '@/lib/tmdb/api';
 import type { Locale } from '@/lib/tmdb/constants';
@@ -9,10 +9,10 @@ import type { MediaItem } from '@/lib/tmdb/types';
 import { PosterWallEnhancer } from './PosterWallEnhancer';
 import type { WallItem } from './poster-wall-utils';
 
-const HEADING_ID = 'trending-wall-heading';
-
 /**
- * Trending posters as a plain HTML grid (wrap it in Suspense).
+ * Trending posters as a carousel, like the Home rows (wrap it in Suspense).
+ * The carousel is the content everywhere; PosterWallEnhancer only adds a 3D
+ * view on top of it on desktop.
  *
  * Like MediaRow, data errors are handled here: Home is prerendered (ISR) and a
  * thrown Server Component error would fail the whole prerender. The wall is
@@ -36,6 +36,7 @@ export async function PosterWall({ locale }: { locale: Locale }) {
 // Hooks cannot run in an async component, so the markup lives in a sync one.
 function PosterWallView({ items }: { items: MediaItem[] }) {
   const t = useTranslations('home');
+  const title = t('trendingWall');
   // Only what the 3D scene needs crosses to the client (getTrendingWall
   // guarantees a poster).
   const wallItems: WallItem[] = items.map((item) => ({
@@ -46,17 +47,19 @@ function PosterWallView({ items }: { items: MediaItem[] }) {
   }));
 
   return (
-    <section aria-labelledby={HEADING_ID}>
-      <h2 id={HEADING_ID} className="mb-4 text-xl font-bold">
-        {t('trendingWall')}
-      </h2>
+    // Same pattern as MediaRow: the carousel region carries the title, so the
+    // section stays unnamed (two nested regions with one name are noise).
+    <section>
+      {/* h-7 header like MediaRow, so the wall lines up with the rows. */}
+      <div className="mb-4 flex h-7 items-center">
+        <h2 className="truncate text-xl font-bold">{title}</h2>
+      </div>
       <PosterWallEnhancer items={wallItems}>
-        <MediaGrid>
+        <MediaCarousel label={title}>
           {items.map((item) => (
             <MediaCard
               key={`${item.mediaType}-${item.id}`}
               item={item}
-              headingLevel="h3"
               action={
                 <FavoriteButton
                   item={{
@@ -71,7 +74,7 @@ function PosterWallView({ items }: { items: MediaItem[] }) {
               }
             />
           ))}
-        </MediaGrid>
+        </MediaCarousel>
       </PosterWallEnhancer>
     </section>
   );
