@@ -150,13 +150,14 @@ describe('createPosterWall', () => {
     expect(renderer.setAnimationLoop).toHaveBeenLastCalledWith(null);
   });
 
-  it('loads w342 posters cross-origin as sRGB textures', () => {
+  it('loads w342 posters cross-origin from a separate cache key as sRGB textures', () => {
     setup();
 
     expect(fakes.loads.map((load) => load.url)).toEqual([
-      'https://image.tmdb.org/t/p/w342/one.jpg',
-      'https://image.tmdb.org/t/p/w342/two.jpg',
-      'https://image.tmdb.org/t/p/w342/three.jpg',
+      // A cache key of their own: never the no-cors copy an <img> cached.
+      'https://image.tmdb.org/t/p/w342/one.jpg?cors=1',
+      'https://image.tmdb.org/t/p/w342/two.jpg?cors=1',
+      'https://image.tmdb.org/t/p/w342/three.jpg?cors=1',
     ]);
     expect(fakes.loads.every((l) => l.crossOrigin === 'anonymous')).toBe(true);
     const texture = new THREE.Texture();
@@ -164,16 +165,16 @@ describe('createPosterWall', () => {
     expect(texture.colorSpace).toBe(THREE.SRGBColorSpace);
   });
 
-  it('retries a failed poster once with a cache-separated URL', () => {
+  it('retries a failed poster once (transient network error)', () => {
     const { renderer } = setup();
     const canvas = renderer.domElement;
     expect(canvas).toHaveAttribute('data-textures-total', '3');
     expect(canvas).toHaveAttribute('data-textures-loaded', '0');
 
-    // e.g. a cached no-cors copy without Access-Control-Allow-Origin.
     fakes.loads[0].onError(new Event('error'));
 
     expect(fakes.loads).toHaveLength(4);
+    // Same cache-separated URL, not yet another variant.
     expect(fakes.loads[3].url).toBe(
       'https://image.tmdb.org/t/p/w342/one.jpg?cors=1'
     );

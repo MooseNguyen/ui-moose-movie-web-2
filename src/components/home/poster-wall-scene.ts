@@ -41,7 +41,16 @@ const LOOK_PITCH = 0.12;
 /** Camera travel (as progress) after which the hovered card is re-picked. */
 const REPICK_PROGRESS = 0.01;
 
-/** The same image under a separate HTTP cache entry. */
+/**
+ * The same image under a separate HTTP cache entry, used for every texture.
+ * image.tmdb.org sends `Access-Control-Allow-Origin` only to requests with an
+ * Origin header, and no `Vary: Origin`. The site's plain <img>s (no
+ * crossOrigin) therefore cache a CORS-less copy of a URL for about a year,
+ * and a CORS texture request for that same URL is served the copy and fails.
+ * A distinct query is a distinct cache entry, so the texture request never
+ * meets the poisoned one. Cost: a poster also shown by the carousel at w342
+ * downloads twice, on desktop with 3D only.
+ */
 function withCacheKey(url: string): string {
   return `${url}${url.includes('?') ? '&' : '?'}cors=1`;
 }
@@ -165,12 +174,9 @@ export function createPosterWall(
         undefined,
         () => {
           if (disposed) return;
-          // TMDB adds CORS headers only to CORS requests and does not vary
-          // its cache on Origin, so the HTTP cache may hold a no-cors copy of
-          // this URL (from an <img> without crossOrigin, e.g. an earlier
-          // visit). A different URL is a different cache entry.
+          // One retry for transient network errors.
           if (!retried) {
-            load(withCacheKey(url), true);
+            load(url, true);
             return;
           }
           // A missing poster keeps its placeholder colour; not worth failing
@@ -184,7 +190,7 @@ export function createPosterWall(
           }
         }
       );
-    load(`${POSTER_BASE_URL}${item.posterPath}`, false);
+    load(withCacheKey(`${POSTER_BASE_URL}${item.posterPath}`), false);
   });
 
   const glowGeometry = new THREE.PlaneGeometry(26, 12);
