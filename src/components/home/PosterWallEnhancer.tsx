@@ -35,6 +35,10 @@ function hasWebGL2(): boolean {
   }
 }
 
+/** The resolved page background, which follows the theme tokens. */
+const pageBackground = () =>
+  window.getComputedStyle(document.body).backgroundColor;
+
 function whenIdle(callback: () => void): () => void {
   if (typeof window.requestIdleCallback === 'function') {
     const id = window.requestIdleCallback(callback, {
@@ -108,6 +112,11 @@ export function PosterWallEnhancer({
     let failed = false;
     let wall: PosterWall | null = null;
     let cancelIdle = () => {};
+    // useTheme/ThemeScript switch the theme with a class on <html>; follow it
+    // without re-creating the scene.
+    const themeObserver = new MutationObserver(() =>
+      wall?.setBackground(pageBackground())
+    );
 
     const updateProgress = () => {
       wall?.setProgress(
@@ -128,6 +137,7 @@ export function PosterWallEnhancer({
         error
       );
       removeListeners();
+      themeObserver.disconnect();
       wall?.dispose();
       wall = null;
       setStatus('failed');
@@ -156,6 +166,11 @@ export function PosterWallEnhancer({
           onSelect: (item) =>
             routerRef.current.push(`/${item.mediaType}/${item.id}`),
           onError: fail,
+          background: pageBackground(),
+        });
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['class'],
         });
         updateProgress();
         window.addEventListener('scroll', updateProgress, { passive: true });
@@ -184,6 +199,7 @@ export function PosterWallEnhancer({
       nearViewport.disconnect();
       cancelIdle();
       removeListeners();
+      themeObserver.disconnect();
       wall?.dispose();
       wall = null;
     };

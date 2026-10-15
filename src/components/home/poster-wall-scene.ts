@@ -10,18 +10,22 @@ export type PosterWallOptions = {
   /** Called once when the scene cannot continue (e.g. WebGL context lost). */
   onError?: (error: Error) => void;
   reducedMotion: boolean;
+  /** Stage and fog colour: the page background (any CSS colour). */
+  background: string;
 };
 
 export type PosterWall = {
   /** Scroll progress (0..1) through the sticky track. */
   setProgress: (progress: number) => void;
+  /** Follows a theme change without re-creating the scene. */
+  setBackground: (cssColor: string) => void;
   dispose: () => void;
 };
 
 const POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w342';
 const CARD_WIDTH = 1.6;
 const CARD_HEIGHT = 2.4;
-const BACKGROUND = 0x0b0b0f;
+const FALLBACK_BACKGROUND = 0x0b0b0f;
 const PLACEHOLDER = 0x1c1c24;
 const GLOW = 0xf97316;
 const GLOW_OPACITY = 0.07;
@@ -35,10 +39,43 @@ const FOV_END = 43;
 const LOOK_YAW = 0.25;
 const LOOK_PITCH = 0.12;
 
+let colorProbe: CanvasRenderingContext2D | null | undefined;
+
+/**
+ * Reads any CSS colour into `target`. Theme tokens are oklch(), which
+ * THREE.Color cannot parse, so the browser converts it: paint one pixel and
+ * read it back as sRGB. Returns false (target unchanged) when unreadable.
+ */
+function readCssColor(css: string, target: THREE.Color): boolean {
+  if (typeof CSS !== 'undefined' && !CSS.supports('color', css)) return false;
+  if (colorProbe === undefined) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    try {
+      colorProbe = canvas.getContext('2d', { willReadFrequently: true });
+    } catch {
+      colorProbe = null;
+    }
+  }
+  if (!colorProbe) {
+    // No 2D canvas (jsdom): THREE parses rgb()/hex/names itself and leaves
+    // the colour unchanged for anything else. "Changed" is all callers need.
+    const before = target.getHex();
+    target.setStyle(css);
+    return target.getHex() !== before;
+  }
+  colorProbe.clearRect(0, 0, 1, 1);
+  colorProbe.fillStyle = css;
+  colorProbe.fillRect(0, 0, 1, 1);
+  const [r, g, b] = colorProbe.getImageData(0, 0, 1, 1).data;
+  target.setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
+  return true;
+}
+
 export function createPosterWall(
   container: HTMLElement,
   items: WallItem[],
-  { onSelect, onError, reducedMotion }: PosterWallOptions
+  { onSelect, onError, reducedMotion, background }: PosterWallOptions
 ): PosterWall {
   // Throws when WebGL2 is unavailable; nothing is attached yet, so the caller
   // only has to fall back.
@@ -47,7 +84,6 @@ export function createPosterWall(
     powerPreference: 'high-performance',
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(BACKGROUND, 1);
   const canvas = renderer.domElement;
   // Decorative: the HTML grid next to it is the accessible content.
   canvas.setAttribute('aria-hidden', 'true');
@@ -60,7 +96,12 @@ export function createPosterWall(
   container.append(canvas);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(BACKGROUND, 6, 16);
+  // One colour for the clear colour and the fog, so posters fade into the
+  // page background in either theme. The glow stays brand orange.
+  const fog = new THREE.Fog(FALLBACK_BACKGROUND, 6, 16);
+  scene.fog = fog;
+  readCssColor(background, fog.color);
+  renderer.setClearColor(fog.color, 1);
   const camera = new THREE.PerspectiveCamera(FOV_START, 1, 0.1, 40);
   camera.rotation.order = 'YXZ';
 
@@ -268,6 +309,10 @@ export function createPosterWall(
   document.addEventListener('visibilitychange', sync);
 
   return {
+    setBackground(cssColor) {
+      if (disposed || !readCssColor(cssColor, fog.color)) return;
+      renderer.setClearColor(fog.color, 1);
+    },
     setProgress(value) {
       progress = Math.min(1, Math.max(0, value));
     },

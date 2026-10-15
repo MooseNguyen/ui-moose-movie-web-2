@@ -31,6 +31,7 @@ let observers: Array<{
 let idleCallbacks: Array<() => void>;
 let wall: {
   setProgress: ReturnType<typeof vi.fn>;
+  setBackground: ReturnType<typeof vi.fn>;
   dispose: ReturnType<typeof vi.fn>;
 };
 let createPosterWall: ReturnType<typeof vi.fn>;
@@ -74,7 +75,7 @@ beforeEach(() => {
     return idleCallbacks.length;
   });
   vi.stubGlobal('cancelIdleCallback', () => {});
-  wall = { setProgress: vi.fn(), dispose: vi.fn() };
+  wall = { setProgress: vi.fn(), setBackground: vi.fn(), dispose: vi.fn() };
   createPosterWall = vi.fn(() => wall);
   mockedLoad.mockResolvedValue({
     createPosterWall: createPosterWall as never,
@@ -231,6 +232,46 @@ describe('PosterWallEnhancer', () => {
     window.dispatchEvent(new Event('load'));
 
     expect(idleCallbacks).toHaveLength(0);
+  });
+
+  it('gives the scene the page background and follows theme changes', async () => {
+    stubEnv(DESKTOP);
+    document.body.style.backgroundColor = 'rgb(10, 10, 10)';
+    renderEnhancer();
+    await approachAndIdle();
+
+    expect(createPosterWall).toHaveBeenCalledWith(
+      expect.anything(),
+      items,
+      expect.objectContaining({ background: 'rgb(10, 10, 10)' })
+    );
+
+    // What useTheme does on toggle: swap the class on <html>.
+    document.body.style.backgroundColor = 'rgb(255, 255, 255)';
+    await act(async () => {
+      document.documentElement.classList.add('light');
+      // MutationObserver callbacks run as microtasks.
+      await Promise.resolve();
+    });
+    expect(wall.setBackground).toHaveBeenLastCalledWith('rgb(255, 255, 255)');
+    expect(createPosterWall).toHaveBeenCalledTimes(1);
+
+    document.documentElement.classList.remove('light');
+    document.body.style.backgroundColor = '';
+  });
+
+  it('stops following the theme after unmount', async () => {
+    stubEnv(DESKTOP);
+    const { unmount } = renderEnhancer();
+    await approachAndIdle();
+    unmount();
+
+    await act(async () => {
+      document.documentElement.classList.add('light');
+      await Promise.resolve();
+    });
+    expect(wall.setBackground).not.toHaveBeenCalled();
+    document.documentElement.classList.remove('light');
   });
 
   it('opens the detail page of the selected poster', async () => {

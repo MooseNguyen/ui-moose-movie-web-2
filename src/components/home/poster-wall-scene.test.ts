@@ -9,6 +9,7 @@ import { createPosterWall } from './poster-wall-scene';
 const fakes = vi.hoisted(() => ({
   renderers: [] as Array<{
     domElement: HTMLCanvasElement;
+    clearColors: string[];
     setAnimationLoop: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
     forceContextLoss: ReturnType<typeof vi.fn>;
@@ -27,7 +28,11 @@ vi.mock('three', async (importOriginal) => {
     domElement = document.createElement('canvas');
     setPixelRatio = vi.fn();
     setSize = vi.fn();
-    setClearColor = vi.fn();
+    // Copies the colour, like the real renderer does.
+    clearColors: string[] = [];
+    setClearColor = vi.fn((color: { getHexString: () => string }) =>
+      this.clearColors.push(color.getHexString())
+    );
     setAnimationLoop = vi.fn();
     render = vi.fn();
     dispose = vi.fn();
@@ -95,7 +100,7 @@ const items: WallItem[] = [
   { id: 3, mediaType: 'movie', title: 'Three', posterPath: '/three.jpg' },
 ];
 
-function setup(wallItems = items) {
+function setup(wallItems = items, background = 'rgb(10, 10, 10)') {
   const container = document.createElement('div');
   document.body.append(container);
   const onSelect = vi.fn();
@@ -104,6 +109,7 @@ function setup(wallItems = items) {
     onSelect,
     onError,
     reducedMotion: false,
+    background,
   });
   const renderer = fakes.renderers.at(-1)!;
   return { container, wall, renderer, onSelect, onError };
@@ -213,6 +219,24 @@ describe('createPosterWall', () => {
     expect(canvas.style.cursor).toBe('');
     canvas.dispatchEvent(new MouseEvent('click', at(1, 1)));
     expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears with the page background and follows theme changes in place', () => {
+    const { wall, renderer } = setup(items, 'rgb(10, 10, 10)');
+    expect(renderer.clearColors.at(-1)).toBe('0a0a0a');
+
+    wall.setBackground('rgb(255, 255, 255)');
+
+    expect(renderer.clearColors.at(-1)).toBe('ffffff');
+    // Same renderer and canvas: the scene was not re-created.
+    expect(fakes.renderers).toHaveLength(1);
+  });
+
+  it('keeps the previous background for a colour it cannot read', () => {
+    const { wall, renderer } = setup(items, 'rgb(255, 255, 255)');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    wall.setBackground('not a colour');
+    expect(renderer.clearColors.at(-1)).toBe('ffffff');
   });
 
   it('reports a lost WebGL context', () => {
