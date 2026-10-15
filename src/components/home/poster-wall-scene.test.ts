@@ -164,6 +164,53 @@ describe('createPosterWall', () => {
     expect(texture.colorSpace).toBe(THREE.SRGBColorSpace);
   });
 
+  it('retries a failed poster once with a cache-separated URL', () => {
+    const { renderer } = setup();
+    const canvas = renderer.domElement;
+    expect(canvas).toHaveAttribute('data-textures-total', '3');
+    expect(canvas).toHaveAttribute('data-textures-loaded', '0');
+
+    // e.g. a cached no-cors copy without Access-Control-Allow-Origin.
+    fakes.loads[0].onError(new Event('error'));
+
+    expect(fakes.loads).toHaveLength(4);
+    expect(fakes.loads[3].url).toBe(
+      'https://image.tmdb.org/t/p/w342/one.jpg?cors=1'
+    );
+    expect(fakes.loads[3].crossOrigin).toBe('anonymous');
+    const texture = new THREE.Texture();
+    fakes.loads[3].onLoad(texture);
+    expect(texture.colorSpace).toBe(THREE.SRGBColorSpace);
+    expect(canvas).toHaveAttribute('data-textures-loaded', '1');
+  });
+
+  it('keeps the placeholder and logs once when the retry fails too', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { renderer, onError } = setup();
+
+    expect(() => {
+      fakes.loads[0].onError(new Event('error'));
+      fakes.loads[1].onError(new Event('error'));
+      fakes.loads[3].onError(new Event('error'));
+      fakes.loads[4].onError(new Event('error'));
+    }).not.toThrow();
+
+    // Exactly one retry per poster.
+    expect(fakes.loads).toHaveLength(5);
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error.mock.calls[0][0]).toBe('[poster-wall]');
+    expect(renderer.domElement).toHaveAttribute('data-textures-loaded', '0');
+    // A missing poster is not a scene failure.
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  it('does not retry after dispose', () => {
+    const { wall } = setup();
+    wall.dispose();
+    fakes.loads[0].onError(new Event('error'));
+    expect(fakes.loads).toHaveLength(3);
+  });
+
   it('releases every geometry, material, texture and the renderer on dispose', () => {
     const geometryDispose = vi.spyOn(THREE.BufferGeometry.prototype, 'dispose');
     const materialDispose = vi.spyOn(THREE.Material.prototype, 'dispose');

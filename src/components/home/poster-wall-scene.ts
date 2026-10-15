@@ -41,6 +41,11 @@ const LOOK_PITCH = 0.12;
 /** Camera travel (as progress) after which the hovered card is re-picked. */
 const REPICK_PROGRESS = 0.01;
 
+/** The same image under a separate HTTP cache entry. */
+function withCacheKey(url: string): string {
+  return `${url}${url.includes('?') ? '&' : '?'}cors=1`;
+}
+
 let colorProbe: CanvasRenderingContext2D | null | undefined;
 
 /**
@@ -125,6 +130,10 @@ export function createPosterWall(
   // TMDB images send `Access-Control-Allow-Origin: *`.
   loader.setCrossOrigin('anonymous');
   let disposed = false;
+  let loggedTextureError = false;
+  // Invisible progress signal (read by the e2e tests).
+  canvas.dataset.texturesTotal = String(items.length);
+  canvas.dataset.texturesLoaded = '0';
 
   items.forEach((item, i) => {
     const material = new THREE.MeshBasicMaterial({ color: PLACEHOLDER });
@@ -137,24 +146,45 @@ export function createPosterWall(
     meshes.push(mesh);
     group.add(mesh);
 
-    loader.load(
-      `${POSTER_BASE_URL}${item.posterPath}`,
-      (texture) => {
-        // The view may be gone by the time a poster arrives.
-        if (disposed) {
-          texture.dispose();
-          return;
+    const load = (url: string, retried: boolean) =>
+      loader.load(
+        url,
+        (texture) => {
+          // The view may be gone by the time a poster arrives.
+          if (disposed) {
+            texture.dispose();
+            return;
+          }
+          texture.colorSpace = THREE.SRGBColorSpace;
+          textures.add(texture);
+          material.map = texture;
+          material.color.setHex(0xffffff);
+          material.needsUpdate = true;
+          canvas.dataset.texturesLoaded = String(textures.size);
+        },
+        undefined,
+        () => {
+          if (disposed) return;
+          // TMDB adds CORS headers only to CORS requests and does not vary
+          // its cache on Origin, so the HTTP cache may hold a no-cors copy of
+          // this URL (from an <img> without crossOrigin, e.g. an earlier
+          // visit). A different URL is a different cache entry.
+          if (!retried) {
+            load(withCacheKey(url), true);
+            return;
+          }
+          // A missing poster keeps its placeholder colour; not worth failing
+          // the scene for. Logged once per scene, not once per poster.
+          if (!loggedTextureError) {
+            loggedTextureError = true;
+            console.error(
+              '[poster-wall]',
+              'Some posters could not be loaded as textures; they stay placeholders.'
+            );
+          }
         }
-        texture.colorSpace = THREE.SRGBColorSpace;
-        textures.add(texture);
-        material.map = texture;
-        material.color.setHex(0xffffff);
-        material.needsUpdate = true;
-      },
-      undefined,
-      // A missing poster keeps its placeholder colour; not worth failing for.
-      () => {}
-    );
+      );
+    load(`${POSTER_BASE_URL}${item.posterPath}`, false);
   });
 
   const glowGeometry = new THREE.PlaneGeometry(26, 12);

@@ -81,6 +81,64 @@ test.describe('desktop', () => {
     await expect(page).toHaveURL(DETAIL_URL);
   });
 
+  test('loads every poster texture even when the HTTP cache holds no-cors copies', async ({
+    page,
+  }) => {
+    // TMDB sends Access-Control-Allow-Origin only to CORS requests and does
+    // not vary its cache on Origin. Reproduce an earlier visit (or any plain
+    // <img>) caching the wall's w342 URLs without CORS headers.
+    await page.goto('/vi/movie');
+    const warmed = await page.evaluate(async (wallName) => {
+      const html = await (await fetch('/vi')).text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const heading = [...doc.querySelectorAll('h2')].find(
+        (h) => h.textContent === wallName
+      );
+      const section = heading?.closest('section');
+      const paths = [
+        ...new Set(
+          [...(section?.querySelectorAll('img') ?? [])]
+            .map((img) =>
+              /image\.tmdb\.org\/t\/p\/\w+(\/[^?\s]+)/.exec(img.src)
+            )
+            .filter((match) => match !== null)
+            .map((match) => match[1])
+        ),
+      ];
+      await Promise.all(
+        paths.map(
+          (path) =>
+            new Promise((resolve) => {
+              const img = new Image(); // no crossOrigin: a no-cors request
+              img.onload = img.onerror = resolve;
+              img.src = `https://image.tmdb.org/t/p/w342${path}`;
+            })
+        )
+      );
+      return paths.length;
+    }, WALL);
+    expect(warmed).toBeGreaterThan(0);
+
+    const errors: string[] = [];
+    page.on('console', (message) => {
+      if (
+        message.type() === 'error' &&
+        message.text().includes('[poster-wall]')
+      ) {
+        errors.push(message.text());
+      }
+    });
+    const wall = await scrollToWall(page);
+    const canvas = wall.locator('canvas');
+    await expect(canvas).toBeVisible({ timeout: 15_000 });
+    const total = await canvas.getAttribute('data-textures-total');
+    expect(Number(total)).toBeGreaterThan(0);
+    await expect(canvas).toHaveAttribute('data-textures-loaded', total!, {
+      timeout: 15_000,
+    });
+    expect(errors).toEqual([]);
+  });
+
   test.describe('with reduced motion', () => {
     test.use({ reducedMotion: 'reduce' });
 
