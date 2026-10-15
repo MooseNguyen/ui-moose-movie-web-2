@@ -14,6 +14,21 @@ vi.mock(
 
 const mockedGetTrendingWall = vi.mocked(getTrendingWall);
 
+beforeAll(() => {
+  // jsdom has no matchMedia; a touch device never enhances, so the plain
+  // grid is what these tests see.
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+
 const items: MediaItem[] = [
   { ...tvItem, id: 1, mediaType: 'movie', title: 'Movie One' },
   { ...tvItem, id: 2, mediaType: 'tv', title: 'Show Two' },

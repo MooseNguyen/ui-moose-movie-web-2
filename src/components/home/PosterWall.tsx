@@ -6,6 +6,8 @@ import { getTrendingWall } from '@/lib/tmdb/api';
 import type { Locale } from '@/lib/tmdb/constants';
 import { TmdbError } from '@/lib/tmdb/errors';
 import type { MediaItem } from '@/lib/tmdb/types';
+import { PosterWallEnhancer } from './PosterWallEnhancer';
+import type { WallItem } from './poster-wall-utils';
 
 const HEADING_ID = 'trending-wall-heading';
 
@@ -34,33 +36,43 @@ export async function PosterWall({ locale }: { locale: Locale }) {
 // Hooks cannot run in an async component, so the markup lives in a sync one.
 function PosterWallView({ items }: { items: MediaItem[] }) {
   const t = useTranslations('home');
+  // Only what the 3D scene needs crosses to the client (getTrendingWall
+  // guarantees a poster).
+  const wallItems: WallItem[] = items.map((item) => ({
+    id: item.id,
+    mediaType: item.mediaType,
+    title: item.title,
+    posterPath: item.posterPath ?? '',
+  }));
 
   return (
     <section aria-labelledby={HEADING_ID}>
       <h2 id={HEADING_ID} className="mb-4 text-xl font-bold">
         {t('trendingWall')}
       </h2>
-      <MediaGrid>
-        {items.map((item) => (
-          <MediaCard
-            key={`${item.mediaType}-${item.id}`}
-            item={item}
-            headingLevel="h3"
-            action={
-              <FavoriteButton
-                item={{
-                  id: item.id,
-                  mediaType: item.mediaType,
-                  title: item.title,
-                  posterPath: item.posterPath,
-                  voteAverage: item.voteAverage,
-                  year: item.year,
-                }}
-              />
-            }
-          />
-        ))}
-      </MediaGrid>
+      <PosterWallEnhancer items={wallItems}>
+        <MediaGrid>
+          {items.map((item) => (
+            <MediaCard
+              key={`${item.mediaType}-${item.id}`}
+              item={item}
+              headingLevel="h3"
+              action={
+                <FavoriteButton
+                  item={{
+                    id: item.id,
+                    mediaType: item.mediaType,
+                    title: item.title,
+                    posterPath: item.posterPath,
+                    voteAverage: item.voteAverage,
+                    year: item.year,
+                  }}
+                />
+              }
+            />
+          ))}
+        </MediaGrid>
+      </PosterWallEnhancer>
     </section>
   );
 }
