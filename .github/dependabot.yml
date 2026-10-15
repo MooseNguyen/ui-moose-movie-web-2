@@ -27,6 +27,12 @@ updates:
       # Listed first: Dependabot puts a dependency in the first matching group.
       react:
         patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+      # three ships breaking changes in most minor releases and its types are
+      # versioned in lockstep, so they move together and get a focused review
+      # (see the threejs migration notes). Listed before dev-dependencies so
+      # @types/three lands here, not in the tooling group.
+      three:
+        patterns: ['three', '@types/three']
       # Tooling bumps are low risk: one PR per week instead of one per package.
       dev-dependencies:
         dependency-type: development
