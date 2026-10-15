@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/carousel';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { Link } from '@/i18n/navigation';
-import { tmdbImage } from '@/lib/images';
+import { TMDB_CROSS_ORIGIN, tmdbImage } from '@/lib/images';
 import type { MediaItem } from '@/lib/tmdb/types';
 import { cn } from '@/lib/utils';
 import { TrailerButton } from './TrailerButton';
@@ -263,6 +263,7 @@ function HeroSlide({ item, priority, onTrailerOpenChange }: HeroSlideProps) {
       <div className="absolute inset-x-0 top-0 bottom-px">
         <Image
           src={tmdbImage(item.backdropPath, 'w1280', 'backdrop')}
+          crossOrigin={TMDB_CROSS_ORIGIN}
           alt=""
           fill
           sizes="100vw"
@@ -292,6 +293,7 @@ function HeroSlide({ item, priority, onTrailerOpenChange }: HeroSlideProps) {
         <div className="bg-muted relative hidden aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-lg shadow-lg lg:block">
           <Image
             src={tmdbImage(item.posterPath, 'w342')}
+            crossOrigin={TMDB_CROSS_ORIGIN}
             alt=""
             fill
             sizes="192px"

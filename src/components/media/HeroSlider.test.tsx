@@ -179,6 +179,15 @@ describe('HeroSlider', () => {
     ).toBeInTheDocument();
   });
 
+  it('requests every TMDB image with CORS', async () => {
+    const { container } = await renderSlider();
+    const images = container.querySelectorAll('img');
+    expect(images.length).toBeGreaterThan(0);
+    images.forEach((img) =>
+      expect(img).toHaveAttribute('crossorigin', 'anonymous')
+    );
+  });
+
   it('loads the first backdrop eagerly with high priority and lazy-loads the rest', async () => {
     const { container } = await renderSlider();
     const backdrops = container.querySelectorAll('img[sizes="100vw"]');

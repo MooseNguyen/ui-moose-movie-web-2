@@ -25,6 +25,17 @@ describe('MediaCard', () => {
     expect(screen.queryByText('undefined')).not.toBeInTheDocument();
   });
 
+  it('requests the TMDB poster with CORS', () => {
+    renderWithIntl(<MediaCard item={tvItem} />);
+    // TMDB sends Access-Control-Allow-Origin only to CORS requests, and the
+    // poster wall reads the same URLs as WebGL textures: a no-cors copy in
+    // the HTTP cache would make those texture loads fail.
+    expect(document.querySelector('img')).toHaveAttribute(
+      'crossorigin',
+      'anonymous'
+    );
+  });
+
   it('shows the year, and hides it when null', () => {
     const { unmount } = renderWithIntl(<MediaCard item={tvItem} />);
     expect(screen.getByText('2011')).toBeInTheDocument();

@@ -22,6 +22,15 @@ describe('DetailHero', () => {
     expect(screen.getByText(movieDetail.overview)).toBeInTheDocument();
   });
 
+  it('requests the backdrop and poster with CORS', () => {
+    const { container } = renderWithIntl(<DetailHero detail={movieDetail} />);
+    const images = container.querySelectorAll('img');
+    expect(images).toHaveLength(2);
+    images.forEach((img) =>
+      expect(img).toHaveAttribute('crossorigin', 'anonymous')
+    );
+  });
+
   it('links each genre to discover filtered by media type and genre', () => {
     renderWithIntl(<DetailHero detail={movieDetail} />);
 

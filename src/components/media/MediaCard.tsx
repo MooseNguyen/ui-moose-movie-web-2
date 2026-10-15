@@ -2,7 +2,7 @@ import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { tmdbImage } from '@/lib/images';
+import { TMDB_CROSS_ORIGIN, tmdbImage } from '@/lib/images';
 import type { MediaItem } from '@/lib/tmdb/types';
 
 // Matches the MediaGrid / MediaCarousel column counts per breakpoint.
@@ -55,6 +55,7 @@ export function MediaCard({
         <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg">
           <Image
             src={tmdbImage(item.posterPath, 'w342')}
+            crossOrigin={TMDB_CROSS_ORIGIN}
             alt=""
             fill
             sizes={POSTER_SIZES}

@@ -12,7 +12,7 @@ import {
   type CreditItem,
 } from '@/components/person/PersonCredits';
 import { routing } from '@/i18n/routing';
-import { tmdbImage } from '@/lib/images';
+import { TMDB_CROSS_ORIGIN, tmdbImage } from '@/lib/images';
 import { parsePositiveId } from '@/lib/route-params';
 import { absoluteUrl, buildMetadata, personJsonLd } from '@/lib/seo';
 import { getPerson } from '@/lib/tmdb/api';
@@ -175,6 +175,7 @@ function PersonProfile({ person }: { person: PersonDetail }) {
       <div className="bg-muted relative aspect-[2/3] w-44 overflow-hidden rounded-lg shadow-lg sm:w-56 md:w-full">
         <Image
           src={tmdbImage(person.profilePath, 'w780', 'profile')}
+          crossOrigin={TMDB_CROSS_ORIGIN}
           alt=""
           fill
           sizes="(min-width: 1024px) 18rem, (min-width: 768px) 16rem, (min-width: 640px) 14rem, 11rem"
