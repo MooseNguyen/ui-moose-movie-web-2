@@ -94,7 +94,7 @@ export default async function DetailPage(props: DetailPageProps) {
         <VideoList videos={detail.videos} />
         {detail.related.length > 0 && (
           // No aria-labelledby: the carousel region inside already carries the name.
-          <section>
+          <section className="row-reveal">
             <h2 className="mb-4 text-xl font-bold">{t('related')}</h2>
             <MediaCarousel label={t('related')}>
               {detail.related.map((item) => (

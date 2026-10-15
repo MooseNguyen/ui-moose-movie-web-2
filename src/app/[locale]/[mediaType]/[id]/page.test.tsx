@@ -86,6 +86,7 @@ describe('DetailPage', () => {
       screen.getByRole('heading', { level: 2, name: 'More like this' })
     ).toBeInTheDocument();
     const related = screen.getByRole('region', { name: 'More like this' });
+    expect(related.closest('section')).toHaveClass('row-reveal');
     expect(
       within(related).getByRole('link', { name: /Se7en/ })
     ).toHaveAttribute('href', '/en/movie/807');

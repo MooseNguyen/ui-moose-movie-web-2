@@ -49,7 +49,9 @@ function PosterWallView({ items }: { items: MediaItem[] }) {
   return (
     // Same pattern as MediaRow: the carousel region carries the title, so the
     // section stays unnamed (two nested regions with one name are noise).
-    <section>
+    // The reveal is off in the 3D layout: its transform must not touch the
+    // sticky stage.
+    <section className="row-reveal immersive:animate-none">
       {/* h-7 header like MediaRow, so the wall lines up with the rows. */}
       <div className="mb-4 flex h-7 items-center">
         <h2 className="truncate text-xl font-bold">{title}</h2>

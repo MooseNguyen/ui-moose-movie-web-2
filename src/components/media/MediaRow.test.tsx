@@ -68,6 +68,8 @@ describe('MediaRow', () => {
     expect(region).toHaveAttribute('aria-roledescription', 'carousel');
     const section = region.closest('section')!;
     expect(section).not.toHaveAttribute('aria-labelledby');
+    // Scroll-driven reveal (CSS only, see globals.css).
+    expect(section).toHaveClass('row-reveal');
     expect(
       within(section).getByRole('heading', {
         level: 2,
