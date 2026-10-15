@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { TMDB_CROSS_ORIGIN, tmdbImage } from '@/lib/images';
+import { tmdbImage } from '@/lib/images';
 import type { PersonSummary } from '@/lib/tmdb/types';
 
 const PROFILE_SIZES =
@@ -33,7 +33,6 @@ export function PersonCard({
       <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg">
         <Image
           src={tmdbImage(person.profilePath, 'w185', 'profile')}
-          crossOrigin={TMDB_CROSS_ORIGIN}
           alt=""
           fill
           sizes={PROFILE_SIZES}

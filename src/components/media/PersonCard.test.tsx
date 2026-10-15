@@ -20,16 +20,6 @@ describe('PersonCard', () => {
     expect(screen.getByText('Acting')).toBeInTheDocument();
   });
 
-  it('requests the TMDB profile with CORS', () => {
-    renderWithIntl(
-      <PersonCard person={{ ...person, profilePath: '/p.jpg' }} />
-    );
-    expect(document.querySelector('img')).toHaveAttribute(
-      'crossorigin',
-      'anonymous'
-    );
-  });
-
   it('omits the department when missing', () => {
     renderWithIntl(
       <PersonCard person={{ ...person, knownForDepartment: null }} />

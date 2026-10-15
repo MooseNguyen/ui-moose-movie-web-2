@@ -4,7 +4,7 @@ import { Fragment, type ReactNode } from 'react';
 import { TrailerButton } from '@/components/media/TrailerButton';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { Link } from '@/i18n/navigation';
-import { TMDB_CROSS_ORIGIN, tmdbImage } from '@/lib/images';
+import { tmdbImage } from '@/lib/images';
 import type { MediaDetail } from '@/lib/tmdb/types';
 
 const MAX_STUDIOS = 3;
@@ -84,7 +84,6 @@ export function DetailHero({ detail }: { detail: MediaDetail }) {
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         <Image
           src={tmdbImage(detail.backdropPath, 'w1280', 'backdrop')}
-          crossOrigin={TMDB_CROSS_ORIGIN}
           alt=""
           fill
           sizes="100vw"
@@ -100,7 +99,6 @@ export function DetailHero({ detail }: { detail: MediaDetail }) {
         <div className="bg-muted relative aspect-[2/3] w-44 overflow-hidden rounded-lg shadow-lg sm:w-56 md:w-full">
           <Image
             src={tmdbImage(detail.posterPath, 'w780')}
-            crossOrigin={TMDB_CROSS_ORIGIN}
             alt=""
             fill
             sizes="(min-width: 1024px) 18rem, (min-width: 768px) 16rem, (min-width: 640px) 14rem, 11rem"

@@ -94,12 +94,6 @@ describe('PersonPage', () => {
     expect(document.querySelector('main')).toBeNull();
   });
 
-  it('requests the profile image with CORS', async () => {
-    await renderServerTree(await PersonPage(props('en', '287')));
-    const profile = document.querySelector('img[sizes*="18rem"]');
-    expect(profile).toHaveAttribute('crossorigin', 'anonymous');
-  });
-
   it('renders Person JSON-LD with the canonical URL', async () => {
     await renderServerTree(await PersonPage(props('en', '287')));
 
