@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { FavoritesHydrator } from '@/features/favorites/FavoritesHydrator';
+import { TiltController } from '@/components/media/TiltController';
 import { Toaster } from '@/components/ui/sonner';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -9,6 +10,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <>
       {children}
       <FavoritesHydrator />
+      <TiltController />
       <Toaster />
     </>
   );

@@ -10,6 +10,16 @@ vi.mock(
 );
 
 describe('PersonCard', () => {
+  it('is a pointer-tilt target with a decorative glare (see TiltController)', () => {
+    renderWithIntl(<PersonCard person={person} />);
+    const card = screen.getByRole('link');
+    expect(card).toHaveAttribute('data-tilt');
+    expect(card.querySelector('.tilt-glare')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    );
+  });
+
   it('links to the person page with a profile placeholder', () => {
     renderWithIntl(<PersonCard person={person} />);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/en/person/287');
