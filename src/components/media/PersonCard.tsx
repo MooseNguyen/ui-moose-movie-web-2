@@ -28,6 +28,8 @@ export function PersonCard({
   return (
     <Link
       href={`/person/${person.id}`}
+      // Pointer tilt target (TiltController + globals.css).
+      data-tilt
       className="group focus-visible:ring-ring block rounded-lg outline-none focus-visible:ring-2"
     >
       <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg">
@@ -40,6 +42,8 @@ export function PersonCard({
           priority={priority}
           className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
+        {/* Decorative light that follows the pointer (TiltController + globals.css). */}
+        <span aria-hidden="true" className="tilt-glare" />
       </div>
       <Heading className="mt-2 line-clamp-2 text-sm font-medium">
         {person.name}

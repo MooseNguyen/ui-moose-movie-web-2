@@ -47,7 +47,8 @@ export function MediaCard({
   return (
     // data-testid: E2E needs to count cards, and their accessible names are
     // TMDB titles that change daily.
-    <div data-testid="media-card" className="group relative">
+    // data-tilt: pointer tilt target (TiltController + globals.css).
+    <div data-testid="media-card" data-tilt className="group relative">
       <Link
         href={`/${item.mediaType}/${item.id}`}
         className="focus-visible:ring-ring block rounded-lg outline-none focus-visible:ring-2"
@@ -62,6 +63,8 @@ export function MediaCard({
             priority={priority}
             className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
+          {/* Decorative light that follows the pointer (TiltController + globals.css). */}
+          <span aria-hidden="true" className="tilt-glare" />
         </div>
         <Heading className="mt-2 line-clamp-2 text-sm font-medium">
           {item.title}

@@ -9,6 +9,14 @@ vi.mock(
 );
 
 describe('MediaCard', () => {
+  it('is a pointer-tilt target with a decorative glare (see TiltController)', () => {
+    renderWithIntl(<MediaCard item={tvItem} />);
+    const card = screen.getByTestId('media-card');
+    expect(card).toHaveAttribute('data-tilt');
+    const glare = card.querySelector('.tilt-glare');
+    expect(glare).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('links to the right media type and shows placeholder when poster missing', () => {
     renderWithIntl(
       <MediaCard item={{ ...tvItem, posterPath: null, year: null }} />
