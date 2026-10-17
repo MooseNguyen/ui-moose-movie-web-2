@@ -4,6 +4,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { ViewTransition } from 'react';
+import { WebVitals } from '@/components/analytics/WebVitals';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { CARD_NAV_TRANSITION } from '@/components/media/poster-transition';
@@ -71,6 +72,7 @@ export default async function LocaleLayout({
               </ViewTransition>
             </main>
             <Footer />
+            <WebVitals />
           </Providers>
         </NextIntlClientProvider>
       </body>
