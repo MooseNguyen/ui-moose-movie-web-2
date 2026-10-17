@@ -22,6 +22,14 @@ describe('DetailHero', () => {
     expect(screen.getByText(movieDetail.overview)).toBeInTheDocument();
   });
 
+  it('names the poster so a card poster can morph into it', () => {
+    renderWithIntl(<DetailHero detail={movieDetail} />);
+    const poster = document.querySelector('img[sizes*="18rem"]')?.parentElement;
+    expect(poster?.style.getPropertyValue('view-transition-name')).toBe(
+      `poster-movie-${movieDetail.id}`
+    );
+  });
+
   it('links each genre to discover filtered by media type and genre', () => {
     renderWithIntl(<DetailHero detail={movieDetail} />);
 

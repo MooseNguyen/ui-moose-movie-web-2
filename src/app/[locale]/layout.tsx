@@ -3,8 +3,10 @@ import { Be_Vietnam_Pro } from 'next/font/google';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { ViewTransition } from 'react';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
+import { CARD_NAV_TRANSITION } from '@/components/media/poster-transition';
 import { ThemeScript } from '@/components/theme/ThemeScript';
 import { Providers } from '@/components/providers';
 import { routing } from '@/i18n/routing';
@@ -57,7 +59,16 @@ export default async function LocaleLayout({
           <Providers>
             <Header />
             <main id="main-content" className="w-full min-w-0 flex-1">
-              {children}
+              {/* Animates only card → Detail navigations (poster morph); every
+                  other navigation, filter change or search stays instant. */}
+              <ViewTransition
+                default={{
+                  [CARD_NAV_TRANSITION]: 'page-swap',
+                  default: 'none',
+                }}
+              >
+                {children}
+              </ViewTransition>
             </main>
             <Footer />
           </Providers>

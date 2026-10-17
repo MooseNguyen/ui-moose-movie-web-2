@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { tmdbImage } from '@/lib/images';
+import { CARD_NAV_TRANSITION, posterTransitionName } from './poster-transition';
 import type { MediaItem } from '@/lib/tmdb/types';
 
 // Matches the MediaGrid / MediaCarousel column counts per breakpoint.
@@ -51,9 +52,14 @@ export function MediaCard({
     <div data-testid="media-card" data-tilt className="group relative">
       <Link
         href={`/${item.mediaType}/${item.id}`}
+        transitionTypes={[CARD_NAV_TRANSITION]}
         className="focus-visible:ring-ring block rounded-lg outline-none focus-visible:ring-2"
       >
-        <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg">
+        {/* Named only when clicked (PosterTransitionController). */}
+        <div
+          data-poster-transition={posterTransitionName(item.mediaType, item.id)}
+          className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg [view-transition-class:poster-morph]"
+        >
           <Image
             src={tmdbImage(item.posterPath, 'w342')}
             alt=""

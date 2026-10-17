@@ -17,11 +17,23 @@ function toPath(href: Href): string {
 // The real next-intl Link needs the Next router, which is absent in vitest.
 // This stand-in prefixes the active locale like the real one does.
 // Usage: vi.mock('@/i18n/navigation', () => import('../../../tests/utils/mock-navigation'));
+// `transitionTypes` (a Next Link prop, not a DOM attribute) is exposed as
+// data-transition-types so tests can assert it.
 export function Link({
   href,
+  transitionTypes,
   ...props
-}: Omit<ComponentProps<'a'>, 'href'> & { href: Href }) {
-  return <a href={'/' + useLocale() + toPath(href)} {...props} />;
+}: Omit<ComponentProps<'a'>, 'href'> & {
+  href: Href;
+  transitionTypes?: string[];
+}) {
+  return (
+    <a
+      href={'/' + useLocale() + toPath(href)}
+      data-transition-types={transitionTypes?.join(' ')}
+      {...props}
+    />
+  );
 }
 
 // Inert router for client components rendered inside page trees. Tests that

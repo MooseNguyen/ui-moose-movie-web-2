@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Fragment, type ReactNode } from 'react';
+import { posterTransitionName } from '@/components/media/poster-transition';
 import { TrailerButton } from '@/components/media/TrailerButton';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { Link } from '@/i18n/navigation';
@@ -96,7 +97,16 @@ export function DetailHero({ detail }: { detail: MediaDetail }) {
 
       {/* pt-24: clears the fixed 4rem header. */}
       <div className="mx-auto grid max-w-7xl gap-8 px-4 pt-24 pb-10 md:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <div className="bg-muted relative aspect-[2/3] w-44 overflow-hidden rounded-lg shadow-lg sm:w-56 md:w-full">
+        {/* The clicked card poster morphs into this one (poster-transition.ts). */}
+        <div
+          style={{
+            viewTransitionName: posterTransitionName(
+              detail.mediaType,
+              detail.id
+            ),
+          }}
+          className="bg-muted relative aspect-[2/3] w-44 overflow-hidden rounded-lg shadow-lg [view-transition-class:poster-morph] sm:w-56 md:w-full"
+        >
           <Image
             src={tmdbImage(detail.posterPath, 'w780')}
             alt=""
