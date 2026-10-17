@@ -17,6 +17,24 @@ describe('MediaCard', () => {
     expect(glare).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('starts a card-nav transition with a named-on-click poster (see PosterTransitionController)', () => {
+    renderWithIntl(<MediaCard item={tvItem} />);
+    expect(screen.getByRole('link')).toHaveAttribute(
+      'data-transition-types',
+      'card-nav'
+    );
+    const poster = document.querySelector('[data-poster-transition]');
+    expect(poster).toHaveAttribute(
+      'data-poster-transition',
+      `poster-tv-${tvItem.id}`
+    );
+    expect(poster).toContainElement(document.querySelector('img'));
+    // Not named up front: the same title can sit in several rows.
+    expect(poster).not.toHaveStyle({
+      viewTransitionName: `poster-tv-${tvItem.id}`,
+    });
+  });
+
   it('links to the right media type and shows placeholder when poster missing', () => {
     renderWithIntl(
       <MediaCard item={{ ...tvItem, posterPath: null, year: null }} />

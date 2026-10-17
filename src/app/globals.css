@@ -243,3 +243,57 @@
     }
   }
 }
+
+/* Card → Detail navigation (poster-transition.ts). The clicked poster and the
+   Detail poster share a view-transition-name, so the browser morphs one into
+   the other; the page content (class page-swap, set by the layout's
+   <ViewTransition>) fades out quickly and the new page fades in. */
+::view-transition-group(*) {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* The page content crossfades in place. Without this, its group would also
+   slide from the old scroll offset (often thousands of pixels) to the top. */
+::view-transition-group(.page-swap) {
+  animation: none;
+}
+
+::view-transition-old(.page-swap) {
+  animation: 150ms ease-out both page-swap-out;
+}
+
+::view-transition-new(.page-swap) {
+  animation: 250ms ease-in 100ms both page-swap-in;
+}
+
+/* The card poster (already loaded) stays opaque for the whole flight; the
+   Detail poster (a larger file, often still loading when the new state is
+   captured) only fades in at the end instead of showing an empty frame. */
+::view-transition-old(.poster-morph) {
+  animation: none;
+}
+
+::view-transition-new(.poster-morph) {
+  animation: 150ms ease-out 250ms both page-swap-in;
+}
+
+@keyframes page-swap-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-swap-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
