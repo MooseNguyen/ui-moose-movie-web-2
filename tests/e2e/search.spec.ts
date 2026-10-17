@@ -8,7 +8,7 @@ async function searchFromHeader(page: Page, term: string) {
   const dialog = page.getByRole('dialog', {
     name: 'Tìm phim lẻ, phim bộ và người',
   });
-  const input = dialog.getByRole('searchbox', { name: 'Từ khóa tìm kiếm' });
+  const input = dialog.getByRole('combobox', { name: 'Từ khóa tìm kiếm' });
   await expect(input).toBeFocused();
   await input.fill(term);
   await input.press('Enter');

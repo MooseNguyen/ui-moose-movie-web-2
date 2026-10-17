@@ -205,6 +205,13 @@
     "prompt": "Enter a keyword to search for movies, TV series and people.",
     "empty": "No results for “{query}”.",
     "loadError": "Could not load search results right now. Please try again.",
+    "suggestions": "Suggestions",
+    "suggestLoading": "Searching…",
+    "suggestCount": "{count, plural, one {# suggestion} other {# suggestions}}",
+    "suggestEmpty": "No suggestions for “{query}”.",
+    "suggestError": "Could not load suggestions. Press Enter to see the results page.",
+    "seeAll": "See all results for “{query}”",
+    "shortcutHint": "Quick open with <kbd>{keys}</kbd>",
     "tabsLabel": "Choose a result type",
     "tabs": {
       "multi": "All",
