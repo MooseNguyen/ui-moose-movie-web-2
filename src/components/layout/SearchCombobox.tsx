@@ -31,6 +31,11 @@ const TYPE_LABEL_KEYS = {
   person: 'tabs.person',
 } as const;
 
+// bg-accent alone is ~1.1:1 against the dialog: the inset bar in the text
+// color is the visible indicator (WCAG 1.4.11 asks 3:1), in both themes.
+const ACTIVE_OPTION =
+  'bg-accent text-accent-foreground shadow-[inset_3px_0_0_var(--foreground)]';
+
 function suggestionHref(item: Suggestion) {
   return item.mediaType === 'person'
     ? `/person/${item.id}`
@@ -210,7 +215,7 @@ export function SearchCombobox({ onNavigate }: Props) {
                 onPointerMove={() => setActive(index)}
                 className={cn(
                   'flex items-center gap-3 rounded-md px-2 py-1.5 text-sm',
-                  index === activeIndex && 'bg-accent text-accent-foreground'
+                  index === activeIndex && ACTIVE_OPTION
                 )}
               >
                 <span className="bg-muted relative h-12 w-8 shrink-0 overflow-hidden rounded">
@@ -248,8 +253,7 @@ export function SearchCombobox({ onNavigate }: Props) {
               onPointerMove={() => setActive(suggestions.items.length)}
               className={cn(
                 'text-muted-foreground flex items-center gap-3 rounded-md px-2 py-2 text-sm',
-                activeIndex === suggestions.items.length &&
-                  'bg-accent text-accent-foreground'
+                activeIndex === suggestions.items.length && ACTIVE_OPTION
               )}
             >
               <Search aria-hidden="true" className="size-4 shrink-0" />
