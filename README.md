@@ -156,7 +156,7 @@ tests/
   job:
   accessibility ≥ 0.95, SEO = 1, script transfer ≤ 215 KB. Two targets only
   warn: performance ≥ 0.9 and script ≤ 200 KB. Pages currently ship
-  ~200–204 KB of gzipped JavaScript, ~131–138 KB of which is the
+  ~204–207 KB of gzipped JavaScript, ~131–138 KB of which is the
   Next.js/React framework (see Known issues). Reports
   are kept as CI artifacts, never on public storage.
 
@@ -176,11 +176,33 @@ secrets, so add the same token a second time under **Settings → Secrets and
 variables → Dependabot**; otherwise every Dependabot PR fails the token
 check. Dependabot opens grouped dependency update PRs every Monday.
 
+## Monitoring
+
+Lighthouse CI measures emulated devices in a lab. Real-user Web Vitals come
+from [Vercel Speed Insights](https://vercel.com/docs/speed-insights). To turn
+it on, open the Vercel project's **Speed Insights** tab and click **Enable**.
+The tracking script is rendered only on the production deployment
+(`VERCEL_ENV=production`, see `src/components/analytics/WebVitals.tsx`), so
+local runs, E2E, Lighthouse CI and preview deployments send nothing. It
+sets no cookies.
+
+Read the **75th percentile (p75)** per route, e.g. `/[locale]/movie/[id]`.
+Google uses p75 field data, and these thresholds count as good:
+
+| Metric                          | Good at p75 | What it says                               |
+| ------------------------------- | ----------- | ------------------------------------------ |
+| LCP (Largest Contentful Paint)  | ≤ 2.5 s     | When the main content (hero, poster) shows |
+| INP (Interaction to Next Paint) | ≤ 200 ms    | How fast clicks and typing respond         |
+| CLS (Cumulative Layout Shift)   | ≤ 0.1       | How much the layout jumps                  |
+
+Field numbers need real traffic before they mean much. With few visits,
+treat them as a trend, not a verdict.
+
 ## Known issues
 
-- **JavaScript budget:** pages ship ~200–204 KB of gzipped JavaScript
-  (measured after #46; Lighthouse warns above 200 KB and fails above
-  215 KB), ~131–138 KB of which is the Next.js/React framework.
+- **JavaScript budget:** pages ship ~204–207 KB of gzipped JavaScript
+  (measured after #86, which added ~1 KB for Speed Insights; Lighthouse warns
+  above 200 KB and fails above 215 KB), ~131–138 KB of which is the Next.js/React framework.
   [#46](https://github.com/MooseNguyen/ui-moose-movie-web-2/issues/46)
   removed ~37 KB by replacing the locale dropdown with a link and loading
   the dialogs on first use. Going below 200 KB was not pursued: the remaining
