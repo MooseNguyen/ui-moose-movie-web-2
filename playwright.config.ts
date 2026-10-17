@@ -9,10 +9,16 @@ export default defineConfig({
   testDir: 'tests/e2e',
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
+  // Every test shares one production server and live TMDB. Scaling workers
+  // with CPU cores (14 on a 28-core machine) overloads that server until
+  // cold Detail navigations take 15s+. CI keeps Playwright's default.
+  workers: isCI ? undefined : 4,
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${PORT}`,
-    trace: 'on-first-retry',
+    // CI keeps the trace of every failed attempt, including a first failure
+    // that passes on retry, so flaky runs can be diagnosed.
+    trace: isCI ? 'retain-on-failure' : 'on-first-retry',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
