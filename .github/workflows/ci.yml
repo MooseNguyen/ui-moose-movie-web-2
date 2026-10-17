@@ -73,7 +73,9 @@ jobs:
           TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}
 
       - uses: actions/upload-artifact@v7
-        if: failure()
+        # Also on success: a test that passed on retry was flaky, and its
+        # traces are the only evidence.
+        if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: playwright-report/
