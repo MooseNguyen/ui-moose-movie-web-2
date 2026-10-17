@@ -17,7 +17,7 @@ describe('robots', () => {
       rules: {
         userAgent: '*',
         allow: '/',
-        disallow: ['/vi/search', '/en/search'],
+        disallow: ['/vi/search', '/en/search', '/api/'],
       },
       sitemap: 'https://moose.example/sitemap.xml',
     });

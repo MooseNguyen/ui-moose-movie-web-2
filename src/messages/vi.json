@@ -205,6 +205,13 @@
     "prompt": "Nhập từ khóa để tìm phim lẻ, phim bộ và người.",
     "empty": "Không tìm thấy kết quả cho “{query}”.",
     "loadError": "Không thể tải kết quả tìm kiếm lúc này. Vui lòng thử lại.",
+    "suggestions": "Gợi ý",
+    "suggestLoading": "Đang tìm…",
+    "suggestCount": "{count} gợi ý",
+    "suggestEmpty": "Không có gợi ý cho “{query}”.",
+    "suggestError": "Không tải được gợi ý. Nhấn Enter để xem trang kết quả.",
+    "seeAll": "Xem tất cả kết quả cho “{query}”",
+    "shortcutHint": "Mở nhanh bằng <kbd>{keys}</kbd>",
     "tabsLabel": "Chọn loại kết quả",
     "tabs": {
       "multi": "Tất cả",
