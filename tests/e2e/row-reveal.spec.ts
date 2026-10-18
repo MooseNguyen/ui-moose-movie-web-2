@@ -12,10 +12,16 @@ async function style(locator: Locator, property: 'animationName' | 'opacity') {
   );
 }
 
+// Vertical offset of the reveal slide, in px. The settled state computes to
+// an identity matrix rather than `none`, so compare the offset, not the string.
+async function offsetY(locator: Locator) {
+  return locator.evaluate(
+    (element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m42
+  );
+}
+
 test.describe('row reveal', () => {
-  test('rows animate and end fully visible once scrolled into view', async ({
-    page,
-  }) => {
+  test('rows slide in and settle once scrolled into view', async ({ page }) => {
     await page.goto('/vi');
     const row = rows(page).last();
     await expect(row).toBeAttached();
@@ -26,20 +32,38 @@ test.describe('row reveal', () => {
     await row.evaluate((element) =>
       element.scrollIntoView({ block: 'center' })
     );
-    await expect.poll(() => style(row, 'opacity')).toBe('1');
+    await expect.poll(() => offsetY(row)).toBe(0);
 
     const card = row.locator('[data-slot="carousel-item"]').first();
     expect(await style(card, 'animationName')).toBe('row-reveal-item');
-    await expect.poll(() => style(card, 'opacity')).toBe('1');
+    await expect.poll(() => offsetY(card)).toBe(0);
   });
 
-  test('a row already on screen at load is not dimmed', async ({ page }) => {
+  // Regression for #90: tools that never scroll (axe in Lighthouse) measure
+  // rows in their start state, so that state must keep full contrast.
+  test('a row not yet scrolled into view is offset but not faded', async ({
+    page,
+  }) => {
+    await page.goto('/vi');
+    const row = rows(page).last();
+    await expect(row).toBeAttached();
+    const card = row.locator('[data-slot="carousel-item"]').first();
+
+    expect(await offsetY(row)).toBeGreaterThan(0);
+    expect(await offsetY(card)).toBeGreaterThan(0);
+    expect(await style(row, 'opacity')).toBe('1');
+    expect(await style(card, 'opacity')).toBe('1');
+  });
+
+  test('a row already on screen at load is in its end state', async ({
+    page,
+  }) => {
     // A tall viewport puts the first Detail row on screen without scrolling.
     await page.setViewportSize({ width: 1280, height: 2400 });
     await page.goto('/vi/movie/550');
     const row = rows(page).first();
     await expect(row).toBeVisible();
-    await expect.poll(() => style(row, 'opacity')).toBe('1');
+    await expect.poll(() => offsetY(row)).toBe(0);
   });
 
   test('no horizontal scroll while rows animate', async ({ page }) => {
