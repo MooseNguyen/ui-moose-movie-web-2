@@ -30,6 +30,25 @@ describe('DetailHero', () => {
     );
   });
 
+  it('tints the backdrop with the ambient hue, under the readability overlay', () => {
+    renderWithIntl(
+      <DetailHero detail={movieDetail} ambient={{ hue: 200, chroma: 0.08 }} />
+    );
+    const tint = document.querySelector<HTMLElement>('.ambient-tint');
+
+    expect(tint?.style.getPropertyValue('--ambient-h')).toBe('200');
+    expect(tint?.style.getPropertyValue('--ambient-c')).toBe('0.08');
+    // Decorative, and painted before the gradient that keeps text readable.
+    expect(tint?.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(tint?.nextElementSibling?.className).toContain('bg-gradient-to-t');
+  });
+
+  it('has no tint without an ambient color', () => {
+    renderWithIntl(<DetailHero detail={movieDetail} />);
+
+    expect(document.querySelector('.ambient-tint')).toBeNull();
+  });
+
   it('links each genre to discover filtered by media type and genre', () => {
     renderWithIntl(<DetailHero detail={movieDetail} />);
 

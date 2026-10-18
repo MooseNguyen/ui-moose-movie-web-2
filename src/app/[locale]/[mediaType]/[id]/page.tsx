@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -15,6 +15,7 @@ import { tmdbImage } from '@/lib/images';
 import { parseMediaType, parsePositiveId } from '@/lib/route-params';
 import { absoluteUrl, buildMetadata, movieJsonLd } from '@/lib/seo';
 import { truncate } from '@/lib/utils';
+import { getPosterAmbient } from '@/lib/poster-color';
 import { getDetail } from '@/lib/tmdb/api';
 import { TmdbError } from '@/lib/tmdb/errors';
 
@@ -24,6 +25,8 @@ const META_DESCRIPTION_LENGTH = 160;
 
 // Request-scoped memo: generateMetadata and the page share one TMDB call.
 const getDetailCached = cache(getDetail);
+// Same for the poster color: the viewport and the page share one fetch.
+const getAmbientCached = cache(getPosterAmbient);
 
 // No loading.tsx at or above this segment: existence is resolved (and
 // notFound() thrown) before anything streams, so a missing title is a real
@@ -80,14 +83,23 @@ export async function generateMetadata(
   });
 }
 
+export async function generateViewport(
+  props: DetailPageProps
+): Promise<Viewport> {
+  const { detail } = await loadDetail(props);
+  const ambient = await getAmbientCached(detail.posterPath);
+  return ambient ? { themeColor: ambient.themeColor } : {};
+}
+
 export default async function DetailPage(props: DetailPageProps) {
   const { locale, path, detail } = await loadDetail(props);
+  const ambient = await getAmbientCached(detail.posterPath);
   const t = await getTranslations({ locale, namespace: 'detail' });
 
   return (
     <div className="pb-10">
       <JsonLd data={movieJsonLd(detail, absoluteUrl(locale, path))} />
-      <DetailHero detail={detail} />
+      <DetailHero detail={detail} ambient={ambient} />
       {/* Block layout (space-y), not flex: flex items default to min-width:auto and the carousels would overflow. */}
       <div className="mx-auto max-w-7xl space-y-12 px-4">
         <CastList cast={detail.cast} />
