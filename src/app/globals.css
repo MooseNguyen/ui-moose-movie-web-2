@@ -139,8 +139,11 @@
 
 /* Scroll-driven reveal for media rows (`row-reveal` on the row <section>).
    Pure CSS, no JS: the progress follows the page scroll, so a row already on
-   screen at load is in its end state, and opacity never drops to 0, so content
-   stays readable if anything goes wrong. Only opacity/transform change: no CLS.
+   screen at load is in its end state. Only transform changes: no CLS, and
+   text keeps full contrast at every point of the animation. Opacity is
+   deliberately not animated: nested opacity multiplies (row × card), so rows
+   not yet scrolled into view would render their text far below WCAG contrast
+   for anyone who does not scroll (axe in Lighthouse, see #90).
    Cards cannot use `view()` themselves: the carousel viewport is
    `overflow: hidden`, which makes it their nearest scroll container. The
    section therefore names a view timeline (--row) that its cards reference,
@@ -183,22 +186,18 @@
 
 @keyframes row-reveal {
   from {
-    opacity: 0.4;
     transform: translateY(24px);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
 
 @keyframes row-reveal-item {
   from {
-    opacity: 0.35;
     transform: translateY(16px);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
