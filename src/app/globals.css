@@ -297,3 +297,17 @@
     animation: none !important;
   }
 }
+
+/* Detail ambient tint (poster-color.ts): the poster's hue and chroma come
+   from the server, the lightness is fixed per theme here. Text contrast
+   therefore never depends on the poster: white text on the dark tint and
+   dark text on the light tint stay above 4.5:1 even with no overlay (the
+   hero's gradient overlay sits on top of it anyway). */
+.ambient-tint {
+  background-color: oklch(0.88 var(--ambient-c) var(--ambient-h));
+  opacity: 0.55;
+}
+
+.dark .ambient-tint {
+  background-color: oklch(0.42 var(--ambient-c) var(--ambient-h));
+}

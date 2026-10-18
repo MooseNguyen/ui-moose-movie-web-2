@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { useFormatter, useTranslations } from 'next-intl';
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, type CSSProperties, type ReactNode } from 'react';
 import { posterTransitionName } from '@/components/media/poster-transition';
 import { TrailerButton } from '@/components/media/TrailerButton';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
@@ -10,7 +10,13 @@ import type { MediaDetail } from '@/lib/tmdb/types';
 
 const MAX_STUDIOS = 3;
 
-export function DetailHero({ detail }: { detail: MediaDetail }) {
+type DetailHeroProps = {
+  detail: MediaDetail;
+  /** Poster hue and chroma for the backdrop tint (see poster-color.ts). */
+  ambient?: { hue: number; chroma: number } | null;
+};
+
+export function DetailHero({ detail, ambient }: DetailHeroProps) {
   const t = useTranslations('detail');
   const format = useFormatter();
 
@@ -92,6 +98,17 @@ export function DetailHero({ detail }: { detail: MediaDetail }) {
           unoptimized={!detail.backdropPath}
           className="scale-110 object-cover opacity-40 blur-md"
         />
+        {ambient && (
+          <div
+            className="ambient-tint absolute inset-0"
+            style={
+              {
+                '--ambient-h': ambient.hue,
+                '--ambient-c': ambient.chroma,
+              } as CSSProperties
+            }
+          />
+        )}
         <div className="from-background via-background/80 to-background/40 absolute inset-0 bg-gradient-to-t" />
       </div>
 

@@ -5,9 +5,15 @@ import { TmdbError } from '@/lib/tmdb/errors';
 import { movieDetail, tvDetail } from '../../../../../tests/fixtures/media';
 import { TEST_SITE_URL } from '../../../../../tests/utils/mock-env';
 import { renderServerTree } from '../../../../../tests/utils/render-server';
-import DetailPage, { generateMetadata, generateStaticParams } from './page';
+import { getPosterAmbient } from '@/lib/poster-color';
+import DetailPage, {
+  generateMetadata,
+  generateStaticParams,
+  generateViewport,
+} from './page';
 
 vi.mock('@/lib/tmdb/api', () => ({ getDetail: vi.fn() }));
+vi.mock('@/lib/poster-color', () => ({ getPosterAmbient: vi.fn() }));
 vi.mock('@/lib/actions/media', () => ({ getTrailer: vi.fn() }));
 vi.mock('@/lib/env', () => import('../../../../../tests/utils/mock-env'));
 vi.mock('next/navigation', () => ({
@@ -37,6 +43,8 @@ vi.mock('next-intl/server', async () => {
 });
 
 const mockedGetDetail = vi.mocked(getDetail);
+const mockedAmbient = vi.mocked(getPosterAmbient);
+const ambient = { hue: 29.2, chroma: 0.12, themeColor: '#3b1d18' };
 
 const props = (locale: string, mediaType: string, id: string) =>
   ({
@@ -170,6 +178,44 @@ describe('DetailPage', () => {
 
     await expect(DetailPage(props('en', 'movie', '550'))).rejects.toBe(error);
     expect(notFound).not.toHaveBeenCalled();
+  });
+});
+
+describe('ambient tint', () => {
+  beforeEach(() => mockedGetDetail.mockResolvedValue(movieDetail));
+
+  it('tints the hero with the poster color', async () => {
+    mockedAmbient.mockResolvedValue(ambient);
+
+    const { container } = await renderServerTree(
+      await DetailPage(props('en', 'movie', '550'))
+    );
+
+    expect(mockedAmbient).toHaveBeenCalledWith(movieDetail.posterPath);
+    const tint = container.querySelector<HTMLElement>('.ambient-tint');
+    expect(tint?.style.getPropertyValue('--ambient-h')).toBe('29.2');
+    expect(tint?.style.getPropertyValue('--ambient-c')).toBe('0.12');
+  });
+
+  it('renders without a tint when the color is unavailable', async () => {
+    mockedAmbient.mockResolvedValue(null);
+
+    const { container } = await renderServerTree(
+      await DetailPage(props('en', 'movie', '550'))
+    );
+
+    expect(container.querySelector('.ambient-tint')).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
+  it('sets the theme color from the poster', async () => {
+    mockedAmbient.mockResolvedValue(ambient);
+    expect(await generateViewport(props('en', 'movie', '550'))).toEqual({
+      themeColor: '#3b1d18',
+    });
+
+    mockedAmbient.mockResolvedValue(null);
+    expect(await generateViewport(props('en', 'movie', '550'))).toEqual({});
   });
 });
 
