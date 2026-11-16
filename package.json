@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@lhci/cli": "0.16.1",
-    "@playwright/test": "1.65.0",
+    "@playwright/test": "1.65.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
