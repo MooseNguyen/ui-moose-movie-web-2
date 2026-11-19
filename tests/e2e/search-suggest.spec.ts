@@ -12,13 +12,39 @@ const isAt = (href: string | null) => (url: URL) =>
 const trigger = (page: Page) =>
   page.getByRole('banner').getByRole('button', { name: 'Tìm kiếm' });
 
-async function openWithShortcut(page: Page) {
-  await page.goto('/vi');
-  // Keys pressed before hydration have no listener yet: retry.
+// CSS, not a role query: while the modal is open, Radix hides the rest of the
+// page from the accessibility tree, so the trigger has no role to match.
+const openingOrOpen = (page: Page) =>
+  page.locator(
+    'header button[aria-keyshortcuts]:is([aria-busy="true"], [aria-expanded="true"])'
+  );
+
+const OPEN_ACTIONS = {
+  shortcut: (page: Page) => page.keyboard.press('ControlOrMeta+k'),
+  click: (page: Page) => trigger(page).click(),
+  tap: (page: Page) => trigger(page).tap(),
+};
+
+/**
+ * Starts opening the search dialog, retrying until the page has hydrated:
+ * before that, nothing listens to the key or the click.
+ *
+ * Never acts again once an open is pending or shown. The dialog code is
+ * lazy-loaded and may take over a second on CI; a second Ctrl/⌘K toggles,
+ * so it would cancel the open or close the dialog as it appears (#107).
+ */
+async function startOpening(page: Page, via: keyof typeof OPEN_ACTIONS) {
   await expect(async () => {
-    await page.keyboard.press('ControlOrMeta+k');
-    await expect(dialog(page)).toBeVisible({ timeout: 1000 });
+    if ((await openingOrOpen(page).count()) === 0) {
+      await OPEN_ACTIONS[via](page);
+    }
+    await expect(openingOrOpen(page)).toHaveCount(1, { timeout: 1000 });
   }).toPass();
+}
+
+async function openSearch(page: Page, via: keyof typeof OPEN_ACTIONS) {
+  await startOpening(page, via);
+  await expect(dialog(page)).toBeVisible();
   await expect(combobox(page)).toBeFocused();
 }
 
@@ -28,7 +54,8 @@ test.describe('search suggestions (keyboard)', () => {
   test('Ctrl/⌘+K, type, arrow down, Enter opens the first suggestion', async ({
     page,
   }) => {
-    await openWithShortcut(page);
+    await page.goto('/vi');
+    await openSearch(page, 'shortcut');
 
     await combobox(page).fill('batman');
     const options = page.getByRole('listbox').getByRole('option');
@@ -53,7 +80,8 @@ test.describe('search suggestions (keyboard)', () => {
   test('Enter with nothing selected goes to the results page', async ({
     page,
   }) => {
-    await openWithShortcut(page);
+    await page.goto('/vi');
+    await openSearch(page, 'shortcut');
 
     await combobox(page).fill('người nhện');
     await page.keyboard.press('Enter');
@@ -66,15 +94,36 @@ test.describe('search suggestions (keyboard)', () => {
     page,
   }) => {
     await page.goto('/vi');
-    await expect(async () => {
-      await trigger(page).click();
-      await expect(dialog(page)).toBeVisible({ timeout: 1000 });
-    }).toPass();
+    await openSearch(page, 'click');
 
     await page.keyboard.press('ControlOrMeta+k');
 
     await expect(dialog(page)).toBeHidden();
     await expect(trigger(page)).toBeFocused();
+  });
+
+  test('one Ctrl/⌘+K opens the dialog even when its code loads slowly', async ({
+    page,
+  }) => {
+    await page.goto('/vi');
+    // Every chunk requested after load is the lazy dialog (or later code):
+    // hold them until released, instead of guessing a delay.
+    let release!: () => void;
+    const released = new Promise<void>((resolve) => (release = resolve));
+    await page.route('**/_next/static/chunks/**', async (route) => {
+      await released;
+      await route.continue();
+    });
+
+    await startOpening(page, 'shortcut');
+    await expect(trigger(page)).toHaveAttribute('aria-busy', 'true');
+    await expect(trigger(page)).toHaveAttribute('aria-expanded', 'false');
+    await expect(dialog(page)).toBeHidden();
+
+    release();
+
+    await expect(dialog(page)).toBeVisible();
+    await expect(combobox(page)).toBeFocused();
   });
 
   for (const theme of ['dark', 'light'] as const) {
@@ -84,7 +133,8 @@ test.describe('search suggestions (keyboard)', () => {
       await page.addInitScript((value) => {
         localStorage.setItem('theme', value);
       }, theme);
-      await openWithShortcut(page);
+      await page.goto('/vi');
+      await openSearch(page, 'shortcut');
       await combobox(page).fill('batman');
       await expect(
         page.getByRole('listbox').getByRole('option').nth(1)
@@ -143,10 +193,7 @@ test.describe('search suggestions (keyboard)', () => {
 test('touch: tapping a suggestion opens it', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'touch only');
   await page.goto('/vi');
-  await expect(async () => {
-    await trigger(page).tap();
-    await expect(dialog(page)).toBeVisible({ timeout: 1000 });
-  }).toPass();
+  await openSearch(page, 'tap');
 
   await combobox(page).fill('batman');
   const options = page.getByRole('listbox').getByRole('option');
