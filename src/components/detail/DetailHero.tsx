@@ -94,7 +94,7 @@ export function DetailHero({ detail, ambient }: DetailHeroProps) {
           alt=""
           fill
           sizes="100vw"
-          priority
+          preload
           unoptimized={!detail.backdropPath}
           className="scale-110 object-cover opacity-40 blur-md"
         />
@@ -129,7 +129,7 @@ export function DetailHero({ detail, ambient }: DetailHeroProps) {
             alt=""
             fill
             sizes="(min-width: 1024px) 18rem, (min-width: 768px) 16rem, (min-width: 640px) 14rem, 11rem"
-            priority
+            preload
             unoptimized={!detail.posterPath}
             className="object-cover"
           />
