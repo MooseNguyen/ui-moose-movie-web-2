@@ -1,6 +1,8 @@
 import { screen } from '@testing-library/react';
 import { renderWithIntl } from '../../../tests/utils/render';
+import { CAROUSEL_POSTER_SIZES } from './carousel-layout';
 import { MediaCard } from './MediaCard';
+import { GRID_POSTER_SIZES } from './MediaGrid';
 import { tvItem } from '../../../tests/fixtures/media';
 
 vi.mock(
@@ -89,6 +91,20 @@ describe('MediaCard', () => {
     renderWithIntl(<MediaCard item={tvItem} action={<button>Fav</button>} />);
     const button = screen.getByRole('button', { name: 'Fav' });
     expect(screen.getByRole('link')).not.toContainElement(button);
+  });
+
+  it('sizes the poster for a grid by default and for the given layout otherwise', () => {
+    const { unmount } = renderWithIntl(<MediaCard item={tvItem} />);
+    expect(document.querySelector('img')).toHaveAttribute(
+      'sizes',
+      GRID_POSTER_SIZES
+    );
+    unmount();
+    renderWithIntl(<MediaCard item={tvItem} sizes={CAROUSEL_POSTER_SIZES} />);
+    expect(document.querySelector('img')).toHaveAttribute(
+      'sizes',
+      CAROUSEL_POSTER_SIZES
+    );
   });
 
   it('is lazy by default and eager with a high fetch priority when priority is set', () => {

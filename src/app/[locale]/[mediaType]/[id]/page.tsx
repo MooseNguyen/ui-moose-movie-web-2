@@ -8,6 +8,7 @@ import { DetailHero } from '@/components/detail/DetailHero';
 import { JsonLd } from '@/components/JsonLd';
 import { VideoList } from '@/components/detail/VideoList';
 import { MediaCard } from '@/components/media/MediaCard';
+import { CAROUSEL_POSTER_SIZES } from '@/components/media/carousel-layout';
 import { MediaCarousel } from '@/components/media/MediaCarousel';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { routing } from '@/i18n/routing';
@@ -113,6 +114,7 @@ export default async function DetailPage(props: DetailPageProps) {
                 <MediaCard
                   key={item.id}
                   item={item}
+                  sizes={CAROUSEL_POSTER_SIZES}
                   action={
                     <FavoriteButton
                       item={{
