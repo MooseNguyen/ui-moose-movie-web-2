@@ -9,6 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { CAROUSEL_ITEM_CLASS } from './carousel-layout';
 
 type MediaCarouselProps = {
   /** Server-rendered cards; each child becomes one slide. */
@@ -30,9 +31,7 @@ export function MediaCarousel({ children, label }: MediaCarouselProps) {
       {/* py-1/pr-1: room for the cards' focus ring, which the viewport's overflow-hidden would clip */}
       <CarouselContent className="py-1 pr-1">
         {Children.map(children, (child) => (
-          <CarouselItem className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
-            {child}
-          </CarouselItem>
+          <CarouselItem className={CAROUSEL_ITEM_CLASS}>{child}</CarouselItem>
         ))}
       </CarouselContent>
       <CarouselPrevious

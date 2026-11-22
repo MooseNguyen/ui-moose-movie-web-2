@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { MediaCard } from '@/components/media/MediaCard';
+import { CAROUSEL_POSTER_SIZES } from '@/components/media/carousel-layout';
 import { MediaCarousel } from '@/components/media/MediaCarousel';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { getTrendingWall } from '@/lib/tmdb/api';
@@ -62,6 +63,7 @@ function PosterWallView({ items }: { items: MediaItem[] }) {
             <MediaCard
               key={`${item.mediaType}-${item.id}`}
               item={item}
+              sizes={CAROUSEL_POSTER_SIZES}
               action={
                 <FavoriteButton
                   item={{
