@@ -14,7 +14,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['tests/setup.ts'],
-    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    // `.claude/**` holds Claude Code git worktrees: full repo copies whose
+    // tests (including Playwright specs) must not run with this suite.
+    exclude: [...configDefaults.exclude, 'tests/e2e/**', '.claude/**'],
     coverage: {
       provider: 'v8',
       include: ['src/lib/**', 'src/features/**'],
