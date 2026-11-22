@@ -1,12 +1,16 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { toast, type Action } from 'sonner';
+import type { Action } from 'sonner';
+import { preloadToasts, showToast } from '@/components/ui/toast';
 import { stubLocalStorage } from '../../../tests/utils/memory-storage';
 import { renderWithIntl } from '../../../tests/utils/render';
 import { FavoritesView } from './FavoritesView';
 import { resetSafeStorage, useFavorites, type FavoriteItem } from './store';
 
-vi.mock('sonner', () => ({ toast: vi.fn() }));
+vi.mock('@/components/ui/toast', () => ({
+  showToast: vi.fn(),
+  preloadToasts: vi.fn(),
+}));
 vi.mock(
   '@/i18n/navigation',
   () => import('../../../tests/utils/mock-navigation')
@@ -38,7 +42,8 @@ beforeEach(() => {
   storage = stubLocalStorage();
   resetSafeStorage();
   useFavorites.setState(initial, true);
-  vi.mocked(toast).mockClear();
+  vi.mocked(showToast).mockClear();
+  vi.mocked(preloadToasts).mockClear();
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -78,6 +83,14 @@ describe('FavoritesView', () => {
     act(() => useFavorites.setState({ hasHydrated: true }));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(cardHrefs()).toEqual(['/en/movie/1']);
+  });
+
+  it('starts loading the undo toast code on mount, before any removal', () => {
+    seed([fav(1, 'movie', 1)]);
+    renderView();
+
+    expect(preloadToasts).toHaveBeenCalledTimes(1);
+    expect(showToast).not.toHaveBeenCalled();
   });
 
   it('shows a prompt and a link to /en/discover when the list is empty', () => {
@@ -179,7 +192,7 @@ describe('FavoritesView', () => {
 
       expect(useFavorites.getState().items.map((i) => i.id)).toEqual([2, 3]);
       expect(cardHrefs()).toEqual(['/en/movie/2', '/en/movie/3']);
-      expect(toast).toHaveBeenCalledWith(
+      expect(showToast).toHaveBeenCalledWith(
         'First removed from favorites',
         expect.objectContaining({
           action: expect.objectContaining({ label: 'Undo' }),
@@ -200,7 +213,7 @@ describe('FavoritesView', () => {
 
       await user.click(removeButton('Second'));
       expect(removeButton('Second')).toHaveFocus();
-      expect(toast).not.toHaveBeenCalled();
+      expect(showToast).not.toHaveBeenCalled();
 
       // An unrelated later change must not move focus to a stale index.
       act(() =>
@@ -264,7 +277,7 @@ describe('FavoritesView', () => {
       expect(cardHrefs()).toEqual(['/en/movie/1', '/en/movie/3']);
       const focused = document.activeElement;
 
-      const [, options] = vi.mocked(toast).mock.calls[0];
+      const [, options] = vi.mocked(showToast).mock.calls[0];
       // What sonner runs when the toast's Undo button is clicked.
       const undo = options?.action as Action;
       act(() => undo.onClick({} as Parameters<Action['onClick']>[0]));

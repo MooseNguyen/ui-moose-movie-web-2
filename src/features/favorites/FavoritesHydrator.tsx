@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '@/components/ui/toast';
 import { FAVORITES_STORAGE_KEY, useFavorites } from './store';
 
 /** Renders nothing: loads favorites after mount and keeps tabs in sync. */
@@ -36,7 +36,7 @@ export function FavoritesHydrator() {
   useEffect(() => {
     if (!storageAvailable && !warned.current) {
       warned.current = true;
-      toast(t('storageUnavailable'));
+      showToast(t('storageUnavailable'));
     }
   }, [storageAvailable, t]);
 

@@ -3,7 +3,20 @@ import createNextIntlPlugin from 'next-intl/plugin';
 import { assertBuildEnv, shouldAssertBuildEnv } from './src/lib/build-env';
 import { TMDB_WIDTHS } from './src/lib/tmdb-image-loader';
 
-const withNextIntl = createNextIntlPlugin();
+// Messages are compiled from ICU strings at build time, so the client ships
+// next-intl's small format-only runtime instead of the ICU parser (~9 KB
+// gzip, issue #113). Unit tests do not run this plugin and still format the
+// raw ICU strings; E2E covers the compiled path.
+const withNextIntl = createNextIntlPlugin({
+  experimental: {
+    messages: {
+      path: './src/messages',
+      format: 'json',
+      locales: 'infer',
+      precompile: true,
+    },
+  },
+});
 
 // Widths at or above the smallest card width go to deviceSizes (used for `vw`
 // sizes and fill images); the rest to imageSizes. Together they are exactly

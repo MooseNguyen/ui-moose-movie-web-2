@@ -1,12 +1,12 @@
 import { act, render } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
-import { toast } from 'sonner';
+import { showToast } from '@/components/ui/toast';
 import en from '@/messages/en.json';
 import { stubLocalStorage } from '../../../tests/utils/memory-storage';
 import { FavoritesHydrator } from './FavoritesHydrator';
 import { resetSafeStorage, useFavorites } from './store';
 
-vi.mock('sonner', () => ({ toast: vi.fn() }));
+vi.mock('@/components/ui/toast', () => ({ showToast: vi.fn() }));
 
 const initial = useFavorites.getInitialState();
 const KEY = 'moose-favorites';
@@ -28,7 +28,7 @@ beforeEach(() => {
   storage = stubLocalStorage();
   resetSafeStorage();
   useFavorites.setState(initial, true);
-  vi.mocked(toast).mockClear();
+  vi.mocked(showToast).mockClear();
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -48,7 +48,7 @@ describe('FavoritesHydrator', () => {
     await act(async () => void mount());
     expect(useFavorites.getState().hasHydrated).toBe(true);
     expect(useFavorites.getState().items.map((i) => i.id)).toEqual([7]);
-    expect(toast).not.toHaveBeenCalled();
+    expect(showToast).not.toHaveBeenCalled();
   });
 
   it('rehydrates when another tab writes the favorites key', async () => {
@@ -96,12 +96,12 @@ describe('FavoritesHydrator', () => {
     });
     await act(async () => void mount());
     expect(useFavorites.getState().storageAvailable).toBe(false);
-    expect(toast).toHaveBeenCalledTimes(1);
-    expect(toast).toHaveBeenCalledWith(en.favorites.storageUnavailable);
+    expect(showToast).toHaveBeenCalledTimes(1);
+    expect(showToast).toHaveBeenCalledWith(en.favorites.storageUnavailable);
 
     await act(async () => {
       window.dispatchEvent(new StorageEvent('storage', { key: KEY }));
     });
-    expect(toast).toHaveBeenCalledTimes(1);
+    expect(showToast).toHaveBeenCalledTimes(1);
   });
 });

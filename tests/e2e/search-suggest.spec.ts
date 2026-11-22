@@ -57,6 +57,12 @@ test.describe('search suggestions (keyboard)', () => {
     await page.goto('/vi');
     await openSearch(page, 'shortcut');
 
+    // Shortcut hint: a precompiled `t.rich` message (a <kbd> tag around an
+    // argument), so the build-time message compilation is covered too.
+    const hint = dialog(page).locator('p', { has: page.locator('kbd') });
+    await expect(hint).toHaveText(/^Mở nhanh bằng (Ctrl K|⌘K)$/);
+    await expect(hint.locator('kbd')).toHaveText(/^(Ctrl K|⌘K)$/);
+
     await combobox(page).fill('batman');
     const options = page.getByRole('listbox').getByRole('option');
     await expect(options.nth(1)).toBeVisible();

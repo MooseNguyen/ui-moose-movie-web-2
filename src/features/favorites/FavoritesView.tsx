@@ -3,7 +3,6 @@
 import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { MediaCard, type MediaCardItem } from '@/components/media/MediaCard';
 import { MediaGrid } from '@/components/media/MediaGrid';
 import {
@@ -20,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { preloadToasts, showToast } from '@/components/ui/toast';
 import { Link } from '@/i18n/navigation';
 import { selectSorted, useFavorites, type FavoriteItem } from './store';
 
@@ -86,6 +86,9 @@ export function FavoritesView({ headingId }: FavoritesViewProps) {
     setFilter('all');
   }
 
+  // Every removal shows an undo toast: fetch its code now, not on the click.
+  useEffect(() => preloadToasts(), []);
+
   useEffect(() => {
     const pending = pendingFocus.current;
     if (!pending) return;
@@ -144,7 +147,7 @@ export function FavoritesView({ headingId }: FavoritesViewProps) {
     // Store updates from an event handler render after it returns, so the
     // effect still sees this flag.
     pendingFocus.current = { filter, index };
-    toast(t('removed', { title: item.title }), {
+    showToast(t('removed', { title: item.title }), {
       duration: UNDO_TOAST_DURATION_MS,
       action: { label: t('undo'), onClick: () => restore(item) },
     });
