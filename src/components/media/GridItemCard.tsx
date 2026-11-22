@@ -6,7 +6,7 @@ import { PersonCard } from './PersonCard';
 type GridItemCardProps = {
   item: GridItem;
   headingLevel?: 'h2' | 'h3';
-  /** Set for above-the-fold cards so the image is not lazy-loaded. */
+  /** Set for LCP-candidate cards: the image is preloaded with a high fetch priority. */
   priority?: boolean;
 };
 

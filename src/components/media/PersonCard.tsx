@@ -15,7 +15,7 @@ type PersonCardProps = {
    * grid sits directly under the page h1, so no heading level is skipped.
    */
   headingLevel?: 'h2' | 'h3';
-  /** Set for above-the-fold cards so the photo is not lazy-loaded. */
+  /** Set for LCP-candidate cards: the photo is preloaded with a high fetch priority. */
   priority?: boolean;
 };
 
@@ -39,7 +39,10 @@ export function PersonCard({
           fill
           sizes={PROFILE_SIZES}
           unoptimized={!person.profilePath}
-          priority={priority}
+          // LCP candidate: preloaded with a high fetch priority; the rest wait.
+          {...(priority
+            ? { preload: true, fetchPriority: 'high' as const }
+            : { loading: 'lazy' as const })}
           className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
         {/* Decorative light that follows the pointer (TiltController + globals.css). */}

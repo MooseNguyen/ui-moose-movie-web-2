@@ -56,12 +56,14 @@ describe('LoadMoreGrid', () => {
       items: [...page1.items, media(3, 'Gamma')],
     };
     renderWithIntl(<LoadMoreGrid initial={three} loadMore={vi.fn()} />);
-    const loading = Array.from(document.querySelectorAll('img')).map((img) =>
-      img.getAttribute('loading')
-    );
-    expect(loading).toHaveLength(3);
-    expect(loading.slice(0, 2)).not.toContain('lazy');
-    expect(loading[2]).toBe('lazy');
+    const images = Array.from(document.querySelectorAll('img'));
+    expect(images).toHaveLength(3);
+    images.slice(0, 2).forEach((img) => {
+      expect(img).not.toHaveAttribute('loading', 'lazy');
+      expect(img).toHaveAttribute('fetchpriority', 'high');
+    });
+    expect(images[2]).toHaveAttribute('loading', 'lazy');
+    expect(images[2]).not.toHaveAttribute('fetchpriority');
   });
 
   it('appends the next page after a click', async () => {
@@ -82,10 +84,9 @@ describe('LoadMoreGrid', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(screen.getByText('Gamma')).toBeInTheDocument();
     // Appended posters stay lazy: only the first initial row is prioritized.
-    expect(document.querySelectorAll('img')[2]).toHaveAttribute(
-      'loading',
-      'lazy'
-    );
+    const appended = document.querySelectorAll('img')[2];
+    expect(appended).toHaveAttribute('loading', 'lazy');
+    expect(appended).not.toHaveAttribute('fetchpriority');
     expect(loadButton()).not.toHaveAttribute('aria-disabled');
   });
 

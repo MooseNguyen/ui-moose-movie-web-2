@@ -91,14 +91,15 @@ describe('MediaCard', () => {
     expect(screen.getByRole('link')).not.toContainElement(button);
   });
 
-  it('is lazy by default and eager when priority is set', () => {
+  it('is lazy by default and eager with a high fetch priority when priority is set', () => {
     const { unmount } = renderWithIntl(<MediaCard item={tvItem} />);
-    expect(document.querySelector('img')).toHaveAttribute('loading', 'lazy');
+    const lazy = document.querySelector('img');
+    expect(lazy).toHaveAttribute('loading', 'lazy');
+    expect(lazy).not.toHaveAttribute('fetchpriority');
     unmount();
     renderWithIntl(<MediaCard item={tvItem} priority />);
-    expect(document.querySelector('img')).not.toHaveAttribute(
-      'loading',
-      'lazy'
-    );
+    const eager = document.querySelector('img');
+    expect(eager).not.toHaveAttribute('loading', 'lazy');
+    expect(eager).toHaveAttribute('fetchpriority', 'high');
   });
 });

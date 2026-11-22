@@ -26,13 +26,14 @@ describe('GridItemCard', () => {
     'forwards priority to the card image ($mediaType)',
     (item) => {
       const { unmount } = renderWithIntl(<GridItemCard item={item} />);
-      expect(document.querySelector('img')).toHaveAttribute('loading', 'lazy');
+      const lazy = document.querySelector('img');
+      expect(lazy).toHaveAttribute('loading', 'lazy');
+      expect(lazy).not.toHaveAttribute('fetchpriority');
       unmount();
       renderWithIntl(<GridItemCard item={item} priority />);
-      expect(document.querySelector('img')).not.toHaveAttribute(
-        'loading',
-        'lazy'
-      );
+      const eager = document.querySelector('img');
+      expect(eager).not.toHaveAttribute('loading', 'lazy');
+      expect(eager).toHaveAttribute('fetchpriority', 'high');
     }
   );
 
