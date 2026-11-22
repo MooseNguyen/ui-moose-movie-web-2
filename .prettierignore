@@ -4,3 +4,4 @@ coverage
 docs
 .superpowers
 pnpm-lock.yaml
+.claude
