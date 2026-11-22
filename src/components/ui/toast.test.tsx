@@ -39,3 +39,29 @@ describe('LazyToaster', () => {
     expect(onUndo).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('showToast', () => {
+  afterEach(() => {
+    vi.doUnmock('sonner');
+    vi.restoreAllMocks();
+  });
+
+  it('logs instead of failing silently when the toast library cannot load', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    vi.doMock('sonner', () => {
+      throw new Error('offline');
+    });
+    const { showToast } = await loadToastModule();
+
+    showToast('Saved for later');
+
+    await vi.waitFor(() =>
+      expect(consoleError).toHaveBeenCalledWith(
+        '[toast] Failed to load the toast library:',
+        expect.any(Error)
+      )
+    );
+  });
+});

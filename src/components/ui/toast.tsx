@@ -39,8 +39,11 @@ function requestToaster() {
 
 // A failed chunk load (e.g. offline) leaves nothing that could display the
 // message; the action that triggered it has already happened, so the toast
-// is dropped instead of surfacing an unhandled rejection.
-const ignoreLoadError = () => {};
+// is dropped instead of surfacing an unhandled rejection. Logged so the
+// failure stays diagnosable.
+const logLoadError = (error: unknown) => {
+  console.error('[toast] Failed to load the toast library:', error);
+};
 
 /** Shows a toast, loading the toast library on first use. */
 export function showToast(message: string, options?: ExternalToast) {
@@ -49,7 +52,7 @@ export function showToast(message: string, options?: ExternalToast) {
     .then(({ toast }) => {
       toast(message, options);
     })
-    .catch(ignoreLoadError);
+    .catch(logLoadError);
 }
 
 /**
@@ -57,7 +60,7 @@ export function showToast(message: string, options?: ExternalToast) {
  * (so e.g. an undo toast is not delayed by the network).
  */
 export function preloadToasts() {
-  loadToaster().catch(ignoreLoadError);
+  loadToaster().catch(logLoadError);
 }
 
 /** Mounts the Toaster only once a toast has been requested. */
