@@ -11,6 +11,7 @@ import type {
 } from '@/lib/tmdb/constants';
 import type { MediaItem } from '@/lib/tmdb/types';
 import { MediaCard } from './MediaCard';
+import { CAROUSEL_POSTER_SIZES } from './carousel-layout';
 import { MediaCarousel } from './MediaCarousel';
 
 type RowProps = {
@@ -86,6 +87,7 @@ function MediaRowView({
             <MediaCard
               key={item.id}
               item={item}
+              sizes={CAROUSEL_POSTER_SIZES}
               action={
                 <FavoriteButton
                   item={{

@@ -3,12 +3,9 @@ import type { ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { tmdbImage } from '@/lib/images';
+import { GRID_POSTER_SIZES } from './MediaGrid';
 import { CARD_NAV_TRANSITION, posterTransitionName } from './poster-transition';
 import type { MediaItem } from '@/lib/tmdb/types';
-
-// Matches the MediaGrid / MediaCarousel column counts per breakpoint.
-const POSTER_SIZES =
-  '(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw';
 
 /** Only the fields the card reads, so callers can pass slim items (e.g. person credits). */
 export type MediaCardItem = Pick<
@@ -33,6 +30,11 @@ type MediaCardProps = {
    * grid sits directly under the page h1, so no heading level is skipped.
    */
   headingLevel?: 'h2' | 'h3';
+  /**
+   * Poster `sizes` for the layout the card sits in: GRID_POSTER_SIZES
+   * (default) or CAROUSEL_POSTER_SIZES.
+   */
+  sizes?: string;
 };
 
 export function MediaCard({
@@ -40,6 +42,7 @@ export function MediaCard({
   priority = false,
   action,
   headingLevel: Heading = 'h3',
+  sizes = GRID_POSTER_SIZES,
 }: MediaCardProps) {
   const format = useFormatter();
   const t = useTranslations('common');
@@ -64,7 +67,7 @@ export function MediaCard({
             src={tmdbImage(item.posterPath, 'w342')}
             alt=""
             fill
-            sizes={POSTER_SIZES}
+            sizes={sizes}
             unoptimized={!item.posterPath}
             // LCP candidate: preloaded with a high fetch priority; the rest wait.
             {...(priority
