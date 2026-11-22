@@ -24,7 +24,7 @@ export type MediaCardItem = Pick<
 
 type MediaCardProps = {
   item: MediaCardItem;
-  /** Set for above-the-fold cards so the poster is not lazy-loaded. */
+  /** Set for LCP-candidate cards: the poster is preloaded with a high fetch priority. */
   priority?: boolean;
   /** Slot for an overlay control (e.g. FavoriteButton), rendered outside the link. */
   action?: ReactNode;
@@ -66,7 +66,10 @@ export function MediaCard({
             fill
             sizes={POSTER_SIZES}
             unoptimized={!item.posterPath}
-            priority={priority}
+            // LCP candidate: preloaded with a high fetch priority; the rest wait.
+            {...(priority
+              ? { preload: true, fetchPriority: 'high' as const }
+              : { loading: 'lazy' as const })}
             className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
           {/* Decorative light that follows the pointer (TiltController + globals.css). */}

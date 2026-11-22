@@ -178,7 +178,7 @@ function PersonProfile({ person }: { person: PersonDetail }) {
           alt=""
           fill
           sizes="(min-width: 1024px) 18rem, (min-width: 768px) 16rem, (min-width: 640px) 14rem, 11rem"
-          priority
+          preload
           unoptimized={!person.profilePath}
           className="object-cover"
         />

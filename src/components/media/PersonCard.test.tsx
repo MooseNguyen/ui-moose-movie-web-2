@@ -30,6 +30,18 @@ describe('PersonCard', () => {
     expect(screen.getByText('Acting')).toBeInTheDocument();
   });
 
+  it('is lazy by default and eager with a high fetch priority when priority is set', () => {
+    const { unmount } = renderWithIntl(<PersonCard person={person} />);
+    const lazy = document.querySelector('img');
+    expect(lazy).toHaveAttribute('loading', 'lazy');
+    expect(lazy).not.toHaveAttribute('fetchpriority');
+    unmount();
+    renderWithIntl(<PersonCard person={person} priority />);
+    const eager = document.querySelector('img');
+    expect(eager).not.toHaveAttribute('loading', 'lazy');
+    expect(eager).toHaveAttribute('fetchpriority', 'high');
+  });
+
   it('omits the department when missing', () => {
     renderWithIntl(
       <PersonCard person={{ ...person, knownForDepartment: null }} />
