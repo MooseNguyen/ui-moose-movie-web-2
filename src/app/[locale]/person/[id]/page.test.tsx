@@ -256,7 +256,7 @@ describe('generateMetadata', () => {
     expect(description).toMatch(/…$/);
   });
 
-  it('falls back to a generic description and omits images', async () => {
+  it('falls back to a generic description and the site card', async () => {
     mockedGetPerson.mockResolvedValue({
       ...personDetail,
       biography: '',
@@ -267,7 +267,9 @@ describe('generateMetadata', () => {
     expect(metadata.description).toBe(
       'Biography and filmography of Brad Pitt.'
     );
-    expect(metadata.openGraph).not.toHaveProperty('images');
+    expect(metadata.openGraph).toMatchObject({
+      images: [{ url: '/en/opengraph-image', width: 1200, height: 630 }],
+    });
   });
 
   it('404s for invalid params and unknown ids', async () => {

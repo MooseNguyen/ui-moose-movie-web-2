@@ -249,5 +249,8 @@
     "clear": "Xóa bộ lọc",
     "empty": "Không có tiêu đề nào khớp với bộ lọc này.",
     "loadError": "Không thể tải danh sách lúc này. Vui lòng thử lại."
+  },
+  "og": {
+    "tagline": "Phim lẻ và phim bộ thịnh hành"
   }
 }
