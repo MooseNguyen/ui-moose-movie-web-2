@@ -88,8 +88,9 @@ describe('buildMetadata', () => {
     expect(alternates?.canonical).toBe(`${SITE}/vi`);
   });
 
-  it('adds Open Graph and a summary card without an image', () => {
+  it('adds Open Graph and a large card with the site card when there is no image', () => {
     const metadata = buildMetadata(base);
+    const siteCard = { url: '/en/opengraph-image', width: 1200, height: 630 };
 
     expect(metadata.title).toBe('Fight Club');
     expect(metadata.description).toBe('An insomniac office worker.');
@@ -100,16 +101,18 @@ describe('buildMetadata', () => {
       url: `${SITE}/en/movie/550`,
       title: 'Fight Club',
       description: 'An insomniac office worker.',
+      images: [siteCard],
     });
     expect(metadata.twitter).toEqual({
-      card: 'summary',
+      card: 'summary_large_image',
       title: 'Fight Club',
       description: 'An insomniac office worker.',
+      images: ['/en/opengraph-image'],
     });
     expect(metadata).not.toHaveProperty('robots');
   });
 
-  it('adds the image and a large card only when an image is given', () => {
+  it('adds an explicit image to Open Graph and Twitter', () => {
     const image = { url: 'https://img/x.jpg', width: 1280, height: 720 };
     const metadata = buildMetadata({
       ...base,
@@ -127,6 +130,14 @@ describe('buildMetadata', () => {
       card: 'summary_large_image',
       images: ['https://img/x.jpg'],
     });
+  });
+
+  it('declares no image when the segment has its own image files', () => {
+    const metadata = buildMetadata({ ...base, ownImageFile: true });
+
+    expect(metadata.openGraph).not.toHaveProperty('images');
+    expect(metadata.twitter).not.toHaveProperty('images');
+    expect(metadata.twitter).toMatchObject({ card: 'summary_large_image' });
   });
 
   it('omits the description when there is none', () => {

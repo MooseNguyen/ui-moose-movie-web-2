@@ -249,5 +249,8 @@
     "clear": "Clear filters",
     "empty": "No titles match these filters.",
     "loadError": "Could not load titles right now. Please try again."
+  },
+  "og": {
+    "tagline": "Trending movies and TV series"
   }
 }

@@ -14,6 +14,15 @@ export type SeoQuery = URLSearchParams | Record<string, string | undefined>;
 
 export type SeoImage = { url: string; width?: number; height?: number };
 
+/**
+ * The site card (src/app/[locale]/opengraph-image.tsx). Pages without their
+ * own image must name it explicitly: Next replaces `openGraph` as a whole per
+ * segment, so a page that sets it would otherwise drop the inherited image.
+ */
+function defaultOgImage(locale: AppLocale): SeoImage {
+  return { url: `/${locale}/opengraph-image`, width: 1200, height: 630 };
+}
+
 type OgType = 'website' | 'video.movie' | 'video.tv_show' | 'profile';
 
 export type BuildMetadataInput = {
@@ -25,6 +34,11 @@ export type BuildMetadataInput = {
   title: string;
   description?: string;
   image?: SeoImage;
+  /**
+   * The page's segment has its own opengraph-image / twitter-image files:
+   * declare no image, since one here would override the generated card.
+   */
+  ownImageFile?: boolean;
   type?: OgType;
   noIndex?: boolean;
 };
@@ -65,6 +79,7 @@ export function buildMetadata({
   title,
   description,
   image,
+  ownImageFile = false,
   type = 'website',
   noIndex = false,
 }: BuildMetadataInput): Metadata {
@@ -74,6 +89,7 @@ export function buildMetadata({
   );
   languages['x-default'] = absoluteUrl(routing.defaultLocale, path, query);
   const text = description === undefined ? { title } : { title, description };
+  const ogImage = ownImageFile ? null : (image ?? defaultOgImage(locale));
 
   return {
     ...text,
@@ -84,11 +100,13 @@ export function buildMetadata({
       locale: OG_LOCALES[locale],
       url: canonical,
       ...text,
-      ...(image && { images: [image] }),
+      ...(ogImage && { images: [ogImage] }),
     },
-    twitter: image
-      ? { card: 'summary_large_image', ...text, images: [image.url] }
-      : { card: 'summary', ...text },
+    twitter: {
+      card: 'summary_large_image',
+      ...text,
+      ...(ogImage && { images: [ogImage.url] }),
+    },
     ...(noIndex && { robots: { index: false, follow: true } }),
   };
 }

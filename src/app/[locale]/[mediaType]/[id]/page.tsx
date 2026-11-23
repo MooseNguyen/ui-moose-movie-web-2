@@ -12,7 +12,6 @@ import { CAROUSEL_POSTER_SIZES } from '@/components/media/carousel-layout';
 import { MediaCarousel } from '@/components/media/MediaCarousel';
 import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { routing } from '@/i18n/routing';
-import { tmdbImage } from '@/lib/images';
 import { parseMediaType, parsePositiveId } from '@/lib/route-params';
 import { absoluteUrl, buildMetadata, movieJsonLd } from '@/lib/seo';
 import { truncate } from '@/lib/utils';
@@ -73,14 +72,9 @@ export async function generateMetadata(
     path,
     title,
     description,
+    // opengraph-image.tsx / twitter-image.tsx in this segment generate the card.
+    ownImageFile: true,
     type: detail.mediaType === 'tv' ? 'video.tv_show' : 'video.movie',
-    image: detail.backdropPath
-      ? {
-          url: tmdbImage(detail.backdropPath, 'w1280', 'backdrop'),
-          width: 1280,
-          height: 720,
-        }
-      : undefined,
   });
 }
 
