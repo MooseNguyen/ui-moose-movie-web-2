@@ -3,7 +3,12 @@ import { expect, test, type Page } from '@playwright/test';
 // Card → Detail poster morph (poster-transition.ts). Records every view
 // transition the page starts, with the names of the animated groups.
 
-type Recorded = { groups: string[]; skipped: string | null };
+type Recorded = {
+  groups: string[];
+  /** Animations on image pairs: `pseudo-element animation-name`. */
+  pairs: string[];
+  skipped: string | null;
+};
 
 async function recordViewTransitions(page: Page) {
   await page.addInitScript(() => {
@@ -14,17 +19,23 @@ async function recordViewTransitions(page: Page) {
       ...args: Parameters<typeof start>
     ) {
       const transition = start.apply(this, args);
-      const entry: Recorded = { groups: [], skipped: null };
+      const entry: Recorded = { groups: [], pairs: [], skipped: null };
       log.push(entry);
       transition.ready.then(
         () => {
-          entry.groups = document
-            .getAnimations()
-            .map(
-              (animation) => (animation.effect as KeyframeEffect).pseudoElement
+          const animations = document.getAnimations();
+          const pseudo = (animation: Animation) =>
+            (animation.effect as KeyframeEffect).pseudoElement ?? '';
+          entry.groups = animations
+            .map(pseudo)
+            .filter((name) => name.startsWith('::view-transition-group('));
+          entry.pairs = animations
+            .filter((animation) =>
+              pseudo(animation).startsWith('::view-transition-image-pair(')
             )
-            .filter((pseudo): pseudo is string =>
-              Boolean(pseudo?.startsWith('::view-transition-group('))
+            .map(
+              (animation) =>
+                `${pseudo(animation)} ${(animation as CSSAnimation).animationName}`
             );
         },
         (error: unknown) => {
@@ -73,6 +84,8 @@ test.describe('poster morph', () => {
       .toMatchObject({
         skipped: null,
         groups: expect.arrayContaining([`::view-transition-group(${name})`]),
+        // The poster flies with depth (lift and swing), not just a 2D morph.
+        pairs: [`::view-transition-image-pair(${name}) poster-depth`],
       });
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
@@ -101,6 +114,7 @@ test.describe('poster morph with reduced motion', () => {
 
     await expect.poll(async () => (await recorded(page)).length).toBe(1);
     expect((await recorded(page))[0].groups).toEqual([]);
+    expect((await recorded(page))[0].pairs).toEqual([]);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 });
