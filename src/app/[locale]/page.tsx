@@ -3,9 +3,9 @@ import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { HomeHero } from '@/components/home/HomeHero';
 import { PosterWall } from '@/components/home/PosterWall';
 import { ErrorBoundary } from '@/components/media/ErrorBoundary';
-import { HeroSlider } from '@/components/media/HeroSlider';
 import { MediaRow } from '@/components/media/MediaRow';
 import { MediaRowSkeleton } from '@/components/media/MediaRowSkeleton';
 import { routing } from '@/i18n/routing';
@@ -73,11 +73,11 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
     <>
       <h1 className="sr-only">{t('heading')}</h1>
       {/* Full-bleed, under the transparent fixed header. */}
-      <HeroSlider items={trending} />
+      <HomeHero items={trending} />
       <div className="mx-auto max-w-7xl space-y-12 px-4 py-10">
         {/* PosterWall renders nothing on data errors (it never throws); the
-            boundary only guards against a client-side crash of the 3D
-            enhancement, and the wall is optional content. */}
+            boundary only guards against a client-side crash of its carousel,
+            and the wall is optional content. */}
         <ErrorBoundary fallback={null}>
           <Suspense fallback={null}>
             <PosterWall locale={locale} />

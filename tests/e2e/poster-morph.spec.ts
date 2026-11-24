@@ -42,7 +42,7 @@ const recorded = (page: Page) =>
       (window as unknown as { __viewTransitions: Recorded[] }).__viewTransitions
   );
 
-// Detail page rows: on Home the poster wall's cards sit under its canvas.
+// Detail page rows: one page load, no Home hero swapping in meanwhile.
 async function clickRelatedCard(page: Page) {
   await page.goto('/vi/movie/550');
   const link = page.getByTestId('media-card').first().getByRole('link');

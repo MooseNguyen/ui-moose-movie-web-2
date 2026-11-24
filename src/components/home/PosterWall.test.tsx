@@ -15,8 +15,7 @@ vi.mock(
 const mockedGetTrendingWall = vi.mocked(getTrendingWall);
 
 beforeAll(() => {
-  // jsdom has no matchMedia (a touch device never enhances, so the plain
-  // carousel is what these tests see) and none of Embla's observers.
+  // jsdom has neither matchMedia nor the observers Embla uses.
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: false,
     media: query,
@@ -65,9 +64,7 @@ describe('PosterWall', () => {
     expect(region).toHaveAttribute('aria-roledescription', 'carousel');
     const section = region.closest('section')!;
     expect(section).not.toHaveAttribute('aria-labelledby');
-    // Reveal only outside the 3D layout: its transform must not touch the
-    // sticky stage.
-    expect(section).toHaveClass('row-reveal', 'immersive:animate-none');
+    expect(section).toHaveClass('row-reveal');
     expect(
       within(section).getByRole('heading', {
         level: 2,

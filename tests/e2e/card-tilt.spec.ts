@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 // Pointer tilt for media cards (TiltController + globals.css). Structure only:
 // no assertions on specific titles.
 
-// Detail page rows: on Home the poster wall's cards sit under its canvas.
+// Detail page rows: one page load, no Home hero swapping in meanwhile.
 const PAGE = '/vi/movie/550';
 const firstCard = (page: Page) => page.getByTestId('media-card').first();
 

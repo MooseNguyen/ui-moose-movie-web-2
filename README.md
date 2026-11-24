@@ -13,8 +13,11 @@ unit and component tests, Playwright E2E tests and Lighthouse budgets in CI.
 
 ## Features
 
-- **Home:** trending hero slider with trailers, plus six carousels (popular,
-  top rated and upcoming movies; popular, top rated and on-the-air TV).
+- **Home:** trending hero with trailers, plus six carousels (popular, top
+  rated and upcoming movies; popular, top rated and on-the-air TV). On desktop
+  pointers with WebGL2 the hero becomes a three.js scene of floating posters
+  (loaded after the page is idle, HTML text and controls on top); touch
+  devices and reduced motion keep the server-rendered slideshow.
 - **Lists:** movie and TV lists with "Load more" pagination through Server
   Actions.
 - **Search:** search across movies, TV and people. Vietnamese diacritics and
