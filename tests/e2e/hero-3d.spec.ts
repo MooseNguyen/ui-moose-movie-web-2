@@ -64,6 +64,30 @@ test.describe('desktop', () => {
     expect(errors).toEqual([]);
   });
 
+  test('shows every hero title in full beside the 3D stage', async ({
+    page,
+  }) => {
+    await page.goto('/vi');
+    const region = hero(page);
+    await expect(region).toHaveAttribute('data-ready', 'true', {
+      timeout: 15_000,
+    });
+    await region.getByRole('button', { name: 'Tạm dừng trình chiếu' }).click();
+
+    const dots = region.getByRole('button', { name: /^Đến trang chiếu \d+$/ });
+    const heading = region.getByRole('heading', { level: 2 });
+    for (let index = 0; index < (await dots.count()); index++) {
+      await dots.nth(index).click();
+      await expect(dots.nth(index)).toHaveAttribute('aria-current', 'true');
+      // The line clamp hides overflow: content taller than the box means a
+      // lost line or cut descenders and Vietnamese marks.
+      const clipped = await heading.evaluate(
+        (element) => element.scrollHeight > element.clientHeight + 1
+      );
+      expect(clipped, (await heading.textContent()) ?? '').toBe(false);
+    }
+  });
+
   test('a click on the front poster opens its Detail page', async ({
     page,
   }) => {

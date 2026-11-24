@@ -31,7 +31,11 @@ export function HeroDetails({
 
   return (
     <div className={cn('max-w-2xl min-w-0', className)}>
-      <h2 className="line-clamp-2 text-3xl font-bold md:text-5xl">
+      {/* Up to three balanced lines: long (often Vietnamese) titles must stay
+          whole beside the 3D stage, where this block is narrower. The clamp
+          hides overflow, so the line height must hold descenders and
+          Vietnamese marks (text-5xl alone sets it to 1 and cuts them). */}
+      <h2 className="line-clamp-3 text-3xl leading-tight font-bold text-balance md:text-5xl">
         {item.title}
       </h2>
       {(item.year !== null || showRating) && (
