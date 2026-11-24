@@ -19,6 +19,18 @@ describe('MediaCard', () => {
     expect(glare).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('floats the title, rating and action above the poster while tilted', () => {
+    renderWithIntl(<MediaCard item={tvItem} action={<button>Fav</button>} />);
+    const layers = screen
+      .getByTestId('media-card')
+      .querySelectorAll('[data-tilt-layer]');
+    expect([...layers].map((layer) => layer.textContent)).toEqual([
+      tvItem.title,
+      expect.stringContaining(String(tvItem.year)),
+      'Fav',
+    ]);
+  });
+
   it('starts a card-nav transition with a named-on-click poster (see PosterTransitionController)', () => {
     renderWithIntl(<MediaCard item={tvItem} />);
     expect(screen.getByRole('link')).toHaveAttribute(

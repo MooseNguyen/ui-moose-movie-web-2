@@ -74,10 +74,13 @@ describe('TiltController', () => {
     move(getByTestId('a-inner'), 200, 0);
 
     expect(card).toHaveAttribute('data-tilting');
-    expect(card.style.getPropertyValue('--tilt-rx')).toBe('8deg');
-    expect(card.style.getPropertyValue('--tilt-ry')).toBe('8deg');
+    expect(card.style.getPropertyValue('--tilt-rx')).toBe('10deg');
+    expect(card.style.getPropertyValue('--tilt-ry')).toBe('10deg');
     expect(card.style.getPropertyValue('--tilt-gx')).toBe('100%');
     expect(card.style.getPropertyValue('--tilt-gy')).toBe('0%');
+    // The shadow falls away from the pointer: down and to the left.
+    expect(card.style.getPropertyValue('--tilt-sx')).toBe('-14px');
+    expect(card.style.getPropertyValue('--tilt-sy')).toBe('26px');
   });
 
   it('resets a card when the pointer leaves it', () => {
@@ -90,6 +93,7 @@ describe('TiltController', () => {
 
     expect(a).not.toHaveAttribute('data-tilting');
     expect(a.style.getPropertyValue('--tilt-rx')).toBe('');
+    expect(a.style.getPropertyValue('--tilt-sx')).toBe('');
   });
 
   it('moves the tilt from one card to the next', () => {
@@ -101,7 +105,7 @@ describe('TiltController', () => {
 
     expect(getByTestId('a')).not.toHaveAttribute('data-tilting');
     expect(getByTestId('b')).toHaveAttribute('data-tilting');
-    expect(getByTestId('b').style.getPropertyValue('--tilt-rx')).toBe('-8deg');
+    expect(getByTestId('b').style.getPropertyValue('--tilt-rx')).toBe('-10deg');
   });
 
   it.each([

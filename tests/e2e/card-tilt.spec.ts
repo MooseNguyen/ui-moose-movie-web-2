@@ -33,10 +33,21 @@ test.describe('card tilt', () => {
       await expect(card).toHaveAttribute('data-tilting', '', { timeout: 500 });
     }).toPass();
     await expect.poll(() => transform(card)).not.toBe('none');
+    // Depth inside the card: the title floats above the poster, which casts
+    // a shadow.
+    const title = card.locator('[data-tilt-layer]').first();
+    await expect.poll(() => transform(title)).not.toBe('none');
+    const poster = card.locator('[data-poster-transition]');
+    await expect
+      .poll(() =>
+        poster.evaluate((element) => getComputedStyle(element).boxShadow)
+      )
+      .not.toBe('none');
 
     await page.mouse.move(1, 1);
     await expect(card).not.toHaveAttribute('data-tilting');
     await expect.poll(() => transform(card)).toBe('none');
+    await expect.poll(() => transform(title)).toBe('none');
   });
 
   test('a tilted card still navigates to Detail', async ({ page }) => {

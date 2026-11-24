@@ -197,7 +197,10 @@
 
 /* Pointer tilt for `[data-tilt]` cards. TiltController (one delegated
    listener) writes --tilt-* variables and `data-tilting` on the hovered
-   card; the transform lives here. Only for devices that can hover with a
+   card; the transform lives here. The tilted card lifts, its poster casts a
+   layered shadow that falls away from the pointer, and the `[data-tilt-layer]`
+   parts (title, rating, favorite button) float above the poster in the
+   card's own 3D space. Only for devices that can hover with a
    fine pointer and when motion is welcome; everyone else gets flat cards.
    The tilt is on the card itself, never on the carousel item, so it does
    not fight the row-reveal transform. */
@@ -215,10 +218,36 @@
     }
 
     [data-tilt][data-tilting] {
-      transform: perspective(800px) rotateX(var(--tilt-rx, 0deg))
-        rotateY(var(--tilt-ry, 0deg));
+      transform: perspective(800px) translate3d(0, -6px, 0)
+        rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg));
+      transform-style: preserve-3d;
       transition: transform 80ms linear;
       will-change: transform;
+    }
+
+    [data-tilt][data-tilting] > a {
+      transform-style: preserve-3d;
+    }
+
+    [data-tilt] [data-poster-transition] {
+      transition: box-shadow 300ms ease-out;
+    }
+
+    [data-tilt][data-tilting] [data-poster-transition] {
+      box-shadow:
+        0 2px 4px rgb(0 0 0 / 0.18),
+        calc(var(--tilt-sx, 0px) * 0.4) calc(var(--tilt-sy, 18px) * 0.4) 12px
+          rgb(0 0 0 / 0.22),
+        var(--tilt-sx, 0px) var(--tilt-sy, 18px) 32px rgb(0 0 0 / 0.32);
+    }
+
+    [data-tilt] [data-tilt-layer] {
+      transition: transform 300ms ease-out;
+    }
+
+    [data-tilt][data-tilting] [data-tilt-layer] {
+      transform: translateZ(28px);
+      transition: transform 80ms linear;
     }
 
     [data-tilt] .tilt-glare {

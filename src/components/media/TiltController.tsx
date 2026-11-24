@@ -8,7 +8,14 @@ import { tiltFromPointer } from './tilt';
 const ENABLED_QUERY = '(hover: hover) and (pointer: fine)';
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
-const VARS = ['--tilt-rx', '--tilt-ry', '--tilt-gx', '--tilt-gy'] as const;
+const VARS = [
+  '--tilt-rx',
+  '--tilt-ry',
+  '--tilt-gx',
+  '--tilt-gy',
+  '--tilt-sx',
+  '--tilt-sy',
+] as const;
 
 function reset(card: HTMLElement) {
   card.removeAttribute('data-tilting');
@@ -20,7 +27,7 @@ function reset(card: HTMLElement) {
  *
  * One delegated `pointermove` listener instead of a client component per
  * card: cards stay Server Components, and a page with 100+ cards hydrates
- * nothing extra. The work is limited to one rect read and four CSS variable
+ * nothing extra. The work is limited to one rect read and six CSS variable
  * writes per animation frame; the transform itself lives in CSS.
  */
 export function TiltController() {
@@ -45,6 +52,8 @@ export function TiltController() {
       active.style.setProperty('--tilt-ry', `${tilt.ry}deg`);
       active.style.setProperty('--tilt-gx', `${tilt.gx}%`);
       active.style.setProperty('--tilt-gy', `${tilt.gy}%`);
+      active.style.setProperty('--tilt-sx', `${tilt.sx}px`);
+      active.style.setProperty('--tilt-sy', `${tilt.sy}px`);
       active.setAttribute('data-tilting', '');
     };
 
