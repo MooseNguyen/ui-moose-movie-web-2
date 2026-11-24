@@ -1,4 +1,10 @@
-import { TILT_MAX_DEG, tiltFromPointer } from './tilt';
+import {
+  SHADOW_BASE_Y,
+  SHADOW_MAX_X,
+  SHADOW_MAX_Y,
+  TILT_MAX_DEG,
+  tiltFromPointer,
+} from './tilt';
 
 const rect = { left: 100, top: 200, width: 200, height: 300 };
 
@@ -9,16 +15,22 @@ describe('tiltFromPointer', () => {
       ry: 0,
       gx: 50,
       gy: 50,
+      // Straight below the card.
+      sx: 0,
+      sy: SHADOW_BASE_Y,
     });
   });
 
   it('tilts the side under the pointer away, up to the max angle', () => {
     // Top-right corner: right side back (rotateY +), top back (rotateX +).
+    // The shadow falls the other way: down-left.
     expect(tiltFromPointer(rect, 300, 200)).toEqual({
       rx: TILT_MAX_DEG,
       ry: TILT_MAX_DEG,
       gx: 100,
       gy: 0,
+      sx: -SHADOW_MAX_X,
+      sy: SHADOW_BASE_Y + SHADOW_MAX_Y,
     });
     // Bottom-left corner: the opposite.
     expect(tiltFromPointer(rect, 100, 500)).toEqual({
@@ -26,6 +38,8 @@ describe('tiltFromPointer', () => {
       ry: -TILT_MAX_DEG,
       gx: 0,
       gy: 100,
+      sx: SHADOW_MAX_X,
+      sy: SHADOW_BASE_Y - SHADOW_MAX_Y,
     });
   });
 
@@ -42,6 +56,6 @@ describe('tiltFromPointer', () => {
   it('stays flat for a zero-size card instead of dividing by zero', () => {
     expect(
       tiltFromPointer({ left: 0, top: 0, width: 0, height: 0 }, 10, 10)
-    ).toEqual({ rx: 0, ry: 0, gx: 50, gy: 50 });
+    ).toEqual({ rx: 0, ry: 0, gx: 50, gy: 50, sx: 0, sy: SHADOW_BASE_Y });
   });
 });

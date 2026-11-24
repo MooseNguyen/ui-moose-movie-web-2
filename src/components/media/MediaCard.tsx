@@ -78,11 +78,18 @@ export function MediaCard({
           {/* Decorative light that follows the pointer (TiltController + globals.css). */}
           <span aria-hidden="true" className="tilt-glare" />
         </div>
-        <Heading className="mt-2 line-clamp-2 text-sm font-medium">
+        {/* data-tilt-layer: floats above the poster while tilted. */}
+        <Heading
+          data-tilt-layer
+          className="mt-2 line-clamp-2 text-sm font-medium"
+        >
           {item.title}
         </Heading>
         {(item.year !== null || showRating) && (
-          <p className="text-muted-foreground mt-0.5 flex gap-2 text-xs">
+          <p
+            data-tilt-layer
+            className="text-muted-foreground mt-0.5 flex gap-2 text-xs"
+          >
             {item.year !== null && <span>{item.year}</span>}
             {showRating && (
               <span>
@@ -97,7 +104,11 @@ export function MediaCard({
           </p>
         )}
       </Link>
-      {action && <div className="absolute top-2 right-2">{action}</div>}
+      {action && (
+        <div data-tilt-layer className="absolute top-2 right-2">
+          {action}
+        </div>
+      )}
     </div>
   );
 }

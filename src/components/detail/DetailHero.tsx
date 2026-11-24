@@ -7,6 +7,7 @@ import { FavoriteButton } from '@/features/favorites/FavoriteButton';
 import { Link } from '@/i18n/navigation';
 import { tmdbImage } from '@/lib/images';
 import type { MediaDetail } from '@/lib/tmdb/types';
+import { DetailHeroDepth } from './DetailHeroDepth';
 
 const MAX_STUDIOS = 3;
 
@@ -86,9 +87,15 @@ export function DetailHero({ detail, ambient }: DetailHeroProps) {
   if (studios) facts.push([t('studios'), studios]);
 
   return (
-    <div className="relative isolate overflow-hidden">
+    // Backdrop, poster and text are separate depth planes (DetailHeroDepth
+    // + globals.css); at rest they sit exactly where they are rendered.
+    <DetailHeroDepth className="relative isolate overflow-hidden">
       {/* Decorative blurred backdrop; it extends behind the fixed header. */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10">
+      <div
+        aria-hidden="true"
+        data-depth-layer="backdrop"
+        className="absolute inset-0 -z-10"
+      >
         <Image
           src={tmdbImage(detail.backdropPath, 'w1280', 'backdrop')}
           alt=""
@@ -116,6 +123,7 @@ export function DetailHero({ detail, ambient }: DetailHeroProps) {
       <div className="mx-auto grid max-w-7xl gap-8 px-4 pt-24 pb-10 md:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)]">
         {/* The clicked card poster morphs into this one (poster-transition.ts). */}
         <div
+          data-depth-layer="poster"
           style={{
             viewTransitionName: posterTransitionName(
               detail.mediaType,
@@ -135,7 +143,7 @@ export function DetailHero({ detail, ambient }: DetailHeroProps) {
           />
         </div>
 
-        <div className="flex min-w-0 flex-col gap-4">
+        <div data-depth-layer="text" className="flex min-w-0 flex-col gap-4">
           <div>
             <h1 className="text-3xl font-bold md:text-4xl">{detail.title}</h1>
             {detail.tagline && (
@@ -209,6 +217,6 @@ export function DetailHero({ detail, ambient }: DetailHeroProps) {
           )}
         </div>
       </div>
-    </div>
+    </DetailHeroDepth>
   );
 }

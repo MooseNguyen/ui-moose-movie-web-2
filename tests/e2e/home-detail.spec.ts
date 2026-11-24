@@ -8,8 +8,7 @@ test('home hero leads to a detail page with title and cast', async ({
     page.getByRole('region', { name: 'Thịnh hành tuần này' })
   ).toBeVisible();
 
-  // A row card, not the trending wall: on desktop the wall's grid is hidden
-  // behind its 3D canvas (covered by poster-wall.spec.ts).
+  // A row card (the hero is covered by hero-3d.spec.ts).
   await page
     .getByRole('region', { name: 'Phim lẻ phổ biến' })
     .getByTestId('media-card')
