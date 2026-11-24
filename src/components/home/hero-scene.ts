@@ -38,7 +38,7 @@ const POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w342';
 const CARD_WIDTH = 1.6;
 const CARD_HEIGHT = 2.4;
 const ORBIT: OrbitOptions = {
-  radiusX: 2.1,
+  radiusX: 1.9,
   radiusZ: 2.2,
   lift: 0.9,
   yawFactor: 0.45,

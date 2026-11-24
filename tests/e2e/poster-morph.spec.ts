@@ -5,8 +5,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 type Recorded = {
   groups: string[];
-  /** Animations on image pairs: `pseudo-element animation-name`. */
-  pairs: string[];
+  /** View-transition animations as `pseudo-element animation-name`. */
+  named: string[];
   skipped: string | null;
 };
 
@@ -19,7 +19,7 @@ async function recordViewTransitions(page: Page) {
       ...args: Parameters<typeof start>
     ) {
       const transition = start.apply(this, args);
-      const entry: Recorded = { groups: [], pairs: [], skipped: null };
+      const entry: Recorded = { groups: [], named: [], skipped: null };
       log.push(entry);
       transition.ready.then(
         () => {
@@ -29,9 +29,9 @@ async function recordViewTransitions(page: Page) {
           entry.groups = animations
             .map(pseudo)
             .filter((name) => name.startsWith('::view-transition-group('));
-          entry.pairs = animations
+          entry.named = animations
             .filter((animation) =>
-              pseudo(animation).startsWith('::view-transition-image-pair(')
+              pseudo(animation).startsWith('::view-transition')
             )
             .map(
               (animation) =>
@@ -85,7 +85,10 @@ test.describe('poster morph', () => {
         skipped: null,
         groups: expect.arrayContaining([`::view-transition-group(${name})`]),
         // The poster flies with depth (lift and swing), not just a 2D morph.
-        pairs: [`::view-transition-image-pair(${name}) poster-depth`],
+        named: expect.arrayContaining([
+          `::view-transition-old(${name}) poster-depth`,
+          `::view-transition-new(${name}) poster-depth`,
+        ]),
       });
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
@@ -114,7 +117,7 @@ test.describe('poster morph with reduced motion', () => {
 
     await expect.poll(async () => (await recorded(page)).length).toBe(1);
     expect((await recorded(page))[0].groups).toEqual([]);
-    expect((await recorded(page))[0].pairs).toEqual([]);
+    expect((await recorded(page))[0].named).toEqual([]);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 });
