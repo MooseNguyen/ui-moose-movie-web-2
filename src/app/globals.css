@@ -326,6 +326,10 @@
   }
 }
 
+/* The animation's timing function applies to each keyframe interval, not to
+   the whole flight. The rise keeps the fast-out curve and comes to rest at
+   the peak; the way down must start from rest too, or the poster stops at
+   the top and then drops at full speed (a visible stutter mid-flight). */
 @keyframes poster-depth {
   0% {
     transform: perspective(900px);
@@ -335,6 +339,7 @@
     transform: perspective(900px) translateZ(140px) rotateY(-18deg)
       rotateX(6deg);
     filter: drop-shadow(0 28px 36px rgb(0 0 0 / 0.35));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
   }
   100% {
     transform: perspective(900px);

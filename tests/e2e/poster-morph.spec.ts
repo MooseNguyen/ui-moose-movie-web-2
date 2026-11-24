@@ -7,6 +7,8 @@ type Recorded = {
   groups: string[];
   /** View-transition animations as `pseudo-element animation-name`. */
   named: string[];
+  /** Lift (translateZ, px) of the departing poster every 20ms of its flight. */
+  lift: number[];
   skipped: string | null;
 };
 
@@ -19,7 +21,12 @@ async function recordViewTransitions(page: Page) {
       ...args: Parameters<typeof start>
     ) {
       const transition = start.apply(this, args);
-      const entry: Recorded = { groups: [], named: [], skipped: null };
+      const entry: Recorded = {
+        groups: [],
+        named: [],
+        lift: [],
+        skipped: null,
+      };
       log.push(entry);
       transition.ready.then(
         () => {
@@ -37,6 +44,26 @@ async function recordViewTransitions(page: Page) {
               (animation) =>
                 `${pseudo(animation)} ${(animation as CSSAnimation).animationName}`
             );
+          // Sample the flight synchronously (no frame is rendered between
+          // the seeks), then put the animation back where it was.
+          const depth = animations.find(
+            (animation) =>
+              pseudo(animation).startsWith('::view-transition-old(poster-') &&
+              (animation as CSSAnimation).animationName === 'poster-depth'
+          );
+          if (depth) {
+            const now = depth.currentTime;
+            const duration = Number(depth.effect!.getComputedTiming().duration);
+            for (let time = 0; time <= duration; time += 20) {
+              depth.currentTime = time;
+              const { transform } = getComputedStyle(
+                document.documentElement,
+                pseudo(depth)
+              );
+              entry.lift.push(new DOMMatrix(transform).m43);
+            }
+            depth.currentTime = now;
+          }
         },
         (error: unknown) => {
           entry.skipped = String(error);
@@ -91,6 +118,25 @@ test.describe('poster morph', () => {
         ]),
       });
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  });
+
+  test('the poster turns smoothly at the top of its lift', async ({ page }) => {
+    await clickRelatedCard(page);
+
+    await expect
+      .poll(async () => (await recorded(page)).at(-1)?.lift.length ?? 0)
+      .toBeGreaterThan(3);
+    const { lift } = (await recorded(page)).at(-1)!;
+    const peak = lift.indexOf(Math.max(...lift));
+    expect(peak).toBeGreaterThan(0);
+    expect(peak).toBeLessThan(lift.length - 1);
+    // The poster slows into the peak, so it must also leave it slowly: a
+    // fall that starts at full speed right after a near stop reads as a
+    // stutter mid-flight (it was ~17px against a ~0.6px rise). The margin
+    // allows for the curves being different on each side.
+    const rise = lift[peak] - lift[peak - 1];
+    const fall = lift[peak] - lift[peak + 1];
+    expect(fall).toBeLessThanOrEqual(4 * rise + 2);
   });
 
   test('a Discover filter change starts no transition', async ({ page }) => {
