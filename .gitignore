@@ -51,3 +51,6 @@ next-env.d.ts
 
 # lighthouse ci
 /.lighthouseci/
+
+# taste-skill captures and reports (.claude/settings.json plugin)
+/.taste-skill/

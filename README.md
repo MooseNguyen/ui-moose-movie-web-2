@@ -160,6 +160,22 @@ tests/
   Next.js/React framework (see Known issues). Reports
   are kept as CI artifacts, never on public storage.
 
+## Design tooling
+
+`.claude/settings.json` enables the
+[taste-skill](https://github.com/Leonxlnx/taste-skill) Claude Code plugin
+(skill `design-taste-frontend`, MIT) for redesign work. Claude Code offers to
+install it when you trust the project folder.
+
+- It targets marketing and company sites. In this app, use it for type,
+  colour, component states and its real-browser checks; keep the layout,
+  routes, i18n strings and shadcn/ui components.
+- Its scripts start a local headless Chrome and fetch icons, fonts and
+  stand-in photos from public CDNs. Captures and reports go to the ignored
+  `.taste-skill/` folder.
+- It is not pinned to a version (the marketplace `ref` is ignored by the
+  CLI), so it follows the author's default branch.
+
 ## Deployment
 
 The app targets [Vercel](https://vercel.com). Import the repository and set
