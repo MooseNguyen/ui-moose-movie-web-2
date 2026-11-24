@@ -318,6 +318,49 @@
   }
 }
 
+/* Detail hero depth (DetailHeroDepth writes --depth-x/-y in -1..1 and
+   --depth-scroll in px). Three planes move by different amounts: the
+   blurred backdrop lags behind the scroll and drifts against the pointer,
+   the poster turns towards the pointer with a shadow that follows, and the
+   text barely moves (it must stay easy to read). With every variable at 0
+   each layer sits exactly where it was rendered, so activation never jumps.
+   Unlayered on purpose: the poster's box-shadow must beat the shadow-lg
+   utility. Touch and reduced motion get flat layers (no controller runs). */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-depth-active] [data-depth-layer='backdrop'] {
+    transform: translate3d(
+      calc(var(--depth-x, 0) * -16px),
+      calc(var(--depth-scroll, 0) * 0.45px + var(--depth-y, 0) * -10px),
+      0
+    );
+    will-change: transform;
+  }
+
+  [data-depth-active] [data-depth-layer='poster'] {
+    transform: perspective(1000px)
+      translate3d(
+        calc(var(--depth-x, 0) * 10px),
+        calc(var(--depth-scroll, 0) * -0.12px + var(--depth-y, 0) * 6px),
+        0
+      )
+      rotateY(calc(var(--depth-x, 0) * 7deg))
+      rotateX(calc(var(--depth-y, 0) * -5deg));
+    box-shadow:
+      0 4px 10px rgb(0 0 0 / 0.2),
+      calc(var(--depth-x, 0) * -16px) calc(20px + var(--depth-y, 0) * -10px)
+        44px rgb(0 0 0 / 0.38);
+    will-change: transform;
+  }
+
+  [data-depth-active] [data-depth-layer='text'] {
+    transform: translate3d(
+      calc(var(--depth-x, 0) * 4px),
+      calc(var(--depth-scroll, 0) * -0.05px),
+      0
+    );
+  }
+}
+
 /* Detail ambient tint (poster-color.ts): the poster's hue and chroma come
    from the server, the lightness is fixed per theme here. Text contrast
    therefore never depends on the poster: white text on the dark tint and

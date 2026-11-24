@@ -11,7 +11,30 @@ vi.mock(
 // module) on hover/focus/open; keep the action stubbed in case that happens.
 vi.mock('@/lib/actions/media', () => ({ getTrailer: vi.fn() }));
 
+// jsdom has no matchMedia; a touch-like device keeps the depth layers flat
+// (DetailHeroDepth.test covers the motion).
+beforeAll(() => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+});
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('DetailHero', () => {
+  it('puts backdrop, poster and text on separate depth planes', () => {
+    renderWithIntl(<DetailHero detail={movieDetail} />);
+    const layers = [...document.querySelectorAll('[data-depth-layer]')].map(
+      (layer) => layer.getAttribute('data-depth-layer')
+    );
+    expect(layers).toEqual(['backdrop', 'poster', 'text']);
+    // The poster plane is the element the card poster morphs into.
+    expect(
+      document
+        .querySelector<HTMLElement>('[data-depth-layer="poster"]')
+        ?.style.getPropertyValue('view-transition-name')
+    ).toBe(`poster-movie-${movieDetail.id}`);
+  });
+
   it('renders the title as the page heading with the tagline and overview', () => {
     renderWithIntl(<DetailHero detail={movieDetail} />);
 
