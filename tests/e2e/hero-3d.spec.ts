@@ -46,9 +46,12 @@ test.describe('desktop', () => {
     });
 
     // The selected title is HTML, and the controls are real buttons.
+    // Pause first and start from title 1, so auto-advance cannot race the
+    // assertions below.
     const heading = region.getByRole('heading', { level: 2 });
-    const first = await heading.textContent();
     await region.getByRole('button', { name: 'Tạm dừng trình chiếu' }).click();
+    await region.getByRole('button', { name: 'Đến trang chiếu 1' }).click();
+    const first = await heading.textContent();
     await region.getByRole('button', { name: 'Trang chiếu tiếp theo' }).click();
     await expect(heading).not.toHaveText(first!);
     await expect(
@@ -112,7 +115,10 @@ test.describe('desktop', () => {
         'carousel'
       );
       await expect(
-        hero(page).getByRole('link', { name: /^Chi tiết: / })
+        // The slideshow keeps every slide in the DOM; the first is shown.
+        hero(page)
+          .getByRole('link', { name: /^Chi tiết: / })
+          .first()
       ).toBeVisible();
     });
   });
@@ -129,7 +135,10 @@ test('mobile keeps the slideshow and never loads the 3D scene', async ({
   await expect(page.locator('canvas')).toHaveCount(0);
   await expect(page.getByTestId('hero-3d')).toHaveCount(0);
   await expect(
-    hero(page).getByRole('link', { name: /^Chi tiết: / })
+    // The slideshow keeps every slide in the DOM; the first is shown.
+    hero(page)
+      .getByRole('link', { name: /^Chi tiết: / })
+      .first()
   ).toBeVisible();
   expect(errors).toEqual([]);
 });
