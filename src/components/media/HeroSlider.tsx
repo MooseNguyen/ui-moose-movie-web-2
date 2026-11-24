@@ -10,6 +10,7 @@ import {
   useState,
   useSyncExternalStore,
   type FocusEvent,
+  type ReactNode,
 } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,7 +47,18 @@ const CAROUSEL_OPTIONS = {
   breakpoints: { [REDUCED_MOTION]: { duration: 0 } },
 };
 
-export function HeroSlider({ items }: { items: MediaItem[] }) {
+type HeroSliderProps = {
+  items: MediaItem[];
+  /**
+   * Optional decorative layer rendered inside the carousel, over the slides
+   * and under the controls (e.g. the 3D stage on Home). It can read the
+   * selection with `useCarousel()`. Marking itself `data-hero-stage="ready"`
+   * hides the slides' own poster, which it then replaces.
+   */
+  stage?: ReactNode;
+};
+
+export function HeroSlider({ items, stage }: HeroSliderProps) {
   const t = useTranslations('home');
   const [api, setApi] = useState<CarouselApi>();
   const [selected, setSelected] = useState(0);
@@ -173,6 +185,7 @@ export function HeroSlider({ items }: { items: MediaItem[] }) {
       opts={CAROUSEL_OPTIONS}
       plugins={plugins}
       aria-label={t('heroLabel')}
+      className="group/hero"
       onFocus={handleFocus}
       onBlur={handleBlur}
     >
@@ -240,6 +253,7 @@ export function HeroSlider({ items }: { items: MediaItem[] }) {
           </CarouselItem>
         ))}
       </CarouselContent>
+      {stage}
     </Carousel>
   );
 }
@@ -289,7 +303,7 @@ function HeroSlide({ item, priority, onTrailerOpenChange }: HeroSlideProps) {
       />
 
       <div className="relative mx-auto flex h-full max-w-7xl items-end gap-8 px-4 pb-20 md:pb-24">
-        <div className="bg-muted relative hidden aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-lg shadow-lg lg:block">
+        <div className="bg-muted relative hidden aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-lg shadow-lg group-has-[[data-hero-stage=ready]]/hero:hidden lg:block">
           <Image
             src={tmdbImage(item.posterPath, 'w342')}
             alt=""

@@ -330,4 +330,15 @@ describe('HeroSlider', () => {
     const { container } = renderWithIntl(<HeroSlider items={[]} />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('renders the optional stage inside the carousel region', async () => {
+    renderWithIntl(
+      <HeroSlider items={items} stage={<div data-testid="stage" />} />
+    );
+    await waitFor(() => expect(autoplay.api).toBeDefined());
+    const region = screen.getByRole('region', { name: 'Trending this week' });
+    expect(within(region).getByTestId('stage')).toBeInTheDocument();
+    // A ready stage hides the slides' own poster through this group.
+    expect(region).toHaveClass('group/hero');
+  });
 });

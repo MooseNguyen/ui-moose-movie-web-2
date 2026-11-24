@@ -3,6 +3,8 @@ import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { HeroStage } from '@/components/home/HeroStage';
+import type { HeroSceneItem } from '@/components/home/hero-scene-layout';
 import { PosterWall } from '@/components/home/PosterWall';
 import { ErrorBoundary } from '@/components/media/ErrorBoundary';
 import { HeroSlider } from '@/components/media/HeroSlider';
@@ -43,6 +45,15 @@ async function getHeroItems(locale: Locale): Promise<MediaItem[]> {
   }
 }
 
+// Only what the 3D stage needs crosses to the client a second time.
+const toSceneItems = (items: MediaItem[]): HeroSceneItem[] =>
+  items.map(({ id, mediaType, title, posterPath }) => ({
+    id,
+    mediaType,
+    title,
+    posterPath,
+  }));
+
 async function getLocale(params: PageProps<'/[locale]'>['params']) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
@@ -72,12 +83,21 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
   return (
     <>
       <h1 className="sr-only">{t('heading')}</h1>
-      {/* Full-bleed, under the transparent fixed header. */}
-      <HeroSlider items={trending} />
+      {/* Full-bleed, under the transparent fixed header. The 3D stage is a
+          desktop-only enhancement; if it crashes on the client, the boundary
+          drops it and the slider stays as it is. */}
+      <HeroSlider
+        items={trending}
+        stage={
+          <ErrorBoundary fallback={null}>
+            <HeroStage items={toSceneItems(trending)} />
+          </ErrorBoundary>
+        }
+      />
       <div className="mx-auto max-w-7xl space-y-12 px-4 py-10">
         {/* PosterWall renders nothing on data errors (it never throws); the
-            boundary only guards against a client-side crash of the 3D
-            enhancement, and the wall is optional content. */}
+            boundary only guards against a client-side crash of its carousel,
+            and the wall is optional content. */}
         <ErrorBoundary fallback={null}>
           <Suspense fallback={null}>
             <PosterWall locale={locale} />
