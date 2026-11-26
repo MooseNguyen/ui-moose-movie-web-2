@@ -147,7 +147,7 @@ describe('HomePage', () => {
 
     await renderServerTree(await HomePage(params('en')));
 
-    const wall = screen.getByRole('region', { name: 'Trending poster wall' });
+    const wall = screen.getByRole('region', { name: 'Trending now' });
     expect(within(wall).getAllByTestId('media-card')).toHaveLength(2);
     expect(mockedGetTrendingWall).toHaveBeenCalledWith('en');
     // Document order: hero, wall, first row (valid h1 > h2 > h3 outline).
@@ -175,7 +175,7 @@ describe('HomePage', () => {
     await renderServerTree(await HomePage(params('en')));
 
     expect(
-      screen.queryByRole('region', { name: 'Trending poster wall' })
+      screen.queryByRole('region', { name: 'Trending now' })
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole('region', { name: 'Popular Movies' })
