@@ -59,7 +59,7 @@ describe('PosterWall', () => {
 
     // Only the carousel is a named region; the section stays unnamed.
     const region = screen.getByRole('region', {
-      name: 'Trending poster wall',
+      name: 'Trending now',
     });
     expect(region).toHaveAttribute('aria-roledescription', 'carousel');
     const section = region.closest('section')!;
@@ -68,7 +68,7 @@ describe('PosterWall', () => {
     expect(
       within(section).getByRole('heading', {
         level: 2,
-        name: 'Trending poster wall',
+        name: 'Trending now',
       })
     ).toBeInTheDocument();
     // Card titles are h3 under the section h2.

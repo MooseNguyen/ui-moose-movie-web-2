@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 // (HeroSlider) everywhere else. Structure only: titles are live TMDB data.
 
 const HERO = 'Thịnh hành tuần này';
-const WALL = 'Bức tường poster thịnh hành';
+const WALL = 'Đang thịnh hành';
 const DETAIL_URL = /\/vi\/(movie|tv)\/\d+$/;
 // three.js is requested only after load and idle (timeout 2s); give it that
 // long before asserting that nothing was loaded.

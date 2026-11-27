@@ -145,7 +145,7 @@
     "detailsTitle": "Details: {title}",
     "seeAll": "See all",
     "seeAllTitle": "See all: {title}",
-    "trendingWall": "Trending poster wall",
+    "trendingWall": "Trending now",
     "rowError": "Could not load {title} right now. Please try again later.",
     "rows": {
       "popularMovies": "Popular Movies",
